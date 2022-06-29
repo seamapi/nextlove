@@ -4,7 +4,7 @@ import { z } from "zod"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 
-export type AuthType = string
+export type AuthType = "none" | string
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
