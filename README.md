@@ -3,4 +3,4 @@
 This repo consists of NextJS utility modules used by Seam, namely:
 - nextjs-server-modules
 - withRouteSpec
-- nextjs-middleware
+- nextjs-exception-middleware

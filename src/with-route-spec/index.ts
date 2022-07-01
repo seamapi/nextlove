@@ -4,11 +4,11 @@ import { z } from "zod"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 
-export type AuthType = "none" | string
+type AuthType = "none" | string
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
-export interface RouteSpec<
+interface RouteSpec<
   Auth extends AuthType = AuthType,
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
@@ -21,25 +21,29 @@ export interface RouteSpec<
   commonParams?: CommonParams
 }
 
-export class RouteSpecHandler {
-  private authMiddlewares: {
-    [key: string]: (next: Function) => Function
-  }
+type AuthMiddlewares = {
+  [key: string]: (next: Function) => Function
+}
 
-  constructor(authMiddlewares: {
-    [key: string]: (next: Function) => Function
-  }) {
-    this.authMiddlewares = { none: (next) => next, ...authMiddlewares }
-  }
+export const generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
 
-  withRouteSpec =
-    <Spec extends RouteSpec>(spec: Spec) =>
+export const createWithRouteSpec = ({
+  authMiddlewares,
+  globalMiddlewares,
+}: {
+  authMiddlewares: AuthMiddlewares
+  globalMiddlewares: Array<(next: Function) => Function>
+}) => {
+  return <Spec extends RouteSpec>(spec: Spec) =>
     (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
-      const auth_middleware = this.authMiddlewares[spec.auth]
+      authMiddlewares["none"] = (next) => next
+
+      const auth_middleware = authMiddlewares[spec.auth]
       if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
       return wrappers(
+        ...(globalMiddlewares as []),
         auth_middleware,
         withMethods(spec.methods),
         withValidation({
@@ -50,6 +54,4 @@ export class RouteSpecHandler {
         next
       )(req as any, res)
     }
-
-  generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
 }
