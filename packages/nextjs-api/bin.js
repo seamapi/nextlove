@@ -1,3 +1,2 @@
-#!/usr/bin/env node
-
-require("nextjs-server-modules/bin")()
+#! /usr/bin/node
+require("nsm/bin.js")
