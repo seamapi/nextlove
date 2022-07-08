@@ -13,7 +13,7 @@ export const route_spec = generateRouteSpec({
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
-  const { todo_id } = req.queryParams as z.infer<typeof queryParams>
+  const { todo_id } = req.query as z.infer<typeof queryParams>
 
   if (todo_id !== "todo_id") {
     throw new NotFoundException({
