@@ -27,13 +27,15 @@ type AuthMiddlewares = {
 
 export const generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
 
-export const createWithRouteSpec = ({
-  authMiddlewares,
-  globalMiddlewares,
-}: {
-  authMiddlewares: AuthMiddlewares
-  globalMiddlewares: Array<(next: Function) => Function>
-}) => {
+export const createWithRouteSpec = (
+  {
+    authMiddlewares,
+    globalMiddlewares,
+  }: {
+    authMiddlewares: AuthMiddlewares
+    globalMiddlewares: Array<(next: Function) => Function>
+  } = { authMiddlewares: {}, globalMiddlewares: [] }
+) => {
   return <Spec extends RouteSpec>(spec: Spec) =>
     (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
