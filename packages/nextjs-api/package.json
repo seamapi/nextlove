@@ -5,11 +5,9 @@
   "bin": {
     "nsm": "node_modules/nextjs-server-modules/bin.js"
   },
+  "main": "./dist/index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "nsm build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "tsup --dts --sourcemap inline src"
   },
   "dependencies": {
     "esbuild": "^0.14.7",
