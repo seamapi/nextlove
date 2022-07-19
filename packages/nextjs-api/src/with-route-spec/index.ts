@@ -29,8 +29,8 @@ export const generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
 
 export const createWithRouteSpec = (
   {
-    authMiddlewares,
-    globalMiddlewares,
+    authMiddlewares = {},
+    globalMiddlewares = [],
   }: {
     authMiddlewares: AuthMiddlewares
     globalMiddlewares: Array<(next: Function) => Function>
