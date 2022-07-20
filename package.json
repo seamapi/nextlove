@@ -22,5 +22,6 @@
     "node": ">=14.0.0"
   },
   "dependencies": {},
-  "packageManager": "yarn@1.22.17"
+  "packageManager": "yarn@1.22.17",
+  "repository": "https://github.com/seamapi/nextjs-api"
 }
