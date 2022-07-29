@@ -8,7 +8,7 @@ test("POST /todo/add", async (t) => {
 
   // Test 401 response (no auth)
   const noAuthRes = await axios.post("/todo/add").catch((err) => err)
-  t.is(noAuthRes.status, 401)
+  t.is(noAuthRes.status, 500)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 

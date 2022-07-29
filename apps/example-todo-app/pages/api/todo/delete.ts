@@ -1,5 +1,5 @@
 import { generateRouteSpec, withRouteSpec } from "lib/middlewares"
-import { NotFoundException } from "nextjs-api"
+import { NotFoundException,  } from "nextjs-api"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
 
