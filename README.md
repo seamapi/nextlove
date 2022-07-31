@@ -1,77 +1,82 @@
-# Turborepo starter
+# NextJS API
 
-This is an official Yarn v1 starter turborepo.
+This repo consists of NextJS utility modules used by Seam, namely:
 
-## What's inside?
+- nextjs-exception-middleware
+- nextjs-server-modules
+- withRouteSpec
+- wrappers
 
-This turborepo uses [Yarn](https://classic.yarnpkg.com/lang/en/) as a package manager. It includes the following packages/apps:
+## Installation
 
-### Apps and Packages
+`yarn add nextjs-api`
 
-- `docs`: a [Next.js](https://nextjs.org) app
-- `web`: another [Next.js](https://nextjs.org) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+## Usage
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### withRouteSpec
 
-### Utilities
+```ts
+import { createWithRouteSpec } from "nextjs-api"
+export { generateRouteSpec } from "nextjs-api"
+import { z } from "zod"
 
-This turborepo has some additional tools already setup for you:
+export const withRouteSpec = createWithRouteSpec({
+  authMiddlewares: { auth_token: withAuthToken },
+  globalMiddlewares: [globalMiddleware],
+})
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+export const route_spec = generateRouteSpec({
+  methods: ["GET"],
+  auth: "auth_token",
+  queryParams: z.object({
+    id: z.string().uuid(),
+  }),
+})
 
-## Setup
-
-This repository is used in the `npx create-turbo` command, and selected when choosing which package manager you wish to use with your monorepo (Yarn).
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-yarn run build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-yarn run dev
+export default withRouteSpec(route_spec)(async (req, res) => {
+  /* ... */
+  return res.status(200).json({ ok: true })
+})
 ```
 
-### Remote Caching
+### wrappers
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.org/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+```ts
+import { wrappers } from "nextjs-api"
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your turborepo:
-
-```
-npx turbo link
+wrappers(withDatabase, logger.withContext("somecontext"), async (req, res) => {
+  res.status(200).end("...")
+})
 ```
 
-## Useful Links
+### nextjs-exception-middleware
 
-Learn more about the power of Turborepo:
+```ts
+// Inside a route handler
+if (bad_soups.includes(soup_param)) {
+  throw new BadRequestException({
+    type: "cant_make_soup",
+    message: "Soup was too difficult, please specify a different soup",
+    data: { soup_param },
+  })
+}
+```
 
-- [Pipelines](https://turborepo.org/docs/core-concepts/pipelines)
-- [Caching](https://turborepo.org/docs/core-concepts/caching)
-- [Remote Caching](https://turborepo.org/docs/core-concepts/remote-caching)
-- [Scoped Tasks](https://turborepo.org/docs/core-concepts/scopes)
-- [Configuration Options](https://turborepo.org/docs/reference/configuration)
-- [CLI Usage](https://turborepo.org/docs/reference/command-line-reference)
+### nextjs-server-modules
+
+Add a build script `{ "build": "nsm build" }`.
+
+The build process will output a `.nsm/index.ts` file which can be used to create your server or invoke requests against it.
+
+```ts
+import myNextJSModule from "./.nsm"
+
+const server = await myNextJSModule({
+  port: 3030,
+  middlewares: [myMiddleware],
+})
+
+// your server is running on localhost:3030!
+
+server.close()
+```
