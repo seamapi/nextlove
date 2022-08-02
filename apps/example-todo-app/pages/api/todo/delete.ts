@@ -1,9 +1,10 @@
 import { generateRouteSpec, withRouteSpec } from "lib/middlewares"
-import { BadRequestException } from "nextjs-api"
+import { NotFoundException,  } from "nextjs-api"
+import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
 
 export const jsonBody = z.object({
-  todo_id: z.string().uuid(),
+  id: z.string().uuid(),
 })
 
 export const route_spec = generateRouteSpec({
@@ -13,12 +14,12 @@ export const route_spec = generateRouteSpec({
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
-  const { todo_id } = req.body as z.infer<typeof jsonBody>
-  if (todo_id !== "todo_id")
-    throw new BadRequestException({
-      type: "invalid_todo_id",
-      message: "Invalid 'todo_id'",
-      data: { todo_id },
+  const { id } = req.body as z.infer<typeof jsonBody>
+  if (id !== TODO_ID)
+    throw new NotFoundException({
+      type: "todo_not_found",
+      message: `Todo ${id} not found`,
+      data: { id },
     })
 
   return res.status(200).json({ ok: true })
