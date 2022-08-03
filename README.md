@@ -52,6 +52,8 @@ wrappers(withDatabase, logger.withContext("somecontext"), async (req, res) => {
 ### nextjs-exception-middleware
 
 ```ts
+import { BadRequestException } from "nextjs-api"
+
 // Inside a route handler
 if (bad_soups.includes(soup_param)) {
   throw new BadRequestException({
