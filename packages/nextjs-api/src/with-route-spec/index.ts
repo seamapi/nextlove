@@ -1,4 +1,5 @@
 import { NextApiResponse, NextApiRequest } from "next"
+import { withExceptionHandling } from "nextjs-exception-middleware"
 import wrappers from "nextjs-middleware-wrappers"
 import { z } from "zod"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
@@ -31,9 +32,13 @@ export const createWithRouteSpec = (
   {
     authMiddlewares = {},
     globalMiddlewares = [],
+    exceptionHandlingMiddleware = withExceptionHandling({
+      addOkStatus: true,
+    }) as any,
   }: {
     authMiddlewares: AuthMiddlewares
     globalMiddlewares: Array<(next: Function) => Function>
+    exceptionHandlingMiddleware?: ((next: Function) => Function) | null
   } = { authMiddlewares: {}, globalMiddlewares: [] }
 ) => {
   return <Spec extends RouteSpec>(spec: Spec) =>
@@ -45,6 +50,9 @@ export const createWithRouteSpec = (
       if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
       return wrappers(
+        ...((exceptionHandlingMiddleware
+          ? [exceptionHandlingMiddleware]
+          : []) as [any]),
         ...(globalMiddlewares as []),
         auth_middleware,
         withMethods(spec.methods),
