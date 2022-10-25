@@ -14,9 +14,10 @@ interface RouteSpec<
   Auth extends AuthType = AuthType,
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
-  CommonParams extends ParamDef = z.ZodTypeAny
+  CommonParams extends ParamDef = z.ZodTypeAny,
+  Methods extends HTTPMethods[] = any
 > {
-  methods: HTTPMethods[]
+  methods: Methods
   auth: Auth
   jsonBody?: JsonBody
   queryParams?: QueryParams
@@ -24,54 +25,74 @@ interface RouteSpec<
 }
 
 type MiddlewareChainOutput<MWChain extends readonly Middleware<any, any>[]> =
-  Simplify<
-    MWChain extends readonly []
-      ? {}
-      : MWChain extends readonly [infer First, ...infer Rest]
-      ? First extends Middleware<infer T, any>
-        ? T &
-            (Rest extends readonly Middleware<any, any>[]
-              ? MiddlewareChainOutput<Rest>
-              : never)
-        : never
+  MWChain extends readonly []
+    ? {}
+    : MWChain extends readonly [infer First, ...infer Rest]
+    ? First extends Middleware<infer T, any>
+      ? T &
+          (Rest extends readonly Middleware<any, any>[]
+            ? MiddlewareChainOutput<Rest>
+            : never)
       : never
-  >
+    : never
 
 type AuthMiddlewares = {
   [auth_type: string]: Middleware<any, any>
 }
 
 export type RouteFunction<
-  SP extends CreateRouteSpecSetupParams<any, any>,
+  SP extends SetupParams<any, any>,
   RS extends RouteSpec,
   AK extends keyof SP["authMiddlewares"]
-> = SP extends CreateRouteSpecSetupParams<infer AuthMW, infer GlobalMW>
+> = SP extends SetupParams<infer AuthMW, infer GlobalMW>
   ? (
-      req: NextApiRequest & { globalMwOut: MiddlewareChainOutput<GlobalMW> } & {
-        authMwOut: AuthMW[AK] extends Middleware<infer AuthOut, any>
-          ? AuthOut
-          : "boop"
+      // req: NextApiRequest & { globalMwOut: MiddlewareChainOutput<GlobalMW> } & {
+      //   authMwOut: AuthMW[AK] extends Middleware<infer AuthOut, any>
+      //     ? AuthOut
+      //     : "boop"
+      // },
+      req: {
+        authMwOut: AuthMW[AK]
       },
       res: NextApiResponse
     ) => void
   : "beep" // (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 
-export interface CreateRouteSpecSetupParams<
-  AuthMW extends AuthMiddlewares,
-  GlobalMW extends Middleware<any, any>[]
+export interface SetupParams<
+  AuthMW extends AuthMiddlewares = any,
+  GlobalMW extends Middleware<any, any>[] = any
 > {
   authMiddlewares: AuthMW
   globalMiddlewares: GlobalMW
-  exceptionHandlingMiddleware: ((next: Function) => Function) | null
+  exceptionHandlingMiddleware?: ((next: Function) => Function) | null
 }
 
-export const generateRouteSpec = <T extends RouteSpec>(route_spec: T): T =>
+export const checkRouteSpec = <T extends RouteSpec>(route_spec: T): T =>
   route_spec
 
-export const createWithRouteSpec = <
-  SetupParams extends CreateRouteSpecSetupParams<any, any>
->(
-  setup_params: Partial<SetupParams>
+export type RouteFunction2<
+  SP extends SetupParams<any, any>,
+  RS extends RouteSpec
+> = (
+  req: SP["authMiddlewares"][RS["auth"]] extends Middleware<
+    infer AuthMWOut,
+    any
+  >
+    ? NextApiRequest &
+        AuthMWOut &
+        MiddlewareChainOutput<SP["globalMiddlewares"]>
+    : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec`,
+  res: NextApiResponse
+) => Promise<void>
+
+export type CreateWithRouteSpecFunction = <SP extends SetupParams<any, any>>(
+  setup_params: SP
+) => <RS extends RouteSpec>(
+  route_spec: RS
+) => (next: RouteFunction2<SP, RS>) => any
+
+export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
+  setup_params: SetupParams
 ) => {
   const {
     authMiddlewares = {},
@@ -81,12 +102,8 @@ export const createWithRouteSpec = <
     }) as any,
   } = setup_params
 
-  return <RS extends RouteSpec>(spec: RS) =>
-    (
-      next: RS extends RouteSpec<infer AuthKey>
-        ? RouteFunction<SetupParams, RouteSpec, AuthKey>
-        : never
-    ) =>
+  return (spec: RouteSpec) =>
+    (next) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
       authMiddlewares["none"] = (next) => next
 
@@ -108,4 +125,4 @@ export const createWithRouteSpec = <
         next
       )(req as any, res)
     }
-}
+}) as any

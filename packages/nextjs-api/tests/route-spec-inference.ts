@@ -1,4 +1,10 @@
-import { createWithRouteSpec, generateRouteSpec, Middleware } from "../src"
+import {
+  RouteFunction2,
+  SetupParams,
+  RouteSpec,
+  checkRouteSpec,
+} from "./../src/with-route-spec/index"
+import { createWithRouteSpec, Middleware } from "../src"
 import type { NextApiRequest as Req, NextApiResponse as Res } from "next"
 import tb, { Union } from "ts-toolbelt"
 import { ObjectOf } from "ts-toolbelt/out/List/ObjectOf"
@@ -56,6 +62,9 @@ import { Simplify } from "type-fest"
 
 // // tb.List.ObjectOf<MWChain>
 
+const exampleAuthMw: Middleware<{ auth: { authorized_by: "bearer" } }, {}> =
+  (next) => (req, res) => {}
+
 const authTokenMiddleware: Middleware<
   {
     auth: {
@@ -87,19 +96,85 @@ const dbMiddleware: Middleware<
 // const chain = [dbMiddleware, authTokenMiddleware] as const
 // type ChainOutput = MiddlewareChainOutput<typeof chain>
 
-const withRouteSpec = createWithRouteSpec({
+const projSetup = {
   authMiddlewares: {
     auth_token: authTokenMiddleware,
-  },
+    bearer: exampleAuthMw,
+  } as const,
   globalMiddlewares: [dbMiddleware],
-})
+} as const
 
-export const myRouteSpec = generateRouteSpec({
-  auth: "auth_token" as const,
+const withRouteSpec = createWithRouteSpec(projSetup)
+
+export const myRouteSpec = checkRouteSpec({
+  auth: "bearer" as const,
   methods: ["GET"],
+} as const)
+
+const withRoute2 = createWithRouteSpec(projSetup)(myRouteSpec)
+
+// export const myRoute = withRouteSpec(myRouteSpec)((req, res) => {
+export const myRoute = withRoute2(async (req, res) => {
+  // req.auth.authorized_by
+  // return res.status(200).json({ ok: true })
 })
 
-export const myRoute = withRouteSpec(myRouteSpec)((req, res) => {
-  req.auth.authorized_by
-  return res.status(200).json({ ok: true })
-})
+// interface RouteSpec<AuthType> {
+//   auth: AuthType
+// }
+
+// interface SetupParams<AuthMWs extends Middleware<any, any>> {
+//   authMiddlewares: AuthMWs
+// }
+
+const setup_params = {
+  authMiddlewares: {
+    bearer: exampleAuthMw,
+  } as const,
+  globalMiddlewares: [] as const,
+  exceptionHandlingMiddleware: null,
+} as const
+
+type OutputOfAuthMiddleware1<
+  AuthType extends keyof typeof setup_params["authMiddlewares"]
+> = typeof setup_params["authMiddlewares"][AuthType] extends Middleware<
+  infer Out,
+  any
+>
+  ? Out
+  : never
+
+type A = OutputOfAuthMiddleware1<"bearer">
+
+type OutputOfAuthMiddleware2<
+  SP extends SetupParams<any>,
+  AuthType extends keyof typeof setup_params["authMiddlewares"]
+> = SP["authMiddlewares"][AuthType] extends Middleware<infer Out, any>
+  ? Out
+  : never
+
+type B = OutputOfAuthMiddleware2<typeof setup_params, "bearer">
+
+type OutputOfAuthMiddleware3<
+  SP extends SetupParams<any>,
+  RS extends RouteSpec
+> = SP["authMiddlewares"][RS["auth"]] extends Middleware<infer Out, any>
+  ? Out
+  : never
+
+const routespec = {
+  auth: "bearer" as const,
+  methods: ["GET"],
+} as const
+
+type C = OutputOfAuthMiddleware3<typeof setup_params, typeof routespec>
+
+type D = RouteFunction2<typeof setup_params, typeof routespec>
+
+const withRoute = createWithRouteSpec(setup_params)(routespec)
+
+type E = typeof withRoute
+
+withRoute(async (req, res) => {})
+
+// type C = RouteFunction2<typeof setup_params,
