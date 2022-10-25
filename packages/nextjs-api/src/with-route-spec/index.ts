@@ -1,6 +1,7 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { withExceptionHandling } from "nextjs-exception-middleware"
 import wrappers, { Middleware } from "nextjs-middleware-wrappers"
+import { Simplify } from "type-fest"
 import { z } from "zod"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
@@ -22,47 +23,53 @@ interface RouteSpec<
   commonParams?: CommonParams
 }
 
+type MiddlewareChainOutput<MWChain extends readonly Middleware<any, any>[]> =
+  Simplify<
+    MWChain extends readonly []
+      ? {}
+      : MWChain extends readonly [infer First, ...infer Rest]
+      ? First extends Middleware<infer T, any>
+        ? T &
+            (Rest extends readonly Middleware<any, any>[]
+              ? MiddlewareChainOutput<Rest>
+              : never)
+        : never
+      : never
+  >
+
 type AuthMiddlewares = {
   [auth_type: string]: Middleware<any, any>
 }
 
 export type RouteFunction<
-  SP extends CreateRouteSpecSetupParams,
-  RS extends RouteSpec
-> = (
-  req: NextApiRequest & { auth_type: RS["auth"] },
-  res: NextApiResponse
-) => Promise<void>
+  SP extends CreateRouteSpecSetupParams<any, any>,
+  RS extends RouteSpec,
+  AK extends keyof SP["authMiddlewares"]
+> = SP extends CreateRouteSpecSetupParams<infer AuthMW, infer GlobalMW>
+  ? (
+      req: NextApiRequest & { globalMwOut: MiddlewareChainOutput<GlobalMW> } & {
+        authMwOut: AuthMW[AK] extends Middleware<infer AuthOut, any>
+          ? AuthOut
+          : "boop"
+      },
+      res: NextApiResponse
+    ) => void
+  : "beep" // (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 
-export interface CreateRouteSpecSetupParams {
-  authMiddlewares: AuthMiddlewares
-  globalMiddlewares: Array<(next: Function) => Function>
+export interface CreateRouteSpecSetupParams<
+  AuthMW extends AuthMiddlewares,
+  GlobalMW extends Middleware<any, any>[]
+> {
+  authMiddlewares: AuthMW
+  globalMiddlewares: GlobalMW
   exceptionHandlingMiddleware: ((next: Function) => Function) | null
 }
 
 export const generateRouteSpec = <T extends RouteSpec>(route_spec: T): T =>
   route_spec
 
-/*
-
-export default (req, res) => {
-
-}
-
-
-import { routeBuilder } from "lib/routes"
-
-export const route_spec = routeBuilder.generateRouteSpec({
-  
-})
-
-export default routeBuilder.withRouteSpec(route_spec)(async (req, res) => {
-})
-
-*/
-
 export const createWithRouteSpec = <
-  SetupParams extends CreateRouteSpecSetupParams
+  SetupParams extends CreateRouteSpecSetupParams<any, any>
 >(
   setup_params: Partial<SetupParams>
 ) => {
@@ -75,7 +82,11 @@ export const createWithRouteSpec = <
   } = setup_params
 
   return <RS extends RouteSpec>(spec: RS) =>
-    (next: RouteFunction<SetupParams, RouteSpec>) =>
+    (
+      next: RS extends RouteSpec<infer AuthKey>
+        ? RouteFunction<SetupParams, RouteSpec, AuthKey>
+        : never
+    ) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
       authMiddlewares["none"] = (next) => next
 
