@@ -39,8 +39,8 @@ export type AuthMiddlewares = {
 }
 
 export interface SetupParams<
-  AuthMW extends AuthMiddlewares = any,
-  GlobalMW extends Middleware<any, any>[] = any
+  AuthMW extends AuthMiddlewares = AuthMiddlewares,
+  GlobalMW extends Middleware<any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
@@ -52,7 +52,7 @@ const defaultMiddlewareMap = {
 } as const
 
 export type RouteFunction<
-  SP extends SetupParams<any, any>,
+  SP extends SetupParams<AuthMiddlewares>,
   RS extends RouteSpec
 > = (
   req: (SP["authMiddlewareMap"] &
@@ -76,12 +76,14 @@ export type RouteFunction<
               ? z.infer<RS["commonParams"]>
               : {})
         }
-    : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec`,
+    : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
   res: NextApiResponse
 ) => Promise<void>
 
-export type CreateWithRouteSpecFunction = <SP extends SetupParams<any, any>>(
-  setup_params: SP
+export type CreateWithRouteSpecFunction = <
+  SP extends SetupParams<AuthMiddlewares, any>
+>(
+  setupParams: SP
 ) => <RS extends RouteSpec>(
   route_spec: RS
 ) => (next: RouteFunction<SP, RS>) => any

@@ -1,4 +1,9 @@
-import { checkRouteSpec, createWithRouteSpec, Middleware } from "../src"
+import {
+  checkRouteSpec,
+  createWithRouteSpec,
+  Middleware,
+  RouteSpec,
+} from "../src"
 import { expectTypeOf } from "expect-type"
 import { z } from "zod"
 
@@ -78,4 +83,18 @@ export const myRoute3Spec = checkRouteSpec({
 
 export const myRoute3 = withRouteSpec(myRoute3Spec)(async (req, res) => {
   expectTypeOf(req.body).toMatchTypeOf<{ A: string; B: string }>()
+})
+
+// @ts-expect-error - route spec is underspecified (needs "as const")
+export const myRoute4Spec: RouteSpec = checkRouteSpec({
+  auth: "none",
+  methods: ["POST"],
+})
+
+const withImproperMWRouteSpec = createWithRouteSpec({
+  authMiddlewareMap: {
+    // @ts-expect-error - improperly defined middleware
+    asd: () => {},
+  },
+  globalMiddlewares: [],
 })

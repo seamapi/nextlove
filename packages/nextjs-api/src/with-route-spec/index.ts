@@ -5,7 +5,11 @@ import { CreateWithRouteSpecFunction, RouteSpec } from "../types"
 import withMethods from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 
-export const checkRouteSpec = <Spec extends RouteSpec>(spec: Spec): Spec => spec
+export const checkRouteSpec = <Spec extends RouteSpec>(
+  spec: Spec
+): string extends Spec["auth"]
+  ? `your route spec is underspecified, add "as const"`
+  : Spec => spec as any
 
 export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
   setupParams
