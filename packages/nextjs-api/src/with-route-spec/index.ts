@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { withExceptionHandling } from "nextjs-exception-middleware"
-import wrappers from "nextjs-middleware-wrappers"
+import wrappers, { Middleware } from "nextjs-middleware-wrappers"
 import { z } from "zod"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
@@ -23,26 +23,59 @@ interface RouteSpec<
 }
 
 type AuthMiddlewares = {
-  [key: string]: (next: Function) => Function
+  [auth_type: string]: Middleware<any, any>
 }
 
-export const generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
+export type RouteFunction<
+  SP extends CreateRouteSpecSetupParams,
+  RS extends RouteSpec
+> = (
+  req: NextApiRequest & { auth_type: RS["auth"] },
+  res: NextApiResponse
+) => Promise<void>
 
-export const createWithRouteSpec = (
-  {
+export interface CreateRouteSpecSetupParams {
+  authMiddlewares: AuthMiddlewares
+  globalMiddlewares: Array<(next: Function) => Function>
+  exceptionHandlingMiddleware: ((next: Function) => Function) | null
+}
+
+export const generateRouteSpec = <T extends RouteSpec>(route_spec: T): T =>
+  route_spec
+
+/*
+
+export default (req, res) => {
+
+}
+
+
+import { routeBuilder } from "lib/routes"
+
+export const route_spec = routeBuilder.generateRouteSpec({
+  
+})
+
+export default routeBuilder.withRouteSpec(route_spec)(async (req, res) => {
+})
+
+*/
+
+export const createWithRouteSpec = <
+  SetupParams extends CreateRouteSpecSetupParams
+>(
+  setup_params: Partial<SetupParams>
+) => {
+  const {
     authMiddlewares = {},
     globalMiddlewares = [],
     exceptionHandlingMiddleware = withExceptionHandling({
       addOkStatus: true,
     }) as any,
-  }: {
-    authMiddlewares: AuthMiddlewares
-    globalMiddlewares: Array<(next: Function) => Function>
-    exceptionHandlingMiddleware?: ((next: Function) => Function) | null
-  } = { authMiddlewares: {}, globalMiddlewares: [] }
-) => {
-  return <Spec extends RouteSpec>(spec: Spec) =>
-    (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
+  } = setup_params
+
+  return <RS extends RouteSpec>(spec: RS) =>
+    (next: RouteFunction<SetupParams, RouteSpec>) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
       authMiddlewares["none"] = (next) => next
 
