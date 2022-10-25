@@ -29,16 +29,10 @@ const dbMiddleware: Middleware<
   return next(req, res)
 }
 
-type AssertEqual<T, Expected> = T extends Expected
-  ? Expected extends T
-    ? true
-    : never
-  : never
-
 const projSetup = {
   authMiddlewareMap: {
     auth_token: authTokenMiddleware,
-  } as const,
+  },
   globalMiddlewares: [dbMiddleware],
 } as const
 
