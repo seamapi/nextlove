@@ -39,6 +39,16 @@ export const createWithRouteSpec = (
   return <Spec extends RouteSpec>(spec: Spec) =>
     (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
+
+      if (process.env.GENERATE_OPENAPI_SPEC) {
+	return spec as any
+        // res.json({
+	  // openapi spec for endpoint
+          // use the spec.methods, spec.auth, spec.queryParams
+	// })
+      }
+
+      // Normal code execution
       authMiddlewares["none"] = (next) => next
 
       const auth_middleware = authMiddlewares[spec.auth]

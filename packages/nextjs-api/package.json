@@ -1,9 +1,9 @@
 {
   "name": "nextjs-api",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "bin": {
-    "nsm": "node_modules/nextjs-server-modules/bin.js"
+    "route-spec-to-openapi": "lib/route-spec-to-openapi.js"
   },
   "main": "./dist/index.js",
   "scripts": {
