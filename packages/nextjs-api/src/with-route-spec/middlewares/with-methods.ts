@@ -9,7 +9,7 @@ export type HTTPMethods =
   | "HEAD"
   | "OPTIONS"
 
-export default (methods: HTTPMethods[]) => (next) => (req, res) => {
+export const withMethods = (methods: HTTPMethods[]) => (next) => (req, res) => {
   if (!methods.includes(req.method)) {
     throw new MethodNotAllowedException({
       type: "method_not_allowed",
@@ -18,3 +18,5 @@ export default (methods: HTTPMethods[]) => (next) => (req, res) => {
   }
   return next(req, res)
 }
+
+export default withMethods

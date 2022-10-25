@@ -42,16 +42,21 @@ export interface SetupParams<
   AuthMW extends AuthMiddlewares = any,
   GlobalMW extends Middleware<any, any>[] = any
 > {
-  authMiddlewares: AuthMW
+  authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
   exceptionHandlingMiddleware?: ((next: Function) => Function) | null
 }
+
+const defaultMiddlewareMap = {
+  none: (next) => next,
+} as const
 
 export type RouteFunction<
   SP extends SetupParams<any, any>,
   RS extends RouteSpec
 > = (
-  req: SP["authMiddlewares"][RS["auth"]] extends Middleware<
+  req: (SP["authMiddlewareMap"] &
+    typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
     infer AuthMWOut,
     any
   >

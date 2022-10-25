@@ -10,10 +10,6 @@ const parseCommaSeparateArrays = (
   const parsed_input = Object.assign({}, input)
 
   // todo: iterate over Zod top level keys, if there's an array, parse it
-  // HACK - Handling this one case of a comma-separate string array
-  if (typeof parsed_input.device_ids === "string") {
-    parsed_input.device_ids = parsed_input.device_ids.split(",")
-  }
 
   return schema.parse(parsed_input)
 }
