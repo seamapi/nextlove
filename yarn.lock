@@ -1636,6 +1636,11 @@ execa@^5.0.0, execa@^5.1.1:
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
 
+expect-type@^0.15.0:
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/expect-type/-/expect-type-0.15.0.tgz#89f75e22c88554844ea2b2faf4ef5fc2e579d3b5"
+  integrity sha512-yWnriYB4e8G54M5/fAFj7rCIBiKs1HAACaY13kCz6Ku0dezjS9aMcfcdVK2X8Tv2tEV1BPz/wKfQ7WA4S/d8aA==
+
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -2790,6 +2795,11 @@ nextjs-middleware-wrappers@^1.1.2:
   resolved "https://registry.yarnpkg.com/nextjs-middleware-wrappers/-/nextjs-middleware-wrappers-1.1.2.tgz#8c7f32251f8603ea99f465c7109c496cc671befc"
   integrity sha512-+DP3XFug7pWD5myYomAjoNsnfQtmVqZ2xQ82oWgJQU0HFDWuyNSFHdwumSJqgfPUmCjZiD8JPi0RMCRY18kvHQ==
 
+nextjs-middleware-wrappers@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/nextjs-middleware-wrappers/-/nextjs-middleware-wrappers-1.3.0.tgz#750821daf306d3b2b1ad86aee28e3ad29599dfd5"
+  integrity sha512-JQ/70Ro+TCB2rQcCOQYJ0PRVXIBzn5KxVpXXfcfJG9miBxXiqRwFBoqunydiR8UGfzKxW3QJXoVhL8Qw3Kw3xQ==
+
 nextjs-server-modules@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/nextjs-server-modules/-/nextjs-server-modules-1.7.0.tgz#86d4b5fd637319ed48803de212fc34cd6476e851"
@@ -3892,6 +3902,11 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
+ts-toolbelt@^9.6.0:
+  version "9.6.0"
+  resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-9.6.0.tgz#50a25426cfed500d4a09bd1b3afb6f28879edfd5"
+  integrity sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==
+
 tsconfig-paths@^3.14.1:
   version "3.14.1"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.14.1.tgz#ba0734599e8ea36c862798e920bcf163277b137a"
@@ -4060,6 +4075,11 @@ type-fest@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.6.0.tgz#8d2a2370d3df886eb5c90ada1c5bf6188acf838b"
   integrity sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg==
+
+type-fest@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.1.0.tgz#157b74044d9c27fd796b9c6aa46eae6658b1e9b8"
+  integrity sha512-StmrZmK3eD9mDF9Vt7UhqthrDSk66O9iYl5t5a0TSoVkHjl0XZx/xuc/BRz4urAXXGHOY5OLsE0RdJFIApSFmw==
 
 typedarray-to-buffer@^3.1.5:
   version "3.1.5"

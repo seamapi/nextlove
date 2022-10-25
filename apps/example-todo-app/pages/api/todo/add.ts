@@ -10,10 +10,11 @@ export const jsonBody = z.object({
 
 export const route_spec = generateRouteSpec({
   methods: ["POST"],
-  auth: "auth_token",
+  auth: "auth_token" as const,
   jsonBody,
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
+  req.auth_type
   return res.status(200).json({ ok: true })
 })

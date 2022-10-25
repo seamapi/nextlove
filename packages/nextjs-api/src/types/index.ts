@@ -60,9 +60,22 @@ export type RouteFunction<
     infer AuthMWOut,
     any
   >
-    ? NextApiRequest &
+    ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
-        MiddlewareChainOutput<SP["globalMiddlewares"]>
+        MiddlewareChainOutput<SP["globalMiddlewares"]> & {
+          body: (RS["jsonBody"] extends z.ZodTypeAny
+            ? z.infer<RS["jsonBody"]>
+            : {}) &
+            (RS["commonParams"] extends z.ZodTypeAny
+              ? z.infer<RS["commonParams"]>
+              : {})
+          query: (RS["queryParams"] extends z.ZodTypeAny
+            ? z.infer<RS["queryParams"]>
+            : {}) &
+            (RS["commonParams"] extends z.ZodTypeAny
+              ? z.infer<RS["commonParams"]>
+              : {})
+        }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec`,
   res: NextApiResponse
 ) => Promise<void>

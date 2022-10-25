@@ -89,10 +89,6 @@ export const withValidation =
         })
       }
 
-      console.log(error)
-      console.log(error.name)
-
-      console.log(error.toString())
       throw new BadRequestException({
         type: "invalid_input",
         message: "Error while parsing input",
