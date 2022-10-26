@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "bin": {
-    "nsm": "node_modules/nextjs-server-modules/bin.js"
+    "nsm": "node_modules/nextjs-server-modules/bin.js",
+    "nextjs-api": "bin.js"
   },
   "main": "./dist/index.js",
   "scripts": {
@@ -23,6 +24,7 @@
     "zod": "^3.17.3"
   },
   "devDependencies": {
+    "@anatine/zod-openapi": "^1.10.0",
     "@types/lodash": "^4.14.182",
     "@types/node": "18.0.0",
     "@types/react": "18.0.14",
@@ -30,7 +32,9 @@
     "eslint": "8.18.0",
     "eslint-config-next": "12.2.0",
     "expect-type": "^0.15.0",
+    "minimist": "^1.2.7",
     "nextjs-middleware-wrappers": "^1.3.0",
+    "openapi3-ts": "^3.1.1",
     "ts-toolbelt": "^9.6.0",
     "turbo": "^1.3.1",
     "type-fest": "^3.1.0",

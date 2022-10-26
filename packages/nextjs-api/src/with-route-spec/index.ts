@@ -50,28 +50,35 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     }) as any,
   } = setupParams
 
-  return (spec: RouteSpec) =>
-    (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
-    async (req: NextApiRequest, res: NextApiResponse) => {
-      authMiddlewareMap["none"] = (next) => next
+  return (spec: RouteSpec) => {
+    const routeExport =
+      (userDefinedRouteFn) =>
+      async (req: NextApiRequest, res: NextApiResponse) => {
+        authMiddlewareMap["none"] = (next) => next
 
-      const auth_middleware = authMiddlewareMap[spec.auth]
-      if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
+        const auth_middleware = authMiddlewareMap[spec.auth]
+        if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-      return wrappers(
-        ...((exceptionHandlingMiddleware
-          ? [exceptionHandlingMiddleware]
-          : []) as [any]),
-        ...((globalMiddlewares || []) as []),
-        auth_middleware,
-        ...((spec.middlewares || []) as []),
-        withMethods(spec.methods),
-        withValidation({
-          jsonBody: spec.jsonBody,
-          queryParams: spec.queryParams,
-          commonParams: spec.commonParams,
-        }),
-        next
-      )(req as any, res)
-    }
+        return wrappers(
+          ...((exceptionHandlingMiddleware
+            ? [exceptionHandlingMiddleware]
+            : []) as [any]),
+          ...((globalMiddlewares || []) as []),
+          auth_middleware,
+          ...((spec.middlewares || []) as []),
+          withMethods(spec.methods),
+          withValidation({
+            jsonBody: spec.jsonBody,
+            queryParams: spec.queryParams,
+            commonParams: spec.commonParams,
+          }),
+          userDefinedRouteFn
+        )(req as any, res)
+      }
+
+    routeExport._setupParams = setupParams
+    routeExport._routeSpec = spec
+
+    return routeExport
+  }
 }) as any
