@@ -1,6 +1,6 @@
-import { createWithRouteSpec } from "nextjs-api"
+import { createWithRouteSpec } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
-export { checkRouteSpec } from "nextjs-api"
+export { checkRouteSpec } from "nextlove"
 
 export const withRouteSpec = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },

@@ -59,7 +59,7 @@ interface GenerateOpenAPIOpts {
 /**
  * This function generates an OpenAPI spec from the Next.js API routes.
  *
- * You normally invoke this with `nextjs-api generate-openapi` in a
+ * You normally invoke this with `nextapi generate-openapi` in a
  * "build:openapi" package.json script.
  */
 export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
