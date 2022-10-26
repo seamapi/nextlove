@@ -62,9 +62,9 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         ...((exceptionHandlingMiddleware
           ? [exceptionHandlingMiddleware]
           : []) as [any]),
-        ...(globalMiddlewares as []),
+        ...((globalMiddlewares || []) as []),
         auth_middleware,
-        ...(spec.middlewares as []),
+        ...((spec.middlewares || []) as []),
         withMethods(spec.methods),
         withValidation({
           jsonBody: spec.jsonBody,
