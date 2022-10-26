@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "rimraf dist && nsm build && tsup ./index.ts --dts --sourcemap && cp -r .next dist/.next",
-    "build:openapi": "nextjs-api generate-openapi --packageDir . --outputFile ./dist/openapi.json --apiName 'Example TODO API'",
+    "build:openapi": "nextjs-api generate-openapi --packageDir . --apiName 'Example TODO API'",
     "start": "next start",
     "lint": "next lint",
     "test": "ava"

@@ -69,6 +69,9 @@ const projSetup = {
     bearer: bearerMiddleware,
   },
   globalMiddlewares: [dbMiddleware],
+
+  apiName: "test",
+  productionServerUrl: "https://example.com",
 } as const
 
 const withRouteSpec = createWithRouteSpec(projSetup)
@@ -133,4 +136,19 @@ export const myRoute4Spec = checkRouteSpec({
 export const myRoute4 = withRouteSpec(myRoute4Spec)(async (req, res) => {
   expectTypeOf(req.db).toMatchTypeOf<{ client: any }>()
   expectTypeOf(req.user).toMatchTypeOf<{ user_id: string }>()
+})
+
+export const myRoute5Spec = checkRouteSpec({
+  auth: "none",
+  methods: ["POST"],
+  jsonResponse: z.object({
+    id: z.string(),
+  }),
+})
+
+export const myRoute5 = withRouteSpec(myRoute5Spec)(async (req, res) => {
+  // @ts-expect-error - should be a string
+  res.status(200).json({ id: 123 })
+
+  res.status(200).json({ id: "123" })
 })

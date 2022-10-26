@@ -11,6 +11,12 @@ export const route_spec = checkRouteSpec({
   methods: ["GET"],
   auth: "auth_token",
   queryParams,
+  jsonResponse: z.object({
+    ok: z.boolean(),
+    todo: z.object({
+      id: z.string().uuid(),
+    }),
+  }),
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
@@ -24,5 +30,5 @@ export default withRouteSpec(route_spec)(async (req, res) => {
     })
   }
 
-  return res.status(200).json({ ok: true })
+  return res.status(200).json({ ok: true, todo: { id } })
 })

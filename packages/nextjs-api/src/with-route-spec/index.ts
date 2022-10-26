@@ -50,10 +50,12 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     }) as any,
   } = setupParams
 
-  return (spec: RouteSpec) => {
-    const routeExport =
-      (userDefinedRouteFn) =>
-      async (req: NextApiRequest, res: NextApiResponse) => {
+  const withRouteSpec = (spec: RouteSpec) => {
+    const createRouteExport = (userDefinedRouteFn) => {
+      const rootRequestHandler = async (
+        req: NextApiRequest,
+        res: NextApiResponse
+      ) => {
         authMiddlewareMap["none"] = (next) => next
 
         const auth_middleware = authMiddlewareMap[spec.auth]
@@ -76,9 +78,19 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         )(req as any, res)
       }
 
-    routeExport._setupParams = setupParams
-    routeExport._routeSpec = spec
+      rootRequestHandler._setupParams = setupParams
+      rootRequestHandler._routeSpec = spec
 
-    return routeExport
+      return rootRequestHandler
+    }
+
+    createRouteExport._setupParams = setupParams
+    createRouteExport._routeSpec = spec
+
+    return createRouteExport
   }
+
+  withRouteSpec._setupParams = setupParams
+
+  return withRouteSpec
 }) as any
