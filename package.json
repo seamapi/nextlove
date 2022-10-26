@@ -11,7 +11,8 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "start:example": "cd apps/example-todo-app && yarn start"
+    "start:example": "cd apps/example-todo-app && yarn start",
+    "test": "cd packages/nextjs-api && yarn test"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
