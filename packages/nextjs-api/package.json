@@ -1,6 +1,6 @@
 {
   "name": "nextjs-api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "bin": {
     "nsm": "node_modules/nextjs-server-modules/bin.js",
