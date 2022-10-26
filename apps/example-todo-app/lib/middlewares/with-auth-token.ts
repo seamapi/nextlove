@@ -1,4 +1,4 @@
-import { UnauthorizedException, Middleware } from "nextapi"
+import { UnauthorizedException, Middleware } from "nextlove"
 
 export const withAuthToken: Middleware<{
   auth: {

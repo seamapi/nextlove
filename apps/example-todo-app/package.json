@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "rimraf dist && nsm build && tsup ./index.ts --dts --sourcemap && cp -r .next dist/.next",
-    "build:openapi": "nextapi generate-openapi --packageDir . --apiName 'Example TODO API'",
+    "build:openapi": "nextlove generate-openapi --packageDir . --apiName 'Example TODO API'",
     "start": "next start",
     "lint": "next lint",
     "test": "ava"
@@ -13,7 +13,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "next": "12.2.0",
-    "nextapi": "*",
+    "nextlove": "*",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "uuid": "^8.3.2"

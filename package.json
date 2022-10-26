@@ -1,5 +1,5 @@
 {
-  "name": "nextapi-turborepo",
+  "name": "nextlove-turborepo",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
@@ -12,8 +12,9 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "start:example": "cd apps/example-todo-app && yarn start",
-    "test": "cd packages/nextapi && yarn test",
-    "generate-openapi:example": "cd apps/example-todo-app && yarn build:openapi"
+    "test": "cd packages/nextlove && yarn test",
+    "generate-openapi:example": "cd apps/example-todo-app && yarn build:openapi",
+    "publish-packages": "cd packages/nextlove && yarn build && npm publish"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
@@ -26,5 +27,5 @@
   },
   "dependencies": {},
   "packageManager": "yarn@1.22.17",
-  "repository": "https://github.com/seamapi/nextapi"
+  "repository": "https://github.com/seamapi/nextlove"
 }

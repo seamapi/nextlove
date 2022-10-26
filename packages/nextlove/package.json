@@ -1,15 +1,15 @@
 {
-  "name": "nextapi",
+  "name": "nextlove",
   "version": "0.2.0",
   "private": false,
-  "repository": "https://github.com/seamapi/nextapi",
+  "repository": "https://github.com/seamapi/nextlove",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "bin": {
     "nsm": "node_modules/nextjs-server-modules/bin.js",
-    "nextapi": "bin.js"
+    "nextlove": "bin.js"
   },
   "main": "./dist/index.js",
   "scripts": {
