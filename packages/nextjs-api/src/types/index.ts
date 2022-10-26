@@ -4,6 +4,7 @@ import wrappers, { Middleware } from "nextjs-middleware-wrappers"
 import { Simplify } from "type-fest"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
+import tb from "ts-toolbelt"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -12,13 +13,15 @@ export interface RouteSpec<
   Methods extends HTTPMethods[] = any,
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
-  CommonParams extends ParamDef = z.ZodTypeAny
+  CommonParams extends ParamDef = z.ZodTypeAny,
+  Middlewares extends readonly Middleware<any, any>[] = any[]
 > {
   methods: Methods
   auth: Auth
   jsonBody?: JsonBody
   queryParams?: QueryParams
   commonParams?: CommonParams
+  middlewares?: Middlewares
 }
 
 export type MiddlewareChainOutput<
@@ -30,9 +33,9 @@ export type MiddlewareChainOutput<
     ? T &
         (Rest extends readonly Middleware<any, any>[]
           ? MiddlewareChainOutput<Rest>
-          : never)
-    : never
-  : never
+          : "ER1")
+    : "ER2"
+  : "ER3"
 
 export type AuthMiddlewares = {
   [auth_type: string]: Middleware<any, any>
@@ -53,6 +56,16 @@ const defaultMiddlewareMap = {
 
 export type RouteFunction<
   SP extends SetupParams<AuthMiddlewares>,
+  // RSAuth extends string,
+  // RSMw extends Middleware<any, any>[],
+  // RS extends RouteSpec<
+  //   RSAuth,
+  //   any,
+  //   z.ZodTypeAny,
+  //   z.ZodTypeAny,
+  //   z.ZodTypeAny,
+  //   RSMw
+  // >
   RS extends RouteSpec
 > = (
   req: (SP["authMiddlewareMap"] &
@@ -62,7 +75,11 @@ export type RouteFunction<
   >
     ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
-        MiddlewareChainOutput<SP["globalMiddlewares"]> & {
+        MiddlewareChainOutput<
+          RS["middlewares"] extends readonly Middleware<any, any>[]
+            ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
+            : SP["globalMiddlewares"]
+        > & {
           body: (RS["jsonBody"] extends z.ZodTypeAny
             ? z.infer<RS["jsonBody"]>
             : {}) &
@@ -84,6 +101,6 @@ export type CreateWithRouteSpecFunction = <
   SP extends SetupParams<AuthMiddlewares, any>
 >(
   setupParams: SP
-) => <RS extends RouteSpec>(
+) => <RS extends RouteSpec<any, any, any, any, any, any>>(
   route_spec: RS
 ) => (next: RouteFunction<SP, RS>) => any

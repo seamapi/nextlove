@@ -1,3 +1,4 @@
+import { MiddlewareChainOutput } from "../src/types"
 import {
   checkRouteSpec,
   createWithRouteSpec,
@@ -7,37 +8,65 @@ import {
 import { expectTypeOf } from "expect-type"
 import { z } from "zod"
 
-const authTokenMiddleware: Middleware<
-  {
-    auth: {
-      authorized_by: "auth_token"
-    }
-  },
-  {}
-> = (next) => (req, res) => {
+const authTokenMiddleware: Middleware<{
+  auth: {
+    authorized_by: "auth_token"
+  }
+}> = (next) => (req, res) => {
   req.auth = {
     authorized_by: "auth_token",
   }
   return next(req, res)
 }
-
-const dbMiddleware: Middleware<
-  {
-    db: {
-      client: any
-    }
-  },
-  {}
-> = (next) => (req, res) => {
-  req.db = {
-    client: "...",
+const bearerMiddleware: Middleware<{
+  auth: {
+    authorized_by: "bearer"
+  }
+}> = (next) => (req, res) => {
+  req.auth = {
+    authorized_by: "bearer",
   }
   return next(req, res)
 }
 
+const dbMiddleware: Middleware<{
+  db: {
+    client: any
+  }
+}> = (next) => (req, res) => {
+  req.db = { client: "..." }
+  return next(req, res)
+}
+
+const userMiddleware: Middleware<
+  {
+    user: {
+      user_id: string
+    }
+  },
+  {}
+> = (next) => (req, res) => {
+  req.user = { user_id: "..." }
+  return next(req, res)
+}
+
+const chain = [dbMiddleware, bearerMiddleware] as const
+
+const chainOutput: MiddlewareChainOutput<typeof chain> = null as any
+
+expectTypeOf(chainOutput).toEqualTypeOf<{
+  db: {
+    client: any
+  }
+  auth: {
+    authorized_by: "bearer"
+  }
+}>
+
 const projSetup = {
   authMiddlewareMap: {
     auth_token: authTokenMiddleware,
+    bearer: bearerMiddleware,
   },
   globalMiddlewares: [dbMiddleware],
 } as const
@@ -50,7 +79,7 @@ export const myRoute1Spec = checkRouteSpec({
   jsonBody: z.object({
     count: z.number(),
   }),
-} as const)
+})
 
 export const myRoute1 = withRouteSpec(myRoute1Spec)(async (req, res) => {
   expectTypeOf(req.db).toMatchTypeOf<{ client: any }>()
@@ -63,7 +92,7 @@ export const myRoute2Spec = checkRouteSpec({
   queryParams: z.object({
     id: z.string(),
   }),
-} as const)
+})
 
 export const myRoute2 = withRouteSpec(myRoute2Spec)(async (req, res) => {
   expectTypeOf(req.auth).toMatchTypeOf<{ authorized_by: "auth_token" }>()
@@ -79,16 +108,10 @@ export const myRoute3Spec = checkRouteSpec({
   commonParams: z.object({
     B: z.string(),
   }),
-} as const)
+})
 
 export const myRoute3 = withRouteSpec(myRoute3Spec)(async (req, res) => {
   expectTypeOf(req.body).toMatchTypeOf<{ A: string; B: string }>()
-})
-
-// @ts-expect-error - route spec is underspecified (needs "as const")
-export const myRoute4Spec: RouteSpec = checkRouteSpec({
-  auth: "none",
-  methods: ["POST"],
 })
 
 const withImproperMWRouteSpec = createWithRouteSpec({
@@ -97,4 +120,17 @@ const withImproperMWRouteSpec = createWithRouteSpec({
     asd: () => {},
   },
   globalMiddlewares: [],
+})
+
+const middlewares = [userMiddleware] as const
+
+export const myRoute4Spec = checkRouteSpec({
+  auth: "none",
+  methods: ["POST"],
+  middlewares,
+})
+
+export const myRoute4 = withRouteSpec(myRoute4Spec)(async (req, res) => {
+  expectTypeOf(req.db).toMatchTypeOf<{ client: any }>()
+  expectTypeOf(req.user).toMatchTypeOf<{ user_id: string }>()
 })
