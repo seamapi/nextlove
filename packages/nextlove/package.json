@@ -1,8 +1,9 @@
 {
   "name": "nextlove",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": false,
   "repository": "https://github.com/seamapi/nextlove",
+  "files": ["dist"],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
