@@ -10,10 +10,6 @@ const parseCommaSeparateArrays = (
   const parsed_input = Object.assign({}, input)
 
   // todo: iterate over Zod top level keys, if there's an array, parse it
-  // HACK - Handling this one case of a comma-separate string array
-  if (typeof parsed_input.device_ids === "string") {
-    parsed_input.device_ids = parsed_input.device_ids.split(",")
-  }
 
   return schema.parse(parsed_input)
 }
@@ -26,6 +22,16 @@ export interface RequestInput<
   jsonBody?: JsonBody
   queryParams?: QueryParams
   commonParams?: CommonParams
+}
+
+const zodIssueToString = (issue: z.ZodIssue) => {
+  if (issue.path.join(".") === "") {
+    return issue.message
+  }
+  if (issue.message === "Required") {
+    return `${issue.path.join(".")} is required`
+  }
+  return `${issue.message} for "${issue.path.join(".")}"`
 }
 
 export const withValidation =
@@ -60,18 +66,32 @@ export const withValidation =
           original_combined_params
         )
       }
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        let message
+        if (error.issues.length === 1) {
+          const issue = error.issues[0]
+          message = zodIssueToString(issue)
+        } else {
+          const message_components: string[] = []
+          for (const issue of error.issues) {
+            message_components.push(zodIssueToString(issue))
+          }
+          message =
+            `${error.issues.length} Input Errors: ` +
+            message_components.join(", ")
+        }
+
         throw new BadRequestException({
           type: "invalid_input",
-          message: "malformed input",
+          message,
           validation_errors: error.format(),
         })
       }
 
       throw new BadRequestException({
         type: "invalid_input",
-        message: "Errored while parsing input",
+        message: "Error while parsing input",
       })
     }
 

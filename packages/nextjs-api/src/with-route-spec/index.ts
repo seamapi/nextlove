@@ -1,52 +1,70 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import wrappers from "nextjs-middleware-wrappers"
-import { z } from "zod"
+import { withExceptionHandling } from "nextjs-exception-middleware"
+import wrappers, { Middleware } from "nextjs-middleware-wrappers"
+import { CreateWithRouteSpecFunction, RouteSpec } from "../types"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
-
-type AuthType = "none" | string
+import { z } from "zod"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
-interface RouteSpec<
-  Auth extends AuthType = AuthType,
+export const checkRouteSpec = <
+  AuthType extends string = string,
+  Methods extends HTTPMethods[] = HTTPMethods[],
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
-  CommonParams extends ParamDef = z.ZodTypeAny
-> {
-  methods: HTTPMethods[]
-  auth: Auth
-  jsonBody?: JsonBody
-  queryParams?: QueryParams
-  commonParams?: CommonParams
-}
+  CommonParams extends ParamDef = z.ZodTypeAny,
+  Middlewares extends readonly Middleware<any, any>[] = readonly Middleware<
+    any,
+    any
+  >[],
+  Spec extends RouteSpec<
+    AuthType,
+    Methods,
+    JsonBody,
+    QueryParams,
+    CommonParams,
+    Middlewares
+  > = RouteSpec<
+    AuthType,
+    Methods,
+    JsonBody,
+    QueryParams,
+    CommonParams,
+    Middlewares
+  >
+>(
+  spec: Spec
+): string extends Spec["auth"]
+  ? `your route spec is underspecified, add "as const"`
+  : Spec => spec as any
 
-type AuthMiddlewares = {
-  [key: string]: (next: Function) => Function
-}
-
-export const generateRouteSpec = <Spec extends RouteSpec>(spec: Spec) => spec
-
-export const createWithRouteSpec = (
-  {
-    authMiddlewares = {},
-    globalMiddlewares = [],
-  }: {
-    authMiddlewares: AuthMiddlewares
-    globalMiddlewares: Array<(next: Function) => Function>
-  } = { authMiddlewares: {}, globalMiddlewares: [] }
+export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
+  setupParams
 ) => {
-  return <Spec extends RouteSpec>(spec: Spec) =>
+  const {
+    authMiddlewareMap = {},
+    globalMiddlewares = [],
+    exceptionHandlingMiddleware = withExceptionHandling({
+      addOkStatus: true,
+    }) as any,
+  } = setupParams
+
+  return (spec: RouteSpec) =>
     (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
     async (req: NextApiRequest, res: NextApiResponse) => {
-      authMiddlewares["none"] = (next) => next
+      authMiddlewareMap["none"] = (next) => next
 
-      const auth_middleware = authMiddlewares[spec.auth]
+      const auth_middleware = authMiddlewareMap[spec.auth]
       if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
       return wrappers(
-        ...(globalMiddlewares as []),
+        ...((exceptionHandlingMiddleware
+          ? [exceptionHandlingMiddleware]
+          : []) as [any]),
+        ...((globalMiddlewares || []) as []),
         auth_middleware,
+        ...((spec.middlewares || []) as []),
         withMethods(spec.methods),
         withValidation({
           jsonBody: spec.jsonBody,
@@ -56,4 +74,4 @@ export const createWithRouteSpec = (
         next
       )(req as any, res)
     }
-}
+}) as any

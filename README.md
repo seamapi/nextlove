@@ -17,17 +17,17 @@ This repo consists of NextJS utility modules used by Seam, namely:
 
 ```ts
 import { createWithRouteSpec } from "nextjs-api"
-export { generateRouteSpec } from "nextjs-api"
+export { checkRouteSpec } from "nextjs-api"
 import { z } from "zod"
 
 export const withRouteSpec = createWithRouteSpec({
-  authMiddlewares: { auth_token: withAuthToken },
+  authMiddlewareMap: { auth_token: withAuthToken },
   globalMiddlewares: [globalMiddleware],
 })
 
-export const route_spec = generateRouteSpec({
+export const route_spec = checkRouteSpec({
   methods: ["GET"],
-  auth: "auth_token",
+  auth: "auth_token", // or "none"
   queryParams: z.object({
     id: z.string().uuid(),
   }),
