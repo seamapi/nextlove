@@ -1,10 +1,7 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { withExceptionHandling } from "nextjs-exception-middleware"
-import wrappers, { Middleware } from "nextjs-middleware-wrappers"
-import { Simplify } from "type-fest"
+import { Middleware } from "nextjs-middleware-wrappers"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
-import tb from "ts-toolbelt"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -33,9 +30,9 @@ export type MiddlewareChainOutput<
     ? T &
         (Rest extends readonly Middleware<any, any>[]
           ? MiddlewareChainOutput<Rest>
-          : "ER1")
-    : "ER2"
-  : "ER3"
+          : never)
+    : never
+  : never
 
 export type AuthMiddlewares = {
   [auth_type: string]: Middleware<any, any>
@@ -56,16 +53,6 @@ const defaultMiddlewareMap = {
 
 export type RouteFunction<
   SP extends SetupParams<AuthMiddlewares>,
-  // RSAuth extends string,
-  // RSMw extends Middleware<any, any>[],
-  // RS extends RouteSpec<
-  //   RSAuth,
-  //   any,
-  //   z.ZodTypeAny,
-  //   z.ZodTypeAny,
-  //   z.ZodTypeAny,
-  //   RSMw
-  // >
   RS extends RouteSpec
 > = (
   req: (SP["authMiddlewareMap"] &
