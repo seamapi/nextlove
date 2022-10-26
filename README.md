@@ -9,15 +9,15 @@ This repo consists of NextJS utility modules used by Seam, namely:
 
 ## Installation
 
-`yarn add nextjs-api`
+`yarn add nextapi`
 
 ## Usage
 
 ### withRouteSpec
 
 ```ts
-import { createWithRouteSpec } from "nextjs-api"
-export { checkRouteSpec } from "nextjs-api"
+import { createWithRouteSpec } from "nextapi"
+export { checkRouteSpec } from "nextapi"
 import { z } from "zod"
 
 export const withRouteSpec = createWithRouteSpec({
@@ -42,7 +42,7 @@ export default withRouteSpec(route_spec)(async (req, res) => {
 ### wrappers
 
 ```ts
-import { wrappers } from "nextjs-api"
+import { wrappers } from "nextapi"
 
 wrappers(withDatabase, logger.withContext("somecontext"), async (req, res) => {
   res.status(200).end("...")
@@ -52,7 +52,7 @@ wrappers(withDatabase, logger.withContext("somecontext"), async (req, res) => {
 ### nextjs-exception-middleware
 
 ```ts
-import { BadRequestException } from "nextjs-api"
+import { BadRequestException } from "nextapi"
 
 // Inside a route handler
 if (bad_soups.includes(soup_param)) {

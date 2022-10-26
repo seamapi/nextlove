@@ -1,10 +1,10 @@
 {
-  "name": "nextjs-api",
+  "name": "nextapi",
   "version": "0.2.0",
-  "private": true,
+  "private": false,
   "bin": {
     "nsm": "node_modules/nextjs-server-modules/bin.js",
-    "nextjs-api": "bin.js"
+    "nextapi": "bin.js"
   },
   "main": "./dist/index.js",
   "scripts": {

@@ -1,5 +1,5 @@
 import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
-import { NotFoundException } from "nextjs-api"
+import { NotFoundException } from "nextapi"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
 
