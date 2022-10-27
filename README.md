@@ -24,6 +24,26 @@ Let's take a look at an example project with three files:
 * **pages/api/health.ts** - Just a health endpoint to see if the server is running! It won't have any auth
 * **pages/api/todos/add.ts** - An endpoint to add a TODO, this will help show how we can use auth!
 
+
+```ts
+// pages/api/health.ts
+import { withRouteSpec } from "lib/with-route-spec"
+import { z } from "zod"
+
+const routeSpec = {
+  methods: ["GET"],
+  auth: "none",
+  jsonResponse: z.object({
+    healthy: z.boolean()
+  })
+} as const
+
+export default withRouteSpec(routeSpec)(async (req, res) => {
+  /* ... */
+  return res.status(200).json({ healthy: true })
+})
+```
+
 ```ts
 // lib/with-route-spec.ts
 export const withRouteSpec = createWithRouteSpec({
@@ -33,28 +53,43 @@ export const withRouteSpec = createWithRouteSpec({
   // For OpenAPI Generation
   apiName: "My API",
   productionServerUrl: "https://example.com",
-})
+} as const)
 ```
 
 ```ts
-import { createWithRouteSpec } from "nextlove"
-export { checkRouteSpec } from "nextlove"
+
+```
+
+```ts
+// pages/api/todos/add.ts
+import { withRouteSpec } from "lib/with-route-spec"
 import { z } from "zod"
 
-export default withRouteSpec({
-  methods: ["GET"],
-  auth: "auth_token", // or "none"
-  queryParams: z.object({
-    id: z.string().uuid(),
+const routeSpec = {
+  methods: ["POST"],
+  auth: "auth_token",
+  jsonBody: z.object({
+    content: z.string(),
   }),
-})(async (req, res) => {
-  /* ... */
+  jsonResponse: z.object({
+    ok: z.boolean()
+  })
+} as const
+
+export default withRouteSpec(routeSpec)(async (req, res) => {
+  // TODO add todo
   return res.status(200).json({ ok: true })
 })
 ```
 
 ## createWithRouteSpec Parameters
 
+| Parameter | Description |
+| --------- | ----------- |
+| `authMiddlewareMap` | Object that maps different types of auth to their middleware |
+| `globalMiddlewares` | Middlewares that should be applied on every route |
+| `apiName` | Used as the name of the api in openapi.json |
+| `productionServerUrl` | Used as the default server url in openapi.json |
 
 
 ## withRouteSpec Parameters
