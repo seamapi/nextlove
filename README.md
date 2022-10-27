@@ -2,9 +2,12 @@
 
 Make type-safe routes that automatically generate OpenAPI in NextJS easy!
 
-Define endpoints with middleware and have your request objects and responses automatically be typed. The
-same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
+* Define endpoints with middleware and have your request objects and responses automatically be typed.
+* The same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
 `openapi.json` file!
+* Throw [http exceptions and they'll magically be handled](https://github.com/seamapi/nextjs-exception-middleware#exception-types)
+* Have well-typed middleware
+
 
 ## Installation
 
@@ -57,12 +60,28 @@ export const withRouteSpec = createWithRouteSpec({
 ```
 
 ```ts
+// lib/middlewares/with-auth-token.ts
+import { UnauthorizedException, Middleware } from "nextlove"
 
+export const withAuthToken: Middleware<{
+  auth: {
+    authorized_by: "auth_token"
+  }
+}> = (next) => async (req, res) => {
+
+  req.auth = {
+    authorized_by: "auth_token",
+  }
+
+  return next(req, res)
+}
+
+export default withAuthToken
 ```
 
 ```ts
 // pages/api/todos/add.ts
-import { withRouteSpec } from "lib/with-route-spec"
+import { withRouteSpec, UnauthorizedException } from "lib/with-route-spec"
 import { z } from "zod"
 
 const routeSpec = {
@@ -77,6 +96,13 @@ const routeSpec = {
 } as const
 
 export default withRouteSpec(routeSpec)(async (req, res) => {
+  // req.auth is correctly typed here!
+  if (req.auth.authorized_by !== "auth_token") {
+    throw new UnauthorizedException({
+      type: "unauthorized",
+      message: "Authenticate yourself to get the requested response"
+    })
+  }
   // TODO add todo
   return res.status(200).json({ ok: true })
 })
@@ -151,11 +177,11 @@ if (bad_soups.includes(soup_param)) {
 }
 ```
 
-### Additional Modules
+### All Modules
 
 This repo bundles NextJS utility modules including...
 
-- nextjs-exception-middleware
-- nextjs-server-modules
-- nextjs-middleware-wrappers
+- [nextjs-exception-middleware](https://github.com/seamapi/nextjs-exception-middleware)
+- [nextjs-server-modules](https://github.com/seamapi/nextjs-server-modules)
+- [nextjs-middleware-wrappers](https://github.com/seamapi/wrappers)
 - openAPI generation utilities
