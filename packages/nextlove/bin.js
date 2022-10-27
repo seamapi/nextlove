@@ -1,4 +1,4 @@
-#! /usr/bin/node
+#!/usr/bin/env node
 
 const argv = require("minimist")(process.argv.slice(2))
 const { register } = require("esbuild-register/dist/node")
