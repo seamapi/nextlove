@@ -1,18 +1,14 @@
 # nextlove - Enhanced NextJS API Types, OpenAPI and Utilities
 
-This repo consists of NextJS utility modules used by Seam, namely:
 
-- nextjs-exception-middleware
-- nextjs-server-modules
-- withRouteSpec
-- wrappers
-- OpenAPI generation utilities
 
 ## Installation
 
 `yarn add nextlove`
 
-## Usage
+## Create well-typed routes + middleware with nextlove!
+
+`nextlove` allows you 
 
 ### withRouteSpec
 
@@ -49,7 +45,17 @@ export default withRouteSpec({
 
 Just run `nextlove generate-openapi` in your project root!
 
-### wrappers
+Examples:
+```bash
+nextlove generate-openapi --
+```
+
+| Parameter | Description |
+| --------- | ----------- |
+| | |
+
+
+### Wrap middlewares together using `wrappers`!
 
 ```ts
 import { wrappers } from "nextlove"
@@ -74,21 +80,11 @@ if (bad_soups.includes(soup_param)) {
 }
 ```
 
-### nextjs-server-modules
+### Additional Modules
 
-Add a build script `{ "build": "nsm build" }`.
+This repo bundles NextJS utility modules including...
 
-The build process will output a `.nsm/index.ts` file which can be used to create your server or invoke requests against it.
-
-```ts
-import myNextJSModule from "./.nsm"
-
-const server = await myNextJSModule({
-  port: 3030,
-  middlewares: [myMiddleware],
-})
-
-// your server is running on localhost:3030!
-
-server.close()
-```
+- nextjs-exception-middleware
+- nextjs-server-modules
+- nextjs-middleware-wrappers
+- openAPI generation utilities
