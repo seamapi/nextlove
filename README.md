@@ -2,15 +2,27 @@
 
 Make type-safe routes that automatically generate OpenAPI in NextJS easy!
 
+Define endpoints with middleware and have your request objects and responses automatically be typed. The
+same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
+`openapi.json` file!
+
 ## Installation
 
 `yarn add nextlove`
 
 ## Create well-typed routes + middleware with nextlove!
 
-`nextlove` allows you 
+`nextlove` allows you to create well-typed middleware and routes using utility types and functions. The
+two main functions to know are `createWithRouteSpec`, which allows you to create a `withRouteSpec` function
+that can be used with all your endpoints, and the `Middleware` utility function which makes middleware type-safe.
 
-### withRouteSpec
+Let's take a look at an example project with three files:
+* **lib/with-route-spec.ts** - This file is used to create the `withRouteSpec` middleware. This middleware should
+  be used for all your routes.
+* **lib/middlewares/with-auth-token.ts** - This is an authentication middleware we'll be using to make sure requests are authenticating
+* **lib/middlewares/with-db.ts** - A common global middleware that attaches a database client to the request object
+* **pages/api/health.ts** - Just a health endpoint to see if the server is running! It won't have any auth
+* **pages/api/todos/add.ts** - An endpoint to add a TODO, this will help show how we can use auth!
 
 ```ts
 // lib/with-route-spec.ts
@@ -40,6 +52,21 @@ export default withRouteSpec({
   return res.status(200).json({ ok: true })
 })
 ```
+
+## createWithRouteSpec Parameters
+
+
+
+## withRouteSpec Parameters
+
+| Parameter | Description |
+| --------- | ----------- |
+| `methods` | HTTP Methods accepted by this route |
+| `auth`    | `none` or a key from your `authMiddlewareMap`, this authentication middleware will be applied |
+| `queryParams` | Any GET query parameters on the request as a zod object |
+| `jsonBody` | The JSON body this endpoint accepts as a zod object |
+| `commonParams` | Parameters common to both the query and json body as a zod object, this is sometimes used if a GET route also accepts POST |
+| `jsonResponse` | A zod object representing the json resposne |
 
 ### Generating OpenAPI Types
 
