@@ -7,6 +7,18 @@ const { unregister } = register({
   target: `node${process.version.slice(1)}`,
 })
 
+if (argv.help || argv.h) {
+  console.log(
+`
+nextlove generate-openapi [options]
+
+  --packageDir <path>  Path to the package directory containing the Next.js app
+  --outputFile <path>  Path to the output file
+  --pathGlob <glob>    Glob pattern to find API route files
+
+`.trim())
+}
+
 if (argv._[0] === "generate-openapi") {
   if (argv._.length === 2) {
     argv.packageDir = argv._[1]
@@ -17,9 +29,7 @@ if (argv._[0] === "generate-openapi") {
   if (!argv["packageDir"]) throw new Error("Missing --packageDir")
 
   require("./dist/generate-openapi")
-    .generateOpenAPI({
-      packageDir: argv["packageDir"],
-    })
+    .generateOpenAPI(argv)
     .then((result) => {
       if (!argv.outputFile) {
         console.log(result)

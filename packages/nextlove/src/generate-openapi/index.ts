@@ -17,38 +17,6 @@ export const defaultMapFilePathToHTTPRoute = (file_path: string) => {
   return route.replace(/\.ts$/, "").replace("public", "")
 }
 
-const getSecurityObject = (
-  auth_type: RouteSpec["auth"]
-): SecurityRequirementObject[] => {
-  switch (auth_type) {
-    case "key_or_session":
-      return [
-        {
-          apiKeyAuth: [],
-        },
-        {
-          sessionAuth: [],
-        },
-      ]
-    case "key":
-      return [
-        {
-          apiKeyAuth: [],
-        },
-      ]
-    case "session":
-      return [
-        {
-          sessionAuth: [],
-        },
-      ]
-    case "none":
-      return []
-    default:
-      throw new Error(`Unknown auth type: ${auth_type}`)
-  }
-}
-
 interface GenerateOpenAPIOpts {
   packageDir: string
   outputFile?: string
@@ -74,6 +42,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   console.log(`searching "${packageDir}${pathGlob}"...`)
   const filepaths = await globby(`${packageDir}${pathGlob}`)
   console.log(`found ${filepaths.length} files`)
+  if (filepaths.length === 0) {
+    throw new Error(`No files found at "${packageDir}${pathGlob}"`)
+  }
   const filepathToRouteFn = new Map<
     string,
     {
