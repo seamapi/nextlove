@@ -39,11 +39,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   } = opts
 
   // Load all route specs
-  console.log(`searching "${packageDir}${pathGlob}"...`)
-  const filepaths = await globby(`${packageDir}${pathGlob}`)
+  const fullPathGlob = path.join(packageDir, pathGlob)
+  console.log(`searching "${fullPathGlob}"...`)
+  const filepaths = await globby(`${fullPathGlob}`)
   console.log(`found ${filepaths.length} files`)
   if (filepaths.length === 0) {
-    throw new Error(`No files found at "${packageDir}${pathGlob}"`)
+    throw new Error(`No files found at "${fullPathGlob}"`)
   }
   const filepathToRouteFn = new Map<
     string,

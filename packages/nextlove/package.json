@@ -1,6 +1,6 @@
 {
   "name": "nextlove",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": false,
   "repository": "https://github.com/seamapi/nextlove",
   "files": [
@@ -17,7 +17,8 @@
   "main": "./dist/index.js",
   "scripts": {
     "test": "tsc --noEmit",
-    "build": "tsup --dts --sourcemap inline src"
+    "build": "tsup --dts --sourcemap inline src",
+    "yalc": "npm run build && yalc push"
   },
   "dependencies": {
     "esbuild": "^0.14.7",
