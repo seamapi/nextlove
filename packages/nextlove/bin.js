@@ -17,6 +17,7 @@ nextlove generate-openapi [options]
   --pathGlob <glob>    Glob pattern to find API route files
 
 `.trim())
+  process.exit(0)
 }
 
 if (argv._[0] === "generate-openapi") {
