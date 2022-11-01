@@ -18,7 +18,7 @@ export interface RouteSpec<
   QueryParams extends ParamDef = z.ZodTypeAny,
   CommonParams extends ParamDef = z.ZodTypeAny,
   Middlewares extends readonly Middleware<any, any>[] = any[],
-  JsonResponse extends ParamDef = z.ZodTypeAny
+  JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>
 > {
   methods: Methods
   auth: Auth
