@@ -129,7 +129,7 @@ export default withRouteSpec(routeSpec)(async (req, res) => {
 | `commonParams` | Parameters common to both the query and json body as a zod object, this is sometimes used if a GET route also accepts POST |
 | `jsonResponse` | A zod object representing the json resposne |
 
-### Generating OpenAPI Types
+### Generating OpenAPI Types (Command Line)
 
 Just run `nextlove generate-openapi` in your project root!
 
@@ -150,6 +150,36 @@ nextlove generate-openapi . --pathGlob '/pages/api/public/**/*.ts'
 | `packageDir`| Path to directory containing package.json and NextJS project |
 | `outputFile` | Path to output openapi.json file |
 | `pathGlob` | Paths to consider as valid routes for OpenAPI generation, defaults to `/pages/api/**/*.ts` |
+
+### Generating OpenAPI Types (Script)
+
+```ts
+import { generateOpenAPI } from "nextlove"
+
+generateOpenAPI({
+  packageDir: ".",
+  outputFile: "openapi.json",
+  pathGlob: "/src/pages/api/**/*.ts",
+
+  // Tags improve the organization of an OpenAPI spec by making "expandable"
+  // sections including routes
+  tags: [
+    "users",
+    "teams",
+    "workspaces"
+  ].map((t) => ({
+    name: `/${t}`,
+    description: t,
+    doesRouteHaveTag: (route) => route.includes(`/${t}`),
+  })),
+  mapFilePathToHTTPRoute(fp) {
+    return fp
+      .replace("src/pages/api/public", "")
+      .replace(/\.ts$/, "")
+      .replace(/\/index$/, "")
+  },
+})
+```
 
 
 ### Wrap middlewares together using `wrappers`!
