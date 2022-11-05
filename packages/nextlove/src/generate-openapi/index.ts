@@ -12,15 +12,21 @@ import { RouteSpec, SetupParams } from "../types"
 import { Entries } from "type-fest"
 import chalk from "chalk"
 
-export const defaultMapFilePathToHTTPRoute = (file_path: string) => {
-  const route = file_path.replace(/^\.\/pages\/api\//, "")
-  return route.replace(/\.ts$/, "").replace("public", "")
-}
+export const defaultMapFilePathToHTTPRoute =
+  (apiPrefix: string = "/api") =>
+  (file_path: string) => {
+    const route = file_path.replace(/^\.\/pages\/api\//, "")
+    return path.join(
+      apiPrefix,
+      route.replace(/\.ts$/, "").replace("public", "")
+    )
+  }
 
 interface GenerateOpenAPIOpts {
   packageDir: string
   outputFile?: string
   pathGlob?: string
+  apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
 }
 
@@ -35,7 +41,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     packageDir,
     outputFile,
     pathGlob = "/pages/api/**/*.ts",
-    mapFilePathToHTTPRoute = defaultMapFilePathToHTTPRoute,
+    mapFilePathToHTTPRoute = defaultMapFilePathToHTTPRoute(opts.apiPrefix),
   } = opts
 
   // Load all route specs
