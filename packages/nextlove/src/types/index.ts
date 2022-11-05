@@ -79,18 +79,15 @@ export type RouteFunction<
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
-          body: (RS["jsonBody"] extends z.ZodTypeAny
+          body: RS["jsonBody"] extends z.ZodTypeAny
             ? z.infer<RS["jsonBody"]>
-            : {}) &
-            (RS["commonParams"] extends z.ZodTypeAny
-              ? z.infer<RS["commonParams"]>
-              : {})
-          query: (RS["queryParams"] extends z.ZodTypeAny
+            : {}
+          query: RS["queryParams"] extends z.ZodTypeAny
             ? z.infer<RS["queryParams"]>
-            : {}) &
-            (RS["commonParams"] extends z.ZodTypeAny
-              ? z.infer<RS["commonParams"]>
-              : {})
+            : {}
+          commonParams: RS["commonParams"] extends z.ZodTypeAny
+            ? z.infer<RS["commonParams"]>
+            : {}
         }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
   res: NextApiResponse<
