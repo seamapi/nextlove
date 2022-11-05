@@ -13,11 +13,20 @@ import { Entries } from "type-fest"
 import chalk from "chalk"
 
 export const defaultMapFilePathToHTTPRoute =
-  (apiPrefix: string = "/api") =>
+  (api_prefix: string = "/") =>
   (file_path: string) => {
-    const route = file_path.replace(/^\.\/pages\/api\//, "")
+    console.log({ api_prefix, file_path })
+    const route = file_path
+      // replace ./ if it starts with ./
+      .replace(/^\.\//, "/")
+      // replace starting /
+      .replace(/^\//, "")
+      // replace /src if it starts with /src
+      .replace(/^src\//, "")
+      // replace /pages if it starts with /pages
+      .replace(/^pages\//, "")
     return path.join(
-      apiPrefix,
+      api_prefix,
       route.replace(/\.ts$/, "").replace("public", "")
     )
   }

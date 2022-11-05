@@ -11,9 +11,9 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "start:example": "cd apps/example-todo-app && yarn start",
     "test": "cd packages/nextlove && yarn test",
-    "generate-openapi:example": "cd apps/example-todo-app && yarn build:openapi",
+    "example:start": "cd apps/example-todo-app && yarn start",
+    "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
     "publish-packages": "cd packages/nextlove && yarn build && npm publish"
   },
   "devDependencies": {
