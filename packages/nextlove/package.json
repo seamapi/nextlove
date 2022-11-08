@@ -16,7 +16,8 @@
   },
   "main": "./dist/index.js",
   "scripts": {
-    "test": "tsc --noEmit",
+    "test": "npm run typecheck",
+    "typecheck": "tsc --noEmit",
     "build": "tsup --dts --sourcemap inline src",
     "yalc": "npm run build && yalc push"
   },
