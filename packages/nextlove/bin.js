@@ -9,15 +9,16 @@ const { unregister } = register({
 
 if (argv.help || argv.h) {
   console.log(
-`
-nextlove generate-openapi [options]
+    `
+nextlove (generate-openapi | generate-route-types) [options]
 
   --packageDir <path>  Path to the package directory containing the Next.js app
   --outputFile <path>  Path to the output file
   --pathGlob <glob>    Glob pattern to find API route files
   --apiPrefix <path>   Prefix for API routes, default: "/"
 
-`.trim())
+`.trim()
+  )
   process.exit(0)
 }
 
@@ -32,6 +33,22 @@ if (argv._[0] === "generate-openapi") {
 
   require("./dist/generate-openapi")
     .generateOpenAPI(argv)
+    .then((result) => {
+      if (!argv.outputFile) {
+        console.log(result)
+      }
+    })
+} else if (argv._[0] === "generate-route-types") {
+  if (argv._.length === 2) {
+    argv.packageDir = argv._[1]
+  }
+  if (argv["package-dir"]) {
+    argv.packageDir = argv["package-dir"]
+  }
+  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
+
+  require("./dist/generate-route-types")
+    .generateRouteTypes(argv)
     .then((result) => {
       if (!argv.outputFile) {
         console.log(result)
