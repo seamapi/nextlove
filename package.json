@@ -14,6 +14,7 @@
     "test": "cd packages/nextlove && yarn test",
     "example:start": "cd apps/example-todo-app && yarn start",
     "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
+    "example:build:type": "cd apps/example-todo-app && yarn build:type",
     "publish-packages": "cd packages/nextlove && yarn build && npm publish"
   },
   "devDependencies": {

@@ -11,26 +11,8 @@ import {
 import { RouteSpec, SetupParams } from "../types"
 import { Entries } from "type-fest"
 import chalk from "chalk"
-
-export const defaultMapFilePathToHTTPRoute =
-  (api_prefix: string = "/api") =>
-  (file_path: string) => {
-    const route = file_path
-      // replace ./ if it starts with ./
-      .replace(/^\.\//, "/")
-      // replace starting /
-      .replace(/^\//, "")
-      // replace /src if it starts with /src
-      .replace(/^src\//, "")
-      // replace /pages if it starts with /pages
-      .replace(/^pages\//, "")
-      // replace /api if it starts with /api
-      .replace(/^api\//, "")
-    return path.join(
-      api_prefix,
-      route.replace(/\.ts$/, "").replace("public", "")
-    )
-  }
+import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
+import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 
 interface GenerateOpenAPIOpts {
   packageDir: string
@@ -47,53 +29,9 @@ interface GenerateOpenAPIOpts {
  * "build:openapi" package.json script.
  */
 export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
-  const {
-    packageDir,
-    outputFile,
-    pathGlob = "/pages/api/**/*.ts",
-    mapFilePathToHTTPRoute = defaultMapFilePathToHTTPRoute(opts.apiPrefix),
-  } = opts
+  const { outputFile } = opts
 
-  // Load all route specs
-  const fullPathGlob = path.join(packageDir, pathGlob)
-  console.log(`searching "${fullPathGlob}"...`)
-  const filepaths = await globby(`${fullPathGlob}`)
-  console.log(`found ${filepaths.length} files`)
-  if (filepaths.length === 0) {
-    throw new Error(`No files found at "${fullPathGlob}"`)
-  }
-  const filepathToRouteFn = new Map<
-    string,
-    {
-      setupParams: SetupParams
-      routeSpec: RouteSpec
-      routeFn: Function
-    }
-  >()
-
-  await Promise.all(
-    filepaths.map(async (p) => {
-      const { default: routeFn } = await require(path.resolve(p))
-
-      if (routeFn) {
-        if (!routeFn._setupParams) {
-          console.warn(
-            chalk.yellow(
-              `Ignoring "${p}" because it wasn't created with withRouteSpec`
-            )
-          )
-          return
-        }
-        filepathToRouteFn.set(p, {
-          setupParams: routeFn._setupParams,
-          routeSpec: routeFn._routeSpec,
-          routeFn,
-        })
-      } else {
-        console.warn(chalk.yellow(`Couldn't find route ${p}`))
-      }
-    })
-  )
+  const filepathToRouteFn = await parseRoutesInPackage(opts)
 
   // TODO detect if there are multiple setups and output different APIs
   const { setupParams: globalSetupParams } = filepathToRouteFn.values().next()
@@ -138,9 +76,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     },
   })
 
-  for (const [file_path, { setupParams, routeSpec }] of filepathToRouteFn) {
+  for (const [
+    file_path,
+    { setupParams, routeSpec, route: routePath },
+  ] of filepathToRouteFn) {
     const route: OperationObject = {
-      summary: mapFilePathToHTTPRoute(file_path),
+      summary: routePath,
       responses: {
         200: {
           description: "OK",
@@ -195,7 +136,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     // Some routes accept multiple methods
-    builder.addPath(mapFilePathToHTTPRoute(file_path), {
+    builder.addPath(routePath, {
       ...routeSpec.methods
         .map((method) => ({
           [method.toLowerCase()]: route,
