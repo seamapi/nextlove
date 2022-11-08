@@ -9,16 +9,22 @@ import {
   SecurityRequirementObject,
 } from "openapi3-ts"
 import { RouteSpec, SetupParams } from "../types"
-import { Entries } from "type-fest"
 import chalk from "chalk"
+import { z } from "zod"
 import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
+
+interface TagOption {
+  name: string
+  description: string
+  doesRouteHaveTag?: (route: string) => boolean
+}
 
 interface GenerateOpenAPIOpts {
   packageDir: string
   outputFile?: string
   pathGlob?: string
-  apiPrefix?: string
+  tags?: Array<TagOption>
   mapFilePathToHTTPRoute?: (file_path: string) => string
 }
 
@@ -29,7 +35,7 @@ interface GenerateOpenAPIOpts {
  * "build:openapi" package.json script.
  */
 export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
-  const { outputFile } = opts
+  const { outputFile, tags = [] } = opts
 
   const filepathToRouteFn = await parseRoutesInPackage(opts)
 
@@ -70,6 +76,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         url: globalSetupParams.productionServerUrl || "https://example.com",
       },
     ],
+    tags: tags.map((tag) => ({ name: tag.name, description: tag.description })),
     paths: {},
     components: {
       securitySchemes,
@@ -127,11 +134,21 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    if (routeSpec.jsonResponse) {
+    const { jsonResponse } = routeSpec
+    if (jsonResponse) {
       route.responses[200].content = {
         "application/json": {
-          schema: generateSchema(routeSpec.jsonResponse),
+          schema: generateSchema(
+            jsonResponse.extend(z.object({ ok: z.boolean() }).shape)
+          ),
         },
+      }
+    }
+
+    route.tags = []
+    for (const tag of tags) {
+      if (tag.doesRouteHaveTag && tag.doesRouteHaveTag(route.summary || "")) {
+        route.tags.push(tag.name)
       }
     }
 
