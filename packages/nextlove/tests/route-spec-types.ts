@@ -114,7 +114,8 @@ export const myRoute3Spec = checkRouteSpec({
 })
 
 export const myRoute3 = withRouteSpec(myRoute3Spec)(async (req, res) => {
-  expectTypeOf(req.body).toMatchTypeOf<{ A: string; B: string }>()
+  expectTypeOf(req.body).toMatchTypeOf<{ A: string }>()
+  expectTypeOf(req.commonParams).toMatchTypeOf<{ B: string }>()
 })
 
 const withImproperMWRouteSpec = createWithRouteSpec({
