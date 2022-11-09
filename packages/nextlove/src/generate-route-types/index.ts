@@ -29,7 +29,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
       : "{}"
   },
   jsonBody: ${
-    routeSpec.jsonBody ? printNode(zodToTs(routeSpec.jsonBody).node) : "never"
+    routeSpec.jsonBody ? printNode(zodToTs(routeSpec.jsonBody).node) : "{}"
   },
   commonParams: ${
     routeSpec.commonParams
