@@ -1,3 +1,4 @@
+import * as fs from "node:fs/promises"
 import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "zod-to-ts"
@@ -44,7 +45,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
     )
   }
   const routeDefStr = routeDefs.join(",\n")
-  return prettier.format(
+  const output = prettier.format(
     `export interface Routes {
 ${routeDefStr}
 }
@@ -60,4 +61,10 @@ export type RouteRequestParams<Path extends keyof Routes> =
 `.trim(),
     { semi: false, parser: "typescript" }
   )
+
+  if (opts.outputFile) {
+    await fs.writeFile(opts.outputFile, output)
+  }
+
+  return output
 }
