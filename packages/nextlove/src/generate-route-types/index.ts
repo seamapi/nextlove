@@ -3,6 +3,7 @@ import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-h
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "zod-to-ts"
 import prettier from "prettier"
+import { z } from "zod"
 
 interface GenerateRouteTypesOpts {
   packageDir: string
@@ -38,7 +39,10 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   },
   jsonResponse: ${
     routeSpec.jsonResponse
-      ? printNode(zodToTs(routeSpec.jsonResponse).node)
+      ? printNode(
+          zodToTs(routeSpec.jsonResponse.merge(z.object({ ok: z.boolean() })))
+            .node
+        )
       : "{}"
   }
 }`.trim()
