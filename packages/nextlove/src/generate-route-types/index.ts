@@ -18,7 +18,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
 
   // TODO when less lazy, use ts-morph for better generation
   const routeDefs: string[] = []
-  for (const [_, { route, routeSpec }] of filepathToRoute) {
+  for (const [_, { route, routeSpec, setupParams }] of filepathToRoute) {
     routeDefs.push(
       `
 "${route}": {
@@ -40,8 +40,11 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   jsonResponse: ${
     routeSpec.jsonResponse
       ? printNode(
-          zodToTs(routeSpec.jsonResponse.merge(z.object({ ok: z.boolean() })))
-            .node
+          zodToTs(
+            setupParams.addOkStatus
+              ? routeSpec.jsonResponse.extend({ ok: z.boolean() })
+              : routeSpec.jsonResponse
+          ).node
         )
       : "{}"
   }

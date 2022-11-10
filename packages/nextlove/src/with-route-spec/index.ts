@@ -46,7 +46,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     authMiddlewareMap = {},
     globalMiddlewares = [],
     exceptionHandlingMiddleware = withExceptionHandling({
-      addOkStatus: true,
+      addOkStatus: setupParams.addOkStatus,
     }) as any,
   } = setupParams
 

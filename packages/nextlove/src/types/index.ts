@@ -57,6 +57,8 @@ export interface SetupParams<
   // These improve OpenAPI generation
   apiName: string
   productionServerUrl: string
+
+  addOkStatus?: boolean
 }
 
 const defaultMiddlewareMap = {
