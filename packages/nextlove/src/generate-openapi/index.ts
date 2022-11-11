@@ -135,11 +135,14 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     const { jsonResponse } = routeSpec
+    const { addOkStatus = true } = setupParams
     if (jsonResponse) {
       route.responses[200].content = {
         "application/json": {
           schema: generateSchema(
-            jsonResponse.extend(z.object({ ok: z.boolean() }).shape)
+            addOkStatus
+              ? jsonResponse.extend({ ok: z.boolean() })
+              : jsonResponse
           ),
         },
       }
