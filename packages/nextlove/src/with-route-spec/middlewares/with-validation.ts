@@ -68,6 +68,7 @@ export const withValidation =
 
     if (
       input.formData &&
+      req.method !== "GET" &&
       !req.headers["content-type"]?.includes(
         "application/x-www-form-urlencoded"
       )
@@ -81,9 +82,10 @@ export const withValidation =
 
     try {
       const original_combined_params = { ...req.query, ...req.body }
-      req.body = input.formData
-        ? input.formData?.parse(req.body)
-        : input.jsonBody?.parse(req.body)
+      req.body =
+        input.formData && req.method !== "GET"
+          ? input.formData?.parse(req.body)
+          : input.jsonBody?.parse(req.body)
       req.query = input.queryParams?.parse(req.query)
 
       if (input.commonParams) {
