@@ -17,11 +17,13 @@ const parseCommaSeparateArrays = (
 export interface RequestInput<
   JsonBody extends z.ZodTypeAny,
   QueryParams extends z.ZodTypeAny,
-  CommonParams extends z.ZodTypeAny
+  CommonParams extends z.ZodTypeAny,
+  FormData extends z.ZodTypeAny
 > {
   jsonBody?: JsonBody
   queryParams?: QueryParams
   commonParams?: CommonParams
+  formData?: FormData
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -38,26 +40,52 @@ export const withValidation =
   <
     JsonBody extends z.ZodTypeAny,
     QueryParams extends z.ZodTypeAny,
-    CommonParams extends z.ZodTypeAny
+    CommonParams extends z.ZodTypeAny,
+    FormData extends z.ZodTypeAny
   >(
-    input: RequestInput<JsonBody, QueryParams, CommonParams>
+    input: RequestInput<JsonBody, QueryParams, CommonParams, FormData>
   ) =>
   (next) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
     if (
+      (input.formData && input.jsonBody) ||
+      (input.formData && input.commonParams)
+    ) {
+      throw new Error("Cannot use formData with jsonBody or commonParams")
+    }
+
+    if (
       (req.method === "POST" || req.method === "PATCH") &&
+      (input.jsonBody || input.commonParams) &&
       !req.headers["content-type"]?.includes("application/json") &&
       !isEmpty(req.body)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",
-        message: `POST requests must have Content-Type header with "application/json"`,
+        message: `${req.method} requests must have Content-Type header with "application/json"`,
+      })
+    }
+
+    if (
+      input.formData &&
+      req.method !== "GET" &&
+      !req.headers["content-type"]?.includes(
+        "application/x-www-form-urlencoded"
+      )
+      // TODO eventually we should support multipart/form-data
+    ) {
+      throw new BadRequestException({
+        type: "invalid_content_type",
+        message: `Must have Content-Type header with "application/x-www-form-urlencoded"`,
       })
     }
 
     try {
       const original_combined_params = { ...req.query, ...req.body }
-      req.body = input.jsonBody?.parse(req.body)
+      req.body =
+        input.formData && req.method !== "GET"
+          ? input.formData?.parse(req.body)
+          : input.jsonBody?.parse(req.body)
       req.query = input.queryParams?.parse(req.query)
 
       if (input.commonParams) {

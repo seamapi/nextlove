@@ -18,7 +18,8 @@ export interface RouteSpec<
   QueryParams extends ParamDef = z.ZodTypeAny,
   CommonParams extends ParamDef = z.ZodTypeAny,
   Middlewares extends readonly Middleware<any, any>[] = any[],
-  JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>
+  JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
+  FormData extends ParamDef = z.ZodTypeAny
 > {
   methods: Methods
   auth: Auth
@@ -27,6 +28,7 @@ export interface RouteSpec<
   commonParams?: CommonParams
   middlewares?: Middlewares
   jsonResponse?: JsonResponse
+  formData?: FormData
 }
 
 export type MiddlewareChainOutput<
@@ -81,7 +83,9 @@ export type RouteFunction<
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
-          body: RS["jsonBody"] extends z.ZodTypeAny
+          body: RS["formData"] extends z.ZodTypeAny
+            ? z.infer<RS["formData"]>
+            : RS["jsonBody"] extends z.ZodTypeAny
             ? z.infer<RS["jsonBody"]>
             : {}
           query: RS["queryParams"] extends z.ZodTypeAny
@@ -101,6 +105,6 @@ export type CreateWithRouteSpecFunction = <
   SP extends SetupParams<AuthMiddlewares, any>
 >(
   setupParams: SP
-) => <RS extends RouteSpec<any, any, any, any, any, any, any>>(
+) => <RS extends RouteSpec<any, any, any, any, any, any, any, any>>(
   route_spec: RS
 ) => (next: RouteFunction<SP, RS>) => any

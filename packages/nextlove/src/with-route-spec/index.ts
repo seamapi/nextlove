@@ -18,20 +18,23 @@ export const checkRouteSpec = <
     any,
     any
   >[],
+  FormData extends ParamDef = z.ZodTypeAny,
   Spec extends RouteSpec<
     AuthType,
     Methods,
     JsonBody,
     QueryParams,
     CommonParams,
-    Middlewares
+    Middlewares,
+    FormData
   > = RouteSpec<
     AuthType,
     Methods,
     JsonBody,
     QueryParams,
     CommonParams,
-    Middlewares
+    Middlewares,
+    FormData
   >
 >(
   spec: Spec
@@ -73,6 +76,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             jsonBody: spec.jsonBody,
             queryParams: spec.queryParams,
             commonParams: spec.commonParams,
+            formData: spec.formData,
           }),
           userDefinedRouteFn
         )(req as any, res)

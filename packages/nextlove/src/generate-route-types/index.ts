@@ -37,6 +37,9 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
       ? printNode(zodToTs(routeSpec.commonParams).node)
       : "{}"
   },
+  formData: ${
+    routeSpec.formData ? printNode(zodToTs(routeSpec.formData).node) : "{}"
+  },
   jsonResponse: ${
     routeSpec.jsonResponse
       ? printNode(
