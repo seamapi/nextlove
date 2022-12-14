@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { z } from "zod"
+import { z, ZodFirstPartyTypeKind } from "zod"
 import { BadRequestException } from "nextjs-exception-middleware"
 import { isEmpty } from "lodash"
 
@@ -9,7 +9,25 @@ const parseCommaSeparateArrays = (
 ) => {
   const parsed_input = Object.assign({}, input)
 
-  // todo: iterate over Zod top level keys, if there's an array, parse it
+  if (schema._def.typeName === ZodFirstPartyTypeKind.ZodObject) {
+    const obj_schema = schema as z.ZodObject<any>
+
+    for (const [key, value] of Object.entries(obj_schema.shape)) {
+      if (
+        (value as z.ZodTypeAny)._def.typeName === ZodFirstPartyTypeKind.ZodArray
+      ) {
+        const array_input = input[key]
+
+        if (typeof array_input === "string") {
+          parsed_input[key] = array_input.split(",")
+        }
+
+        if (Array.isArray(input[`${key}[]`])) {
+          parsed_input[key] = input[`${key}[]`]
+        }
+      }
+    }
+  }
 
   return schema.parse(parsed_input)
 }
