@@ -22,6 +22,5 @@ export const route_spec = checkRouteSpec({
 export default withRouteSpec(route_spec)(async (req, res) => {
   const { ids } = req.commonParams
 
-
   return res.status(200).json({ ok: true, todos: ids.map((id) => ({ id })) })
 })
