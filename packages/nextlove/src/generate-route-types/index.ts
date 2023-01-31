@@ -16,9 +16,13 @@ interface GenerateRouteTypesOpts {
 export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   const filepathToRoute = await parseRoutesInPackage(opts)
 
+  const sortedRoutes = Array.from(filepathToRoute.entries()).sort(
+    (a, b) => a[1].route.localeCompare(b[1].route)
+  )
+
   // TODO when less lazy, use ts-morph for better generation
   const routeDefs: string[] = []
-  for (const [_, { route, routeSpec, setupParams }] of filepathToRoute) {
+  for (const [_, { route, routeSpec, setupParams }] of sortedRoutes) {
     routeDefs.push(
       `
 "${route}": {
