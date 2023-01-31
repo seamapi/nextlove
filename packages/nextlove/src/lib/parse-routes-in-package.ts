@@ -23,7 +23,7 @@ export const parseRoutesInPackage = async (opts: {
     mapFilePathToHTTPRoute = defaultMapFilePathToHTTPRoute(opts.apiPrefix),
   } = opts
   // Load all route specs
-  const fullPathGlob = path.join(packageDir, pathGlob)
+  const fullPathGlob = path.posix.join(packageDir, pathGlob)
   console.log(`searching "${fullPathGlob}"...`)
   const filepaths = await globby(`${fullPathGlob}`)
   console.log(`found ${filepaths.length} files`)

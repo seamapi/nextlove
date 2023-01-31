@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@semantic-release/git": "10.0.1",
+    "cpy-cli": "^4.2.0",
     "eslint-config-custom": "*",
     "prettier": "^2.7.1",
     "semantic-release": "19.0.5",
