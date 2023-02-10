@@ -11,7 +11,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "bin": {
-    "nsm": "node_modules/nextjs-server-modules/bin.js",
+    "nsm": "nsm-bin.js",
     "nextlove": "bin.js"
   },
   "main": "./dist/index.js",
