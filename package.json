@@ -11,12 +11,12 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "test": "cd packages/nextlove && yarn test",
-    "example:start": "cd apps/example-todo-app && yarn start",
-    "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
-    "example:build:type": "cd apps/example-todo-app && yarn build:type",
-    "publish-packages": "cd packages/nextlove && yarn build && npm publish",
-    "example:test": "npm run build && cd apps/example-todo-app && yarn run ava"
+    "test": "cd packages/nextlove && pnpm test",
+    "example:start": "cd apps/example-todo-app && pnpm start",
+    "example:build:openapi": "cd apps/example-todo-app && pnpm build:openapi",
+    "example:build:type": "cd apps/example-todo-app && pnpm build:type",
+    "publish-packages": "cd packages/nextlove && pnpm build && npm publish",
+    "example:test": "npm run build && cd apps/example-todo-app && pnpm run test"
   },
   "devDependencies": {
     "@semantic-release/git": "10.0.1",
@@ -31,6 +31,6 @@
     "node": ">=14.0.0"
   },
   "dependencies": {},
-  "packageManager": "yarn@1.22.17",
+  "packageManager": "pnpm@7.27.0",
   "repository": "https://github.com/seamapi/nextlove"
 }

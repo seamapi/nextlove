@@ -12,8 +12,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16
-          cache: "yarn"
+          cache: "pnpm"
       - name: Run NPM Install
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Run NPM Test
-        run: yarn test
+        run: pnpm test
