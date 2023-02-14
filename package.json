@@ -15,8 +15,8 @@
     "example:start": "cd apps/example-todo-app && pnpm start",
     "example:build:openapi": "cd apps/example-todo-app && pnpm build:openapi",
     "example:build:type": "cd apps/example-todo-app && pnpm build:type",
-    "publish-packages": "cd packages/nextlove && pnpm build && npm publish",
-    "example:test": "npm run build && cd apps/example-todo-app && pnpm run test"
+    "publish-packages": "cd packages/nextlove && pnpm build && pnpm publish",
+    "example:test": "pnpm run build && cd apps/example-todo-app && pnpm run test"
   },
   "devDependencies": {
     "@semantic-release/git": "10.0.1",
