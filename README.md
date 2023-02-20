@@ -2,7 +2,7 @@
 
 Make type-safe routes that automatically generate OpenAPI in NextJS easy!
 
-* Define endpoints with middleware and have your request objects and responses automatically be typed.
+* Define endpoints with middleware and have your request objects and responses automatically be typed
 * The same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
 `openapi.json` file!
 * Throw [http exceptions and they'll magically be handled](https://github.com/seamapi/nextjs-exception-middleware#exception-types)
