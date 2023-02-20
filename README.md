@@ -150,8 +150,6 @@ nextlove generate-openapi . --pathGlob '/pages/api/public/**/*.ts'
 | `packageDir`| Path to directory containing package.json and NextJS project |
 | `outputFile` | Path to output openapi.json file |
 | `pathGlob` | Paths to consider as valid routes for OpenAPI generation, defaults to `/pages/api/**/*.ts` |
-| `tags` | Tags improve the organization of an OpenAPI spec by making "expandable" sections including routes |
-| `mapFilePathToHTTPRoute` | A function that takes a file path as input and maps it to a corresponding HTTP route. Each file found within the pathGlob will pass by this function |
 
 ### Generating OpenAPI Types (Script)
 
@@ -162,6 +160,9 @@ generateOpenAPI({
   packageDir: ".",
   outputFile: "openapi.json",
   pathGlob: "/src/pages/api/**/*.ts",
+
+  // Tags improve the organization of an OpenAPI spec by making "expandable"
+  // sections including routes
   tags: [
     "users",
     "teams",
@@ -171,6 +172,8 @@ generateOpenAPI({
     description: t,
     doesRouteHaveTag: (route) => route.includes(`/${t}`),
   })),
+
+  // This function will be applied to each file found within the pathGlob.
   mapFilePathToHTTPRoute(fp) {
     return fp
       .replace("src/pages/api/public", "")
@@ -180,18 +183,6 @@ generateOpenAPI({
 })
 ```
 
-#### Understanding mapFilePathToHTTPRoute
-
-```bash
-src
-└── pages
-    └── api
-        └── public
-            └── hello
-                └── index.ts
-```
-
-In the example above, the input file path is `/path/to/src/pages/api/public/hello/index.ts`. The mapFilePathToHTTPRoute function removes the string `src/pages/api/public`, the `.ts` extension, and the `/index` portion of the string, resulting in the output of `/hello`. The resulting string represents the HTTP route.
 
 ### Wrap middlewares together using `wrappers`!
 
