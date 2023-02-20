@@ -51,12 +51,13 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     exceptionHandlingMiddleware = withExceptionHandling({
       addOkStatus: setupParams.addOkStatus,
       exceptionHandlingOptions: {
-        shouldIncludeErrorContext: () =>
-          Boolean(
-            process.env.CI ||
-              process.env.NODE_ENV === "development" ||
-              process.env.NODE_ENV === "test"
-          ),
+        getErrorContext: (req, error) => {
+          if (process.env.NODE_ENV === "production") {
+            return {}
+          }
+
+          return error
+        }
       },
     }) as any,
   } = setupParams

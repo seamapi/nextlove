@@ -1,13 +1,14 @@
 import test from "ava"
-import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
-import { v4 as uuidv4 } from "uuid"
 
 test("POST /todo/add", async (t) => {
   const { axios } = await getTestServer(t)
 
   const noAuthRes = await axios.post("/todo/add").catch((err) => err)
   t.is(noAuthRes.status, 401, "no auth")
+
+  const hasErrorStack = Boolean(noAuthRes.response.error.stack);
+  t.is(hasErrorStack, true)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 
