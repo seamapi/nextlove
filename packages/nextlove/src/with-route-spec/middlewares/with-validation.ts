@@ -14,7 +14,10 @@ const parseCommaSeparateArrays = (
 
     for (const [key, value] of Object.entries(obj_schema.shape)) {
       if (
-        (value as z.ZodTypeAny)._def.typeName === ZodFirstPartyTypeKind.ZodArray
+        (value as z.ZodTypeAny)._def.typeName ===
+          ZodFirstPartyTypeKind.ZodArray ||
+        (value as z.ZodTypeAny)._def.innerType._def.typeName ===
+          ZodFirstPartyTypeKind.ZodArray
       ) {
         const array_input = input[key]
 
