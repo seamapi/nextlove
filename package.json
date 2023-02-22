@@ -16,7 +16,8 @@
     "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
     "example:build:type": "cd apps/example-todo-app && yarn build:type",
     "publish-packages": "cd packages/nextlove && yarn build && npm publish",
-    "example:test": "npm run build && cd apps/example-todo-app && yarn run ava"
+    "example:test": "npm run build && cd apps/example-todo-app && yarn run ava",
+    "example:test-only": "cd apps/example-todo-app && yarn run ava"
   },
   "devDependencies": {
     "@semantic-release/git": "10.0.1",
