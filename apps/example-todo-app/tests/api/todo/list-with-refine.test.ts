@@ -58,4 +58,22 @@ test("GET /todo/list-with-refine", async (t) => {
       message: "Either title or ids must be provided",
     },
   })
+
+  await axiosAssert.throws(
+    t,
+    async () =>
+      axios.get("/todo/list-with-refine", {
+        params: {
+          title: "title",
+          ids: ids.join(","),
+        },
+      }),
+    {
+      status: 400,
+      error: {
+        type: "invalid_input",
+        message: "Must specify either title or ids",
+      },
+    }
+  )
 })
