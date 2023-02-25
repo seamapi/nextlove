@@ -3,14 +3,35 @@ import { z, ZodFirstPartyTypeKind } from "zod"
 import { BadRequestException } from "nextjs-exception-middleware"
 import { isEmpty } from "lodash"
 
+const getZodObjectSchemaFromZodEffectSchema = (
+  isZodEffect: boolean,
+  schema: z.ZodTypeAny
+): z.ZodTypeAny | z.ZodObject<any> => {
+  if (!isZodEffect) {
+    return schema as z.ZodObject<any>
+  }
+
+  let currentSchema = schema
+
+  while (currentSchema instanceof z.ZodEffects) {
+    currentSchema = currentSchema._def.schema
+  }
+
+  return currentSchema as z.ZodObject<any>
+}
+
 const parseCommaSeparateArrays = (
   schema: z.ZodTypeAny,
   input: Record<string, unknown>
 ) => {
   const parsed_input = Object.assign({}, input)
+  const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
+  const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
+  const isZodObject =
+    safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
 
-  if (schema._def.typeName === ZodFirstPartyTypeKind.ZodObject) {
-    const obj_schema = schema as z.ZodObject<any>
+  if (isZodObject) {
+    const obj_schema = safe_schema as z.ZodObject<any>
 
     for (const [key, value] of Object.entries(obj_schema.shape)) {
       if (
