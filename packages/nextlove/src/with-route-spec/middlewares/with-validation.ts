@@ -20,6 +20,22 @@ const getZodObjectSchemaFromZodEffectSchema = (
   return currentSchema as z.ZodObject<any>
 }
 
+const isSchemaArrayc = (schema: z.ZodTypeAny) => {
+  const unsafe_def_maybe_optional_maybe_zod_effect = (schema as z.ZodTypeAny)
+    ._def
+  const unsafe_def_maybe_zod_effect =
+    unsafe_def_maybe_optional_maybe_zod_effect.typeName ===
+    ZodFirstPartyTypeKind.ZodOptional
+      ? unsafe_def_maybe_optional_maybe_zod_effect.innerType._def
+      : unsafe_def_maybe_optional_maybe_zod_effect
+  const safe_def =
+    unsafe_def_maybe_zod_effect.typeName === ZodFirstPartyTypeKind.ZodEffects
+      ? unsafe_def_maybe_zod_effect.schema._def
+      : unsafe_def_maybe_zod_effect
+
+  return safe_def.typeName === ZodFirstPartyTypeKind.ZodArray
+}
+
 const parseCommaSeparateArrays = (
   schema: z.ZodTypeAny,
   input: Record<string, unknown>
@@ -34,12 +50,7 @@ const parseCommaSeparateArrays = (
     const obj_schema = safe_schema as z.ZodObject<any>
 
     for (const [key, value] of Object.entries(obj_schema.shape)) {
-      if (
-        (value as z.ZodTypeAny)._def.typeName ===
-          ZodFirstPartyTypeKind.ZodArray ||
-        (value as z.ZodTypeAny)._def.innerType?._def.typeName ===
-          ZodFirstPartyTypeKind.ZodArray
-      ) {
+      if (isSchemaArrayc(value as z.ZodTypeAny)) {
         const array_input = input[key]
 
         if (typeof array_input === "string") {
