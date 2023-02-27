@@ -20,7 +20,7 @@ const getZodObjectSchemaFromZodEffectSchema = (
   return currentSchema as z.ZodObject<any>
 }
 
-const getSchemaIsArray = (schema: z.ZodTypeAny) => {
+const isSchemaArrayc = (schema: z.ZodTypeAny) => {
   const unsafe_def_maybe_optional_maybe_zof_effect = (schema as z.ZodTypeAny)
     ._def
   const unsafe_def_maybe_zof_effect =
@@ -50,7 +50,7 @@ const parseCommaSeparateArrays = (
     const obj_schema = safe_schema as z.ZodObject<any>
 
     for (const [key, value] of Object.entries(obj_schema.shape)) {
-      if (getSchemaIsArray(value as z.ZodTypeAny)) {
+      if (isSchemaArrayc(value as z.ZodTypeAny)) {
         const array_input = input[key]
 
         if (typeof array_input === "string") {
