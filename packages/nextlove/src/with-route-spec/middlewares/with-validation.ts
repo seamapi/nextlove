@@ -21,17 +21,17 @@ const getZodObjectSchemaFromZodEffectSchema = (
 }
 
 const isSchemaArrayc = (schema: z.ZodTypeAny) => {
-  const unsafe_def_maybe_optional_maybe_zof_effect = (schema as z.ZodTypeAny)
+  const unsafe_def_maybe_optional_maybe_zod_effect = (schema as z.ZodTypeAny)
     ._def
-  const unsafe_def_maybe_zof_effect =
-    unsafe_def_maybe_optional_maybe_zof_effect.typeName ===
+  const unsafe_def_maybe_zod_effect =
+    unsafe_def_maybe_optional_maybe_zod_effect.typeName ===
     ZodFirstPartyTypeKind.ZodOptional
-      ? unsafe_def_maybe_optional_maybe_zof_effect.innerType._def
-      : unsafe_def_maybe_optional_maybe_zof_effect
+      ? unsafe_def_maybe_optional_maybe_zod_effect.innerType._def
+      : unsafe_def_maybe_optional_maybe_zod_effect
   const safe_def =
-    unsafe_def_maybe_zof_effect.typeName === ZodFirstPartyTypeKind.ZodEffects
-      ? unsafe_def_maybe_zof_effect.schema._def
-      : unsafe_def_maybe_zof_effect
+    unsafe_def_maybe_zod_effect.typeName === ZodFirstPartyTypeKind.ZodEffects
+      ? unsafe_def_maybe_zod_effect.schema._def
+      : unsafe_def_maybe_zod_effect
 
   return safe_def.typeName === ZodFirstPartyTypeKind.ZodArray
 }
