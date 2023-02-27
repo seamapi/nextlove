@@ -76,4 +76,22 @@ test("GET /todo/list-with-refine", async (t) => {
       },
     }
   )
+
+  await axiosAssert.throws(
+    t,
+    async () =>
+      axios.get("/todo/list-with-refine", {
+        params: {
+          title:
+            "A title big enough to test if nextlove is handling correct with nested .refine (from zod) with at least 101 characters long",
+        },
+      }),
+    {
+      status: 400,
+      error: {
+        type: "invalid_input",
+        message: 'Title must be less than 100 characters for "title"',
+      },
+    }
+  )
 })

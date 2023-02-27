@@ -3,7 +3,15 @@ import { z } from "zod"
 
 export const commonParams = z
   .object({
-    title: z.string().optional(),
+    title: z
+      .string()
+      .optional()
+      .refine((payload) => {
+        if (!payload || payload.length < 100) {
+          return true
+        }
+        return false
+      }, "Title must be less than 100 characters"),
     ids: z.array(z.string().uuid()).optional(),
   })
   .refine(
