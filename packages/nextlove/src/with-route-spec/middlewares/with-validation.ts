@@ -20,23 +20,31 @@ const getZodObjectSchemaFromZodEffectSchema = (
   return currentSchema as z.ZodObject<any>
 }
 
-const isSchemaArrayc = (schema: z.ZodTypeAny) => {
-  const unsafe_def_maybe_optional_maybe_zod_effect = (schema as z.ZodTypeAny)
-    ._def
-  const unsafe_def_maybe_zod_effect =
-    unsafe_def_maybe_optional_maybe_zod_effect.typeName ===
+/**
+ * This function is used to get the correct schema from a ZodEffect | ZodDefault | ZodOptional schema.
+ * TODO: this function should handle all special cases of ZodSchema and not just ZodEffect | ZodDefault | ZodOptional
+ */
+const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
+  const unsafe_def_maybe_optional_maybe_default_maybe_zod_effect = (
+    schema as z.ZodTypeAny
+  )._def
+  const unsafe_def_maybe_default_maybe_zod_effect =
+    unsafe_def_maybe_optional_maybe_default_maybe_zod_effect.typeName ===
     ZodFirstPartyTypeKind.ZodOptional
-      ? unsafe_def_maybe_optional_maybe_zod_effect.innerType._def
-      : unsafe_def_maybe_optional_maybe_zod_effect
-  const safe_def =
-    unsafe_def_maybe_zod_effect.typeName === ZodFirstPartyTypeKind.ZodEffects
-      ? unsafe_def_maybe_zod_effect.schema._def
-      : unsafe_def_maybe_zod_effect
-
-  return safe_def.typeName === ZodFirstPartyTypeKind.ZodArray
+      ? unsafe_def_maybe_optional_maybe_default_maybe_zod_effect.innerType._def
+      : unsafe_def_maybe_optional_maybe_default_maybe_zod_effect
+  const unsafe_def_maybe_zod_effect =
+    unsafe_def_maybe_default_maybe_zod_effect.typeName ===
+    ZodFirstPartyTypeKind.ZodDefault
+      ? unsafe_def_maybe_default_maybe_zod_effect.innerType._def
+      : unsafe_def_maybe_default_maybe_zod_effect
+  return unsafe_def_maybe_zod_effect.typeName ===
+    ZodFirstPartyTypeKind.ZodEffects
+    ? unsafe_def_maybe_zod_effect.schema._def
+    : unsafe_def_maybe_zod_effect
 }
 
-const parseCommaSeparateArrays = (
+const parseQueryParams = (
   schema: z.ZodTypeAny,
   input: Record<string, unknown>
 ) => {
@@ -50,7 +58,9 @@ const parseCommaSeparateArrays = (
     const obj_schema = safe_schema as z.ZodObject<any>
 
     for (const [key, value] of Object.entries(obj_schema.shape)) {
-      if (isSchemaArrayc(value as z.ZodTypeAny)) {
+      const def = getZodDefFromZodSchemaHelpers(value as z.ZodTypeAny)
+      const isArray = def.typeName === ZodFirstPartyTypeKind.ZodArray
+      if (isArray) {
         const array_input = input[key]
 
         if (typeof array_input === "string") {
@@ -59,6 +69,17 @@ const parseCommaSeparateArrays = (
 
         if (Array.isArray(input[`${key}[]`])) {
           parsed_input[key] = input[`${key}[]`]
+        }
+
+        continue
+      }
+
+      const isBoolean = def.typeName === ZodFirstPartyTypeKind.ZodBoolean
+      if (isBoolean) {
+        const boolean_input = input[key]
+
+        if (typeof boolean_input === "string") {
+          parsed_input[key] = boolean_input === "true"
         }
       }
     }
@@ -139,10 +160,16 @@ export const withValidation =
         input.formData && req.method !== "GET"
           ? input.formData?.parse(req.body)
           : input.jsonBody?.parse(req.body)
-      req.query = input.queryParams?.parse(req.query)
+
+      if (input.queryParams) {
+        req.query = parseQueryParams(input.queryParams, req.query)
+      }
 
       if (input.commonParams) {
-        ;(req as any).commonParams = parseCommaSeparateArrays(
+        /**
+         * as commonParams includes query params, we can use the parseQueryParams function
+         */
+        ;(req as any).commonParams = parseQueryParams(
           input.commonParams,
           original_combined_params
         )
