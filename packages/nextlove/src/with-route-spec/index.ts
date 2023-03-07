@@ -57,7 +57,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           }
 
           return error
-        }
+        },
       },
     }) as any,
   } = setupParams

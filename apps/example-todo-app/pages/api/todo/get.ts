@@ -6,6 +6,10 @@ import { z } from "zod"
 export const queryParams = z.object({
   id: z.string().uuid(),
   throwError: z.boolean().default(true),
+  throwErrorAlwaysTrue: z
+    .boolean()
+    .default(true)
+    .refine((v) => v === true, "Must be true"),
 })
 
 export const route_spec = checkRouteSpec({
@@ -37,12 +41,10 @@ export default withRouteSpec(route_spec)(async (req, res) => {
         data: { id },
       })
     } else {
-      return res
-        .status(200)
-        .json({
-          ok: false,
-          error: { type: "todo_not_found", message: `Todo ${id} not found` },
-        })
+      return res.status(200).json({
+        ok: false,
+        error: { type: "todo_not_found", message: `Todo ${id} not found` },
+      })
     }
   }
 

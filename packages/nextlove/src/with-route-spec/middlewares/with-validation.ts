@@ -25,23 +25,27 @@ const getZodObjectSchemaFromZodEffectSchema = (
  * TODO: this function should handle all special cases of ZodSchema and not just ZodEffect | ZodDefault | ZodOptional
  */
 const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
-  const unsafe_def_maybe_optional_maybe_default_maybe_zod_effect = (
-    schema as z.ZodTypeAny
-  )._def
-  const unsafe_def_maybe_default_maybe_zod_effect =
-    unsafe_def_maybe_optional_maybe_default_maybe_zod_effect.typeName ===
-    ZodFirstPartyTypeKind.ZodOptional
-      ? unsafe_def_maybe_optional_maybe_default_maybe_zod_effect.innerType._def
-      : unsafe_def_maybe_optional_maybe_default_maybe_zod_effect
-  const unsafe_def_maybe_zod_effect =
-    unsafe_def_maybe_default_maybe_zod_effect.typeName ===
-    ZodFirstPartyTypeKind.ZodDefault
-      ? unsafe_def_maybe_default_maybe_zod_effect.innerType._def
-      : unsafe_def_maybe_default_maybe_zod_effect
-  return unsafe_def_maybe_zod_effect.typeName ===
-    ZodFirstPartyTypeKind.ZodEffects
-    ? unsafe_def_maybe_zod_effect.schema._def
-    : unsafe_def_maybe_zod_effect
+  const special_zod_types = [
+    ZodFirstPartyTypeKind.ZodOptional,
+    ZodFirstPartyTypeKind.ZodDefault,
+    ZodFirstPartyTypeKind.ZodEffects,
+  ]
+
+  while (special_zod_types.includes(schema._def.typeName)) {
+    if (
+      schema._def.typeName === ZodFirstPartyTypeKind.ZodOptional ||
+      schema._def.typeName === ZodFirstPartyTypeKind.ZodDefault
+    ) {
+      schema = schema._def.innerType
+      continue
+    }
+
+    if (schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects) {
+      schema = schema._def.schema
+      continue
+    }
+  }
+  return schema._def
 }
 
 const parseQueryParams = (
