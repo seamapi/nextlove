@@ -25,6 +25,7 @@
     "next": ">=12",
     "react": ">=18",
     "react-dom": ">=18",
+    "nextjs-server-modules": ">=1",
     "zod": "^3"
   },
   "dependencies": {
@@ -33,7 +34,6 @@
     "lodash": "^4.17.21",
     "nextjs-exception-middleware": "^2.0.1",
     "nextjs-middleware-wrappers": "^1.3.0",
-    "nextjs-server-modules": "^1.7.0",
     "zod-to-ts": "^1.1.1"
   },
   "devDependencies": {
