@@ -20,6 +20,6 @@ export const route_spec = checkRouteSpec({
 export default withRouteSpec(route_spec)(async (req, res) => {
   return res.status(200).json({
     // @ts-ignore
-    ok: true
+    ok: true,
   })
 })
