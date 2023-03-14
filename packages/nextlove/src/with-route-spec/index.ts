@@ -86,6 +86,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             queryParams: spec.queryParams,
             commonParams: spec.commonParams,
             formData: spec.formData,
+            jsonResponse: spec.jsonResponse,
           }),
           userDefinedRouteFn
         )(req as any, res)
