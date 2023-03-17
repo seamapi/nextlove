@@ -60,7 +60,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   }
   const routeDefStr = routeDefs.join(",\n")
   const output = prettier.format(
-    `export interface Routes {
+    `export type Routes = {
 ${routeDefStr}
 }
 
