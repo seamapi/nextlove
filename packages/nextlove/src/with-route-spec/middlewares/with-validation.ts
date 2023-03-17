@@ -126,11 +126,8 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
 ) {
   const original_res_json = res.json
   const override_res_json = (json: any) => {
-    const responseHasError = Boolean(json.error)
-    /**
-     * should we validate the response even if it has an error?
-     */
-    if (responseHasError) {
+    const is_success = res.statusCode >= 200 && res.statusCode < 300
+    if (!is_success) {
       return original_res_json(json)
     }
 
