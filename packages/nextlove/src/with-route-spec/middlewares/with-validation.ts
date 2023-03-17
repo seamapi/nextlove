@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { z, ZodFirstPartyTypeKind } from "zod"
-import { BadRequestException } from "nextjs-exception-middleware"
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from "nextjs-exception-middleware"
 import { isEmpty } from "lodash"
 
 const getZodObjectSchemaFromZodEffectSchema = (
@@ -96,12 +99,15 @@ export interface RequestInput<
   JsonBody extends z.ZodTypeAny,
   QueryParams extends z.ZodTypeAny,
   CommonParams extends z.ZodTypeAny,
-  FormData extends z.ZodTypeAny
+  FormData extends z.ZodTypeAny,
+  JsonResponse extends z.ZodTypeAny
 > {
   jsonBody?: JsonBody
   queryParams?: QueryParams
   commonParams?: CommonParams
   formData?: FormData
+  jsonResponse?: JsonResponse
+  shouldValidateResponses?: boolean
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -114,14 +120,47 @@ const zodIssueToString = (issue: z.ZodIssue) => {
   return `${issue.message} for "${issue.path.join(".")}"`
 }
 
+function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
+  jsonResponse: JsonResponse | undefined,
+  res: NextApiResponse
+) {
+  const original_res_json = res.json
+  const override_res_json = (json: any) => {
+    const is_success = res.statusCode >= 200 && res.statusCode < 300
+    if (!is_success) {
+      return original_res_json(json)
+    }
+
+    try {
+      jsonResponse?.parse(json)
+    } catch (err) {
+      throw new InternalServerErrorException({
+        type: "invalid_response",
+        message: "the response does not match with jsonResponse",
+        zodError: err,
+      })
+    }
+
+    return original_res_json(json)
+  }
+  res.json = override_res_json
+}
+
 export const withValidation =
   <
     JsonBody extends z.ZodTypeAny,
     QueryParams extends z.ZodTypeAny,
     CommonParams extends z.ZodTypeAny,
-    FormData extends z.ZodTypeAny
+    FormData extends z.ZodTypeAny,
+    JsonResponse extends z.ZodTypeAny
   >(
-    input: RequestInput<JsonBody, QueryParams, CommonParams, FormData>
+    input: RequestInput<
+      JsonBody,
+      QueryParams,
+      CommonParams,
+      FormData,
+      JsonResponse
+    >
   ) =>
   (next) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
@@ -205,6 +244,13 @@ export const withValidation =
         type: "invalid_input",
         message: "Error while parsing input",
       })
+    }
+
+    /**
+     * this will override the res.json method to validate the response
+     */
+    if (input.shouldValidateResponses) {
+      validateJsonResponse(input.jsonResponse, res)
     }
 
     return next(req, res)
