@@ -107,6 +107,7 @@ export interface RequestInput<
   commonParams?: CommonParams
   formData?: FormData
   jsonResponse?: JsonResponse
+  shouldValidateResponses?: boolean
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -123,35 +124,29 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
   res: NextApiResponse
 ) {
-  let shouldValidateResponsesBasedOnEnv = false
-  if (
-    (process.env.NEXTLOVE_VALIDATION_RESPONSES === undefined &&
-      process.env.NODE_ENV !== "production") ||
-    process.env.NEXTLOVE_VALIDATION_RESPONSES === "true"
-  ) {
-    shouldValidateResponsesBasedOnEnv = true
-  }
-
-  const shouldValidateResponses =
-    shouldValidateResponsesBasedOnEnv && jsonResponse
-
-  if (shouldValidateResponses) {
-    const original_res_json = res.json
-    const override_res_json = (json: Parameters<typeof res.json>) => {
-      try {
-        jsonResponse?.parse(json)
-      } catch (err) {
-        throw new InternalServerErrorException({
-          type: "invalid_response",
-          message: "the response does not match with jsonResponse",
-          zodError: err,
-        })
-      }
-
+  const original_res_json = res.json
+  const override_res_json = (json: any) => {
+    const responseHasError = Boolean(json.error)
+    /**
+     * should we validate the response even if it has an error?
+     */
+    if (responseHasError) {
       return original_res_json(json)
     }
-    res.json = override_res_json
+
+    try {
+      jsonResponse?.parse(json)
+    } catch (err) {
+      throw new InternalServerErrorException({
+        type: "invalid_response",
+        message: "the response does not match with jsonResponse",
+        zodError: err,
+      })
+    }
+
+    return original_res_json(json)
   }
+  res.json = override_res_json
 }
 
 export const withValidation =
@@ -257,7 +252,9 @@ export const withValidation =
     /**
      * this will override the res.json method to validate the response
      */
-    validateJsonResponse(input.jsonResponse, res)
+    if (input.shouldValidateResponses) {
+      validateJsonResponse(input.jsonResponse, res)
+    }
 
     return next(req, res)
   }

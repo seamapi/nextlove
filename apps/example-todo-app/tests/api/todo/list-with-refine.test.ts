@@ -36,9 +36,10 @@ test("GET /todo/list-with-refine", async (t) => {
     })),
   })
 
+  const title = uuidv4()
   const responseWithTitle = await axios.get("/todo/list-with-refine", {
     params: {
-      title: "title",
+      title,
     },
   })
 
@@ -46,7 +47,7 @@ test("GET /todo/list-with-refine", async (t) => {
     ok: true,
     todos: [
       {
-        id: "title",
+        id: title,
       },
     ],
   })

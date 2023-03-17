@@ -48,6 +48,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
   const {
     authMiddlewareMap = {},
     globalMiddlewares = [],
+    shouldValidateResponses,
     exceptionHandlingMiddleware = withExceptionHandling({
       addOkStatus: setupParams.addOkStatus,
       exceptionHandlingOptions: {
@@ -87,6 +88,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             commonParams: spec.commonParams,
             formData: spec.formData,
             jsonResponse: spec.jsonResponse,
+            shouldValidateResponses,
           }),
           userDefinedRouteFn
         )(req as any, res)

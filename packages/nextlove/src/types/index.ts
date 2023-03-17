@@ -61,6 +61,8 @@ export interface SetupParams<
   productionServerUrl: string
 
   addOkStatus?: boolean
+
+  shouldValidateResponses?: boolean
 }
 
 const defaultMiddlewareMap = {
