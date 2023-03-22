@@ -75,6 +75,22 @@ type NextApiResponseWithoutJsonAndStatusMethods = Omit<
   "json" | "status"
 >
 
+type SuccessfulNextApiResponseMethods<T> = {
+  status: (
+    statusCode: 200 | 201
+  ) => NextApiResponseWithoutJsonAndStatusMethods & {
+    json: Send<T>
+  }
+  json: Send<T>
+}
+
+type ErrorNextApiResponseMethods = {
+  status: (statusCode: number) => NextApiResponseWithoutJsonAndStatusMethods & {
+    json: Send<any>
+  }
+  json: Send<any>
+}
+
 export type RouteFunction<
   SP extends SetupParams<AuthMiddlewares>,
   RS extends RouteSpec
@@ -105,29 +121,12 @@ export type RouteFunction<
         }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
   res: NextApiResponseWithoutJsonAndStatusMethods &
-    ({
-      status: (
-        statusCode: 200 | 201
-      ) => NextApiResponseWithoutJsonAndStatusMethods & {
-        json: Send<
-          RS["jsonResponse"] extends z.ZodTypeAny
-            ? z.infer<RS["jsonResponse"]>
-            : any
-        >
-      }
-      json: Send<
-        RS["jsonResponse"] extends z.ZodTypeAny
-          ? z.infer<RS["jsonResponse"]>
-          : any
-      >
-    } & {
-      status: (
-        statusCode: number
-      ) => NextApiResponseWithoutJsonAndStatusMethods & {
-        json: Send<any>
-      }
-      json: Send<any>
-    })
+    SuccessfulNextApiResponseMethods<
+      RS["jsonResponse"] extends z.ZodTypeAny
+        ? z.infer<RS["jsonResponse"]>
+        : any
+    > &
+    ErrorNextApiResponseMethods
 ) => Promise<void>
 
 export type CreateWithRouteSpecFunction = <
