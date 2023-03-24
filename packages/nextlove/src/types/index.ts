@@ -1,8 +1,14 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { Middleware as WrapperMiddleware } from "nextjs-middleware-wrappers"
+import { HttpException } from "nextjs-exception-middleware"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
 import { SecuritySchemeObject, SecurityRequirementObject } from "openapi3-ts"
+
+/** Export an interface version of HttpException to avoid class inheritance issues */
+export interface IHttpException
+  /** Omitting metadata properties from base level attributes, TS is getting them confused  */
+  extends Omit<HttpException, "name" | "message"> {}
 
 export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
   securitySchema?: SecuritySchemeObject
