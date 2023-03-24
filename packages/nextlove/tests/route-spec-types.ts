@@ -165,3 +165,24 @@ export const myRoute6Spec = checkRouteSpec({
 export const myRoute6 = withRouteSpec(myRoute6Spec)(async (req, res) => {
   expectTypeOf(req.body).toMatchTypeOf<{ id: string }>()
 })
+
+export const myRoute7Spec = {
+  auth: "none",
+  methods: ["POST"],
+  jsonResponse: z.object({
+    ok: z.boolean(),
+  }),
+} as const
+
+export const myRoute7 = withRouteSpec(myRoute7Spec)(async (req, res) => {
+  const sucessfulApiResponse200 = res.status(200)
+  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<(body: {
+    ok: boolean
+  }) => void>()
+  const sucessfulApiResponse201 = res.status(201)
+  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<(body: {
+    ok: boolean
+  }) => void>()
+  const errorApiResponse400 = res.status(400)
+  expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
+})
