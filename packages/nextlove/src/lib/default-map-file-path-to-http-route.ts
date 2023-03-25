@@ -14,8 +14,12 @@ export const defaultMapFilePathToHTTPRoute =
       .replace(/^pages\//, "")
       // replace /api if it starts with /api
       .replace(/^api\//, "")
-    return path.join(
-      api_prefix,
-      route.replace(/\.ts$/, "").replace("public", "")
-    )
+      // replace .ts if it ends with .ts
+      .replace(/\.ts$/, "")
+      // remove public reference
+      .replace("public", "")
+      // replace index if it ends with index
+      .replace(/\/\index(?!.)/, "")
+
+    return path.join(api_prefix, route)
   }
