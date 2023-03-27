@@ -4,6 +4,3 @@ import requireIndex from "requireindex";
 export = {
   rules: requireIndex(__dirname + "/rules")
 }
-
-
-
