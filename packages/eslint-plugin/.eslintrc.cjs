@@ -4,7 +4,8 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   env: {
-    node: false,
+    "es2021": true,
+    node: true,
   },
   overrides: [
     {

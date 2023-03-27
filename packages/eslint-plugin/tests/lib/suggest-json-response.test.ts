@@ -1,5 +1,5 @@
 import { ESLintUtils } from '@typescript-eslint/utils';
-import { rule } from '../../lib/rules/suggest-json-response';
+import rule from '../../lib/rules/suggest-json-response';
 
 const ruleTester = new ESLintUtils.RuleTester({
   parser: '@typescript-eslint/parser',
