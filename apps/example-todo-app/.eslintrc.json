@@ -1,3 +1,10 @@
 {
-  "extends": "next/core-web-vitals"
+  "root": true,
+  "extends": "next/core-web-vitals",
+  "plugins": [
+    "eslint-plugin-nextlove"
+  ],
+  "rules": {
+    "nextlove/suggest-json-response": "warn"
+  }
 }
