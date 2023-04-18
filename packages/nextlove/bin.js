@@ -15,7 +15,7 @@ nextlove (generate-openapi | generate-route-types) [options]
   --packageDir <path>  Path to the package directory containing the Next.js app
   --outputFile <path>  Path to the output file
   --pathGlob <glob>    Glob pattern to find API route files
-  --apiPrefix <path>   Prefix for API routes, default: "/"
+  --apiPrefix <path>   Prefix for API routes, default: "/api"
 
 `.trim()
   )
