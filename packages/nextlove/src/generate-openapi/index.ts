@@ -25,6 +25,7 @@ interface GenerateOpenAPIOpts {
   outputFile?: string
   pathGlob?: string
   tags?: Array<TagOption>
+  apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
 }
 
