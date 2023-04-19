@@ -199,10 +199,14 @@ export const withValidation =
 
     try {
       const original_combined_params = { ...req.query, ...req.body }
-      req.body =
-        input.formData && req.method !== "GET"
-          ? input.formData?.parse(req.body)
-          : input.jsonBody?.parse(req.body)
+      const isFormData = Boolean(input.formData)
+      if (isFormData && req.method !== "GET") {
+        req.body = input.formData?.parse(req.body)
+      }
+
+      if (!isFormData && req.method !== "GET") {
+        req.body = input.jsonBody?.parse(req.body)
+      }
 
       if (input.queryParams) {
         req.query = parseQueryParams(input.queryParams, req.query)
