@@ -10,6 +10,14 @@ export const withRouteSpec = createWithRouteSpec({
   shouldValidateResponses: true,
 } as const)
 
+export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
+  authMiddlewareMap: { auth_token: withAuthToken },
+  globalMiddlewares: [],
+  apiName: "TODO API",
+  productionServerUrl: "https://example.com",
+  shouldValidateGetRequestBody: false,
+} as const)
+
 export const withRouteSpecWithoutValidateResponse = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },
   globalMiddlewares: [],

@@ -108,6 +108,7 @@ export interface RequestInput<
   formData?: FormData
   jsonResponse?: JsonResponse
   shouldValidateResponses?: boolean
+  shouldValidateGetRequestBody?: boolean
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -199,12 +200,18 @@ export const withValidation =
 
     try {
       const original_combined_params = { ...req.query, ...req.body }
+
+      const willValidateRequestBody = input.shouldValidateGetRequestBody
+        ? true
+        : req.method !== "GET"
+
       const isFormData = Boolean(input.formData)
-      if (isFormData && req.method !== "GET") {
+
+      if (isFormData && willValidateRequestBody) {
         req.body = input.formData?.parse(req.body)
       }
 
-      if (!isFormData && req.method !== "GET") {
+      if (!isFormData && willValidateRequestBody) {
         req.body = input.jsonBody?.parse(req.body)
       }
 
