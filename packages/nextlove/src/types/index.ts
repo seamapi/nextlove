@@ -63,6 +63,7 @@ export interface SetupParams<
   addOkStatus?: boolean
 
   shouldValidateResponses?: boolean
+  shouldValidateGetRequestBody?: boolean
 }
 
 const defaultMiddlewareMap = {
