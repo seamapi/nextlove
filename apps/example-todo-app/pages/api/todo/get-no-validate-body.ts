@@ -1,6 +1,5 @@
 import {
   checkRouteSpec,
-  withRouteSpec,
   withRouteSpecWithoutValidateGetRequestBody,
 } from "lib/middlewares"
 import { NotFoundException } from "nextlove"
@@ -16,6 +15,8 @@ export const route_spec = checkRouteSpec({
   }),
 })
 
-export default withRouteSpec(route_spec)(async (req, res) => {
-  return res.status(200).json({ ok: true })
-})
+export default withRouteSpecWithoutValidateGetRequestBody(route_spec)(
+  async (req, res) => {
+    return res.status(200).json({ ok: true })
+  }
+)
