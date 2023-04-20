@@ -49,7 +49,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     authMiddlewareMap = {},
     globalMiddlewares = [],
     shouldValidateResponses,
-    shouldValidateGetRequestBody,
+    shouldValidateGetRequestBody = true,
     exceptionHandlingMiddleware = withExceptionHandling({
       addOkStatus: setupParams.addOkStatus,
       exceptionHandlingOptions: {

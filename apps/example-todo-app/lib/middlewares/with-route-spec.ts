@@ -8,7 +8,6 @@ export const withRouteSpec = createWithRouteSpec({
   apiName: "TODO API",
   productionServerUrl: "https://example.com",
   shouldValidateResponses: true,
-  shouldValidateGetRequestBody: true,
 } as const)
 
 export const withRouteSpecWithoutValidateResponse = createWithRouteSpec({
