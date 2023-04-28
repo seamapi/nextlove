@@ -141,8 +141,10 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       route.responses[200].content = {
         "application/json": {
           schema: generateSchema(
-            addOkStatus
-              ? jsonResponse.extend({ ok: z.boolean() })
+            addOkStatus && jsonResponse._def.typeName === "ZodObject"
+              ? (jsonResponse as z.ZodObject<any, any, any, any, any>).extend({
+                  ok: z.boolean(),
+                })
               : jsonResponse
           ),
         },
