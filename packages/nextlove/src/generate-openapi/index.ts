@@ -1,17 +1,9 @@
 import fs from "node:fs/promises"
-import path from "node:path"
-import globby from "globby"
 import { generateSchema } from "@anatine/zod-openapi"
-import {
-  OpenApiBuilder,
-  OperationObject,
-  ParameterObject,
-  SecurityRequirementObject,
-} from "openapi3-ts"
-import { RouteSpec, SetupParams } from "../types"
+import { OpenApiBuilder, OperationObject, ParameterObject } from "openapi3-ts"
+import { SetupParams } from "../types"
 import chalk from "chalk"
 import { z } from "zod"
-import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 
 interface TagOption {
@@ -44,7 +36,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   const { setupParams: globalSetupParams } = filepathToRouteFn.values().next()
     .value as { setupParams: SetupParams }
 
-  const securitySchemes = {}
+  const securitySchemes = globalSetupParams.securitySchemas ?? {}
   const securityObjectsForAuthType = {}
   for (const authName of Object.keys(globalSetupParams.authMiddlewareMap)) {
     const mw = globalSetupParams.authMiddlewareMap[authName]
@@ -88,6 +80,57 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     file_path,
     { setupParams, routeSpec, route: routePath },
   ] of filepathToRouteFn) {
+    const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].some((method) =>
+      routeSpec.methods.includes(method)
+    )
+    // TODO: support multipart/form-data
+
+    // handle body
+    let body_to_generate_schema
+    if (isPostOrPutOrPatch) {
+      body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
+
+      if (routeSpec.jsonBody && routeSpec.commonParams) {
+        body_to_generate_schema = routeSpec.jsonBody.merge(
+          routeSpec.commonParams
+        )
+      }
+    } else {
+      body_to_generate_schema = routeSpec.jsonBody
+    }
+
+    // handle query
+    let query_to_generate_schema
+    if (isPostOrPutOrPatch) {
+      query_to_generate_schema = routeSpec.jsonBody
+    } else {
+      query_to_generate_schema = routeSpec.queryParams ?? routeSpec.commonParams
+
+      if (routeSpec.queryParams && routeSpec.commonParams) {
+        query_to_generate_schema = routeSpec.queryParams.merge(
+          routeSpec.commonParams
+        )
+      }
+    }
+
+    // DELETE and GET cannot have a body
+    let methods = routeSpec.methods
+
+    if (routeSpec.methods.includes("DELETE") && body_to_generate_schema) {
+      methods = methods.filter((m) => m !== "DELETE")
+    }
+
+    if (routeSpec.methods.includes("GET") && body_to_generate_schema) {
+      methods = methods.filter((m) => m !== "GET")
+    }
+
+    if (methods.length === 0) {
+      console.warn(
+        chalk.yellow(`Skipping route ${routePath} because it has no methods.`)
+      )
+      continue
+    }
+
     const route: OperationObject = {
       summary: routePath,
       responses: {
@@ -104,21 +147,18 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       security: securityObjectsForAuthType[routeSpec.auth],
     }
 
-    if (routeSpec.jsonBody || routeSpec.commonParams) {
+    if (body_to_generate_schema) {
       route.requestBody = {
         content: {
           "application/json": {
-            schema: generateSchema(
-              (routeSpec.jsonBody as any) || routeSpec.commonParams
-            ),
+            schema: generateSchema(body_to_generate_schema as any),
           },
         },
       }
     }
 
-    if (routeSpec.queryParams) {
-      const schema = generateSchema(routeSpec.queryParams)
-
+    if (query_to_generate_schema) {
+      const schema = generateSchema(query_to_generate_schema as any)
       if (schema.properties) {
         const parameters: ParameterObject[] = Object.keys(
           schema.properties as any
@@ -158,7 +198,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
     // Some routes accept multiple methods
     builder.addPath(routePath, {
-      ...routeSpec.methods
+      ...methods
         .map((method) => ({
           [method.toLowerCase()]: route,
         }))
