@@ -5,6 +5,9 @@ import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
 import { SecuritySchemeObject, SecurityRequirementObject } from "openapi3-ts"
 
 export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
+  /**
+   * @deprecated moved to setupParams
+   */
   securitySchema?: SecuritySchemeObject
   securityObjects?: SecurityRequirementObject[]
 }
@@ -14,9 +17,9 @@ type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 export interface RouteSpec<
   Auth extends string = string,
   Methods extends HTTPMethods[] = any,
-  JsonBody extends ParamDef = z.ZodTypeAny,
-  QueryParams extends ParamDef = z.ZodTypeAny,
-  CommonParams extends ParamDef = z.ZodTypeAny,
+  JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
+  QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
+  CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   Middlewares extends readonly Middleware<any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
   FormData extends ParamDef = z.ZodTypeAny
@@ -64,6 +67,7 @@ export interface SetupParams<
 
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
+  securitySchemas?: Record<string, SecuritySchemeObject>
 }
 
 const defaultMiddlewareMap = {
