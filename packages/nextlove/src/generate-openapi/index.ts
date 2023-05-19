@@ -247,9 +247,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         .map((method) => ({
           [method.toLowerCase()]: {
             ...route,
-            operationId: `${transformPathToOperationId(routePath)}${
-              methods.length > 1 ? pascalCase(method) : ""
-            }`,
+            operationId: `${transformPathToOperationId(routePath)}${pascalCase(
+              method
+            )}`,
           },
         }))
         .reduceRight((acc, cur) => ({ ...acc, ...cur }), {}),
