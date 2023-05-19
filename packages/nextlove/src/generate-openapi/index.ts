@@ -9,30 +9,46 @@ import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 function transformPathToOperationId(path: string): string {
   function replaceFirstCharToLowercase(str: string) {
     if (str.length === 0) {
-      return str;
+      return str
     }
-    
-    const firstChar = str.charAt(0).toLowerCase();
-    return firstChar + str.slice(1);
+
+    const firstChar = str.charAt(0).toLowerCase()
+    return firstChar + str.slice(1)
   }
 
-  const parts = path.replace(/-/g, "_").split('/').filter(part => part !== '');
-  const transformedParts = parts.map(part => {
-    if (part.startsWith('[') && part.endsWith(']')) {
+  const parts = path
+    .replace(/-/g, "_")
+    .split("/")
+    .filter((part) => part !== "")
+  const transformedParts = parts.map((part) => {
+    if (part.startsWith("[") && part.endsWith("]")) {
       // Convert [param] to ByParam
-      const serviceName = part.slice(1, -1);
-      const words = serviceName.split('_');
-      const capitalizedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
-      return `By${capitalizedWords.join('')}`;
+      const serviceName = part.slice(1, -1)
+      const words = serviceName.split("_")
+      const capitalizedWords = words.map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      return `By${capitalizedWords.join("")}`
     } else {
       // Convert api_path to ApiPath
-      const words = part.split('_');
-      const capitalizedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1));
-      return capitalizedWords.join('');
+      const words = part.split("_")
+      const capitalizedWords = words.map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+      )
+      return capitalizedWords.join("")
     }
-  });
+  })
 
-  return replaceFirstCharToLowercase(transformedParts.join(''));
+  return replaceFirstCharToLowercase(transformedParts.join(""))
+}
+
+function pascalCase(input: string): string {
+  const words = input.split(" ")
+  const capitalizedWords = words.map(
+    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  )
+  const pascalCaseString = capitalizedWords.join("")
+  return pascalCaseString
 }
 
 interface TagOption {
@@ -225,13 +241,16 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    route.operationId = transformPathToOperationId(routePath)
-
     // Some routes accept multiple methods
     builder.addPath(routePath, {
       ...methods
         .map((method) => ({
-          [method.toLowerCase()]: route,
+          [method.toLowerCase()]: {
+            ...route,
+            operationId: `${transformPathToOperationId(routePath)}${pascalCase(
+              method
+            )}`,
+          },
         }))
         .reduceRight((acc, cur) => ({ ...acc, ...cur }), {}),
     })
