@@ -12,14 +12,10 @@ export const route_spec = {
   methods: ["POST"],
   auth: "auth_token",
   jsonBody,
-  jsonResponse: z.object({
+  jsonResponse: {
     ok: z.string(),
-  }),
+  },
 } as const
 
-export default withRouteSpec(route_spec)(async (req, res) => {
-  return res.status(200).json({
-    // @ts-ignore
-    ok: true,
-  })
-})
+// @ts-expect-error
+export default withRouteSpec(route_spec)(async (req, res) => {})

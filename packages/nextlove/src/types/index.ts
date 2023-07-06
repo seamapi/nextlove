@@ -138,6 +138,17 @@ export type CreateWithRouteSpecFunction = <
   SP extends SetupParams<AuthMiddlewares, any>
 >(
   setupParams: SP
-) => <RS extends RouteSpec<any, any, any, any, any, any, any, any>>(
+) => <
+  RS extends RouteSpec<
+    string,
+    any,
+    any,
+    any,
+    any,
+    any,
+    z.ZodObject<any, any, any, any, any>,
+    any
+  >
+>(
   route_spec: RS
 ) => (next: RouteFunction<SP, RS>) => any
