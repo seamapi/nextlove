@@ -11,6 +11,10 @@ interface GenerateRouteTypesOpts {
   pathGlob?: string
   apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
+  /**
+   * If provided, only routes that return true will be included in the generated types.
+   */
+  filterRoutes?: (route: string) => boolean
 }
 
 export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
@@ -19,10 +23,13 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   const sortedRoutes = Array.from(filepathToRoute.entries()).sort((a, b) =>
     a[1].route.localeCompare(b[1].route)
   )
+  const filteredRoutes = sortedRoutes.filter(
+    ([_, { route }]) => !opts.filterRoutes || opts.filterRoutes(route)
+  )
 
   // TODO when less lazy, use ts-morph for better generation
   const routeDefs: string[] = []
-  for (const [_, { route, routeSpec, setupParams }] of sortedRoutes) {
+  for (const [_, { route, routeSpec, setupParams }] of filteredRoutes) {
     routeDefs.push(
       `
 "${route}": {
