@@ -1,7 +1,7 @@
 import {
   checkRouteSpec,
   withRouteSpecWithoutValidateGetRequestBody,
-} from "lib/middlewares"
+} from "src/lib/middlewares"
 import { NotFoundException } from "nextlove"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"

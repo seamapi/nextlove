@@ -1,5 +1,6 @@
-import { createWithRouteSpec } from "nextlove"
+import { createWithRouteSpec, createWithRouteSpecEdge } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
+import withAuthTokenEdge from "./with-auth-token-edge"
 export { checkRouteSpec } from "nextlove"
 
 export const withRouteSpec = createWithRouteSpec({
@@ -9,6 +10,15 @@ export const withRouteSpec = createWithRouteSpec({
   productionServerUrl: "https://example.com",
   shouldValidateResponses: true,
 } as const)
+
+export const withRouteSpecEdge = createWithRouteSpecEdge({
+  authMiddlewareMap: { auth_token: withAuthTokenEdge },
+  globalMiddlewares: [],
+  apiName: "TODO API",
+  productionServerUrl: "https://example.com",
+  shouldValidateResponses: true,
+} as const)
+
 
 export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },

@@ -1,4 +1,4 @@
-import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec, withRouteSpec } from "src/lib/middlewares"
 import { z } from "zod"
 
 export const commonParams = z

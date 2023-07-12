@@ -1,8 +1,8 @@
-import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec, withRouteSpec } from "src/lib/middlewares"
 import { z } from "zod"
 
 export const commonParams = z.object({
-  ids: z.array(z.string().uuid()),
+  ids: z.array(z.string().uuid()).optional(),
 })
 
 export const route_spec = checkRouteSpec({
@@ -22,5 +22,7 @@ export const route_spec = checkRouteSpec({
 export default withRouteSpec(route_spec)(async (req, res) => {
   const { ids } = req.commonParams
 
-  return res.status(200).json({ ok: true, todos: ids.map((id) => ({ id })) })
+  const todos = ids ? ids.map((id) => ({ id })) : []
+
+  return res.status(200).json({ ok: true, todos })
 })
