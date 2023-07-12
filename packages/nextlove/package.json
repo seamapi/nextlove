@@ -18,6 +18,7 @@
   "scripts": {
     "test": "npm run typecheck",
     "typecheck": "tsc --noEmit",
+    "dev": "tsup --dts --sourcemap inline src --watch",
     "build": "tsup --dts --sourcemap inline src",
     "yalc": "npm run build && yalc push"
   },

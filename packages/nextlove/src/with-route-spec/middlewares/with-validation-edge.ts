@@ -5,8 +5,8 @@ import {
   InternalServerErrorException,
 } from "nextjs-exception-middleware"
 import { isEmpty } from "lodash"
+import { NextloveRequest } from "../response-edge"
 import { parseQueryParams, zodIssueToString } from "./zod"
-
 
 export interface RequestInput<
   JsonBody extends z.ZodTypeAny,
@@ -24,19 +24,21 @@ export interface RequestInput<
   shouldValidateGetRequestBody?: boolean
 }
 
+
+// NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
 function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
-  res: NextApiResponse
+  res: NextloveRequest['responseEdge'] 
 ) {
   const original_res_json = res.json
-  const override_res_json = (json: any) => {
+  const override_res_json: NextloveRequest['responseEdge']['json'] = (body, params) => {
     const is_success = res.statusCode >= 200 && res.statusCode < 300
     if (!is_success) {
-      return original_res_json(json)
+      return original_res_json(body, params)
     }
 
     try {
-      jsonResponse?.parse(json)
+      jsonResponse?.parse(body)
     } catch (err) {
       throw new InternalServerErrorException({
         type: "invalid_response",
@@ -45,12 +47,12 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
       })
     }
 
-    return original_res_json(json)
+    return res.json(body, params)
   }
   res.json = override_res_json
 }
 
-export const withValidation =
+export const withValidationEdge =
   <
     JsonBody extends z.ZodTypeAny,
     QueryParams extends z.ZodTypeAny,
@@ -67,18 +69,35 @@ export const withValidation =
     >
   ) =>
   (next) =>
-  async (req: NextApiRequest, res: NextApiResponse) => {
+  async (req: NextloveRequest) => {
     if (
       (input.formData && input.jsonBody) ||
       (input.formData && input.commonParams)
     ) {
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
+    const { searchParams } = new URL(req.url)
+    const paramsArray = Array.from(searchParams.entries());
+    let queryEdge = Object.fromEntries(paramsArray);
+    
+    const isBodyPresent = !!req.body
+
+
+    let bodyEdge: any 
+    if (isBodyPresent) {
+      bodyEdge = await req.json()
+    }
+    
+    const contentType = req.headers.get("content-type")
+    const isContentTypeJson = contentType?.includes("application/json")
+    const isContentTypeFormUrlEncoded = contentType?.includes(
+      "application/x-www-form-urlencoded"
+    )
 
     if (
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
-      !req.headers["content-type"]?.includes("application/json") &&
+      !isContentTypeJson &&
       !isEmpty(req.body)
     ) {
       throw new BadRequestException({
@@ -90,9 +109,7 @@ export const withValidation =
     if (
       input.formData &&
       req.method !== "GET" &&
-      !req.headers["content-type"]?.includes(
-        "application/x-www-form-urlencoded"
-      )
+      !isContentTypeFormUrlEncoded
       // TODO eventually we should support multipart/form-data
     ) {
       throw new BadRequestException({
@@ -102,7 +119,7 @@ export const withValidation =
     }
 
     try {
-      const original_combined_params = { ...req.query, ...req.body }
+      const original_combined_params = { ...queryEdge, ...bodyEdge }
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
@@ -111,15 +128,15 @@ export const withValidation =
       const isFormData = Boolean(input.formData)
 
       if (isFormData && willValidateRequestBody) {
-        req.body = input.formData?.parse(req.body)
+        (req as any).edgeBody = input.formData?.parse(bodyEdge)
       }
 
       if (!isFormData && willValidateRequestBody) {
-        req.body = input.jsonBody?.parse(req.body)
+        (req as any).edgeBody = input.jsonBody?.parse(bodyEdge)
       }
 
       if (input.queryParams) {
-        req.query = parseQueryParams(input.queryParams, req.query)
+        (req as any).edgeQuery = parseQueryParams(input.queryParams, queryEdge)
       }
 
       if (input.commonParams) {
@@ -164,10 +181,10 @@ export const withValidation =
      * this will override the res.json method to validate the response
      */
     if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, res)
+      validateJsonResponse(input.jsonResponse, req.responseEdge)
     }
 
-    return next(req, res)
+    return next(req)
   }
 
-export default withValidation
+
