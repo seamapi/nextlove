@@ -9,7 +9,7 @@ test("GET /todo/list", async (t) => {
 
   const ids = [uuidv4(), uuidv4()]
 
-  const responseWithArray = await axios.get("/todo/list", {
+  const responseWithArray = await axios.get("/api/todo/list", {
     params: {
       ids,
     },
@@ -22,7 +22,7 @@ test("GET /todo/list", async (t) => {
     })),
   })
 
-  const responseWithCommas = await axios.get("/todo/list", {
+  const responseWithCommas = await axios.get("/api/todo/list", {
     params: {
       ids: ids.join(","),
     },

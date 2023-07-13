@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { withExceptionHandling } from "nextjs-exception-middleware"
-import wrappers, { Middleware } from "nextjs-middleware-wrappers"
+import { withExceptionHandling } from "../exceptions-middleware-nodejs"
+import wrappers, { Middleware } from "../wrappers-nodejs"
 import { CreateWithRouteSpecFunction, RouteSpec } from "../types"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"

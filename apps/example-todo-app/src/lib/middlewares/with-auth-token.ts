@@ -19,10 +19,4 @@ export const withAuthToken: Middleware<{
   return next(req, res)
 }
 
-withAuthToken.securitySchema = {
-  type: "http",
-  scheme: "bearer",
-  bearerFormat: "API Token",
-}
-
 export default withAuthToken

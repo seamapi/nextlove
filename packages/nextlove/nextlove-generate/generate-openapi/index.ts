@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import { generateSchema } from "@anatine/zod-openapi"
 import { OpenApiBuilder, OperationObject, ParameterObject } from "openapi3-ts"
-import { SetupParams } from "../types"
+import { SetupParams } from "../../src/types"
 import chalk from "chalk"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
@@ -85,15 +85,16 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   const securityObjectsForAuthType = {}
   for (const authName of Object.keys(globalSetupParams.authMiddlewareMap)) {
     const mw = globalSetupParams.authMiddlewareMap[authName]
-    if (mw.securitySchema) {
-      securitySchemes[authName] = (mw as any).securitySchema
-    } else {
-      console.warn(
-        chalk.yellow(
-          `Authentication middleware "${authName}" has no securitySchema. You can define this on the function (e.g. after the export do... \n\nmyMiddleware.securitySchema = {\n  type: "http"\n  scheme: "bearer"\n  bearerFormat: "JWT"\n // or API Token etc.\n}\n\nYou can also define "securityObjects" this way, if you want to make the endpoint support multiple modes of authentication.\n\n`
-        )
-      )
-    }
+    // TODO: remove this warning
+    // if (mw.securitySchema) {
+    //   securitySchemes[authName] = (mw as any).securitySchema
+    // } else {
+    //   console.warn(
+    //     chalk.yellow(
+    //       `Authentication middleware "${authName}" has no securitySchema. You can define this on the function (e.g. after the export do... \n\nmyMiddleware.securitySchema = {\n  type: "http"\n  scheme: "bearer"\n  bearerFormat: "JWT"\n // or API Token etc.\n}\n\nYou can also define "securityObjects" this way, if you want to make the endpoint support multiple modes of authentication.\n\n`
+    //     )
+    //   )
+    // }
 
     securityObjectsForAuthType[authName] = (mw as any).securityObjects || [
       {

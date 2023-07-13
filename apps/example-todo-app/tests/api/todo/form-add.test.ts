@@ -14,7 +14,7 @@ test("POST /todo/form-add", async (t) => {
 
   const successfulRes = await axios({
     method: "POST",
-    url: "/todo/form-add",
+    url: "/api/todo/form-add",
     data: bodyFormData,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",

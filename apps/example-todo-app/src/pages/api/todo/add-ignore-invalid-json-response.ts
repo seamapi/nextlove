@@ -1,7 +1,7 @@
 import {
   withRouteSpecWithoutValidateResponse,
   checkRouteSpec,
-} from "src/lib/middlewares"
+} from "@/lib/middlewares"
 import { z } from "zod"
 import { v4 as uuidv4 } from "uuid"
 

@@ -4,7 +4,7 @@ import axiosAssert from "tests/fixtures/axios-assert"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
-test.failing("GET /todo/get", async (t) => {
+test("GET /todo/get", async (t) => {
   const { axios } = await getTestServer(t)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
@@ -12,7 +12,7 @@ test.failing("GET /todo/get", async (t) => {
   const id = uuidv4()
 
   const invalidIdFormatRes = await axios
-    .get(`/todo/get?id=${id}&throwError=false`)
+    .get(`/api/todo/get?id=${id}&throwError=false`)
     .catch((err) => err)
 
   t.is(invalidIdFormatRes.status, 200)
@@ -23,7 +23,7 @@ test.failing("GET /todo/get", async (t) => {
 
   axiosAssert.throws(
     t,
-    () => axios.get(`/todo/get?id=${id}&throwErrorAlwaysTrue=false`),
+    () => axios.get(`/api/todo/get?id=${id}&throwErrorAlwaysTrue=false`),
     {
       error: {
         type: "invalid_input",

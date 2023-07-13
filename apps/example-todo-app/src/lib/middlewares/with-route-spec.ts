@@ -17,6 +17,7 @@ export const withRouteSpecEdge = createWithRouteSpecEdge({
   apiName: "TODO API",
   productionServerUrl: "https://example.com",
   shouldValidateResponses: true,
+  addOkStatus: true,
 } as const)
 
 

@@ -1,12 +1,11 @@
-import type { NextApiRequest, NextApiResponse } from "next"
-import { z, ZodFirstPartyTypeKind } from "zod"
+import { z } from "zod"
 import {
   BadRequestException,
   InternalServerErrorException,
-} from "nextjs-exception-middleware"
+} from "../http-exceptions"
 import { isEmpty } from "lodash"
-import { NextloveRequest } from "../response-edge"
-import { parseQueryParams, zodIssueToString } from "./zod"
+import { NextloveRequest } from "../edge-helpers"
+import { parseQueryParams, zodIssueToString } from "../zod-helpers"
 
 export interface RequestInput<
   JsonBody extends z.ZodTypeAny,
@@ -24,15 +23,18 @@ export interface RequestInput<
   shouldValidateGetRequestBody?: boolean
 }
 
-
 // NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
 function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
-  res: NextloveRequest['responseEdge'] 
+  req: NextloveRequest
 ) {
-  const original_res_json = res.json
-  const override_res_json: NextloveRequest['responseEdge']['json'] = (body, params) => {
-    const is_success = res.statusCode >= 200 && res.statusCode < 300
+  const original_res_json = req.responseEdge.json
+  const override_res_json: NextloveRequest["responseEdge"]["json"] = (
+    body,
+    params
+  ) => {
+    const is_success =
+      req.responseEdge.statusCode >= 200 && req.responseEdge.statusCode < 300
     if (!is_success) {
       return original_res_json(body, params)
     }
@@ -47,9 +49,10 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
       })
     }
 
-    return res.json(body, params)
+    return original_res_json(body, params)
   }
-  res.json = override_res_json
+
+  req.responseEdge.json = override_res_json
 }
 
 export const withValidationEdge =
@@ -77,18 +80,18 @@ export const withValidationEdge =
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
     const { searchParams } = new URL(req.url)
-    const paramsArray = Array.from(searchParams.entries());
-    let queryEdge = Object.fromEntries(paramsArray);
-    
+    const paramsArray = Array.from(searchParams.entries())
+    let edgeQuery = Object.fromEntries(paramsArray)
+
     const isBodyPresent = !!req.body
 
-
-    let bodyEdge: any 
+    let bodyEdge: any
     if (isBodyPresent) {
       bodyEdge = await req.json()
     }
-    
+
     const contentType = req.headers.get("content-type")
+
     const isContentTypeJson = contentType?.includes("application/json")
     const isContentTypeFormUrlEncoded = contentType?.includes(
       "application/x-www-form-urlencoded"
@@ -98,7 +101,7 @@ export const withValidationEdge =
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
       !isContentTypeJson &&
-      !isEmpty(req.body)
+      !isEmpty(bodyEdge)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",
@@ -119,7 +122,7 @@ export const withValidationEdge =
     }
 
     try {
-      const original_combined_params = { ...queryEdge, ...bodyEdge }
+      const original_combined_params = { ...edgeQuery, ...bodyEdge }
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
@@ -128,15 +131,15 @@ export const withValidationEdge =
       const isFormData = Boolean(input.formData)
 
       if (isFormData && willValidateRequestBody) {
-        (req as any).edgeBody = input.formData?.parse(bodyEdge)
+        ;(req as any).edgeBody = input.formData?.parse(bodyEdge)
       }
 
       if (!isFormData && willValidateRequestBody) {
-        (req as any).edgeBody = input.jsonBody?.parse(bodyEdge)
+        ;(req as any).edgeBody = input.jsonBody?.parse(bodyEdge)
       }
 
       if (input.queryParams) {
-        (req as any).edgeQuery = parseQueryParams(input.queryParams, queryEdge)
+        ;(req as any).edgeQuery = parseQueryParams(input.queryParams, edgeQuery)
       }
 
       if (input.commonParams) {
@@ -181,10 +184,8 @@ export const withValidationEdge =
      * this will override the res.json method to validate the response
      */
     if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, req.responseEdge)
+      validateJsonResponse(input.jsonResponse, req)
     }
 
     return next(req)
   }
-
-

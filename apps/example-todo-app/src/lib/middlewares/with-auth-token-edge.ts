@@ -21,10 +21,4 @@ export const withAuthTokenEdge: MiddlewareEdge<{
   return next(req)
 }
 
-withAuthTokenEdge.securitySchema = {
-  type: "http",
-  scheme: "bearer",
-  bearerFormat: "API Token",
-}
-
 export default withAuthTokenEdge

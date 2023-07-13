@@ -1,4 +1,4 @@
-import { checkRouteSpec, withRouteSpec } from "src/lib/middlewares"
+import { checkRouteSpec, withRouteSpec } from "@/lib/middlewares"
 import { NotFoundException } from "nextlove"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
@@ -20,7 +20,7 @@ export const route_spec = checkRouteSpec({
     ok: z.boolean(),
     todo: z.object({
       id: z.string().uuid(),
-    }),
+    }).optional(),
     error: z
       .object({
         type: z.string(),

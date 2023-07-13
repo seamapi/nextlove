@@ -10,7 +10,7 @@ test("GET /todo/list-with-refine", async (t) => {
 
   const ids = [uuidv4(), uuidv4()]
 
-  const responseWithArray = await axios.get("/todo/list-with-refine", {
+  const responseWithArray = await axios.get("/api/todo/list-with-refine", {
     params: {
       ids,
     },
@@ -23,7 +23,7 @@ test("GET /todo/list-with-refine", async (t) => {
     })),
   })
 
-  const responseWithCommas = await axios.get("/todo/list-with-refine", {
+  const responseWithCommas = await axios.get("/api/todo/list-with-refine", {
     params: {
       ids: ids.join(","),
     },
@@ -37,7 +37,7 @@ test("GET /todo/list-with-refine", async (t) => {
   })
 
   const title = uuidv4()
-  const responseWithTitle = await axios.get("/todo/list-with-refine", {
+  const responseWithTitle = await axios.get("/api/todo/list-with-refine", {
     params: {
       title,
     },
@@ -52,7 +52,7 @@ test("GET /todo/list-with-refine", async (t) => {
     ],
   })
 
-  await axiosAssert.throws(t, async () => axios.get("/todo/list-with-refine"), {
+  await axiosAssert.throws(t, async () => axios.get("/api/todo/list-with-refine"), {
     status: 400,
     error: {
       type: "invalid_input",
@@ -63,7 +63,7 @@ test("GET /todo/list-with-refine", async (t) => {
   await axiosAssert.throws(
     t,
     async () =>
-      axios.get("/todo/list-with-refine", {
+      axios.get("/api/todo/list-with-refine", {
         params: {
           title: "title",
           ids: ids.join(","),
@@ -81,7 +81,7 @@ test("GET /todo/list-with-refine", async (t) => {
   await axiosAssert.throws(
     t,
     async () =>
-      axios.get("/todo/list-with-refine", {
+      axios.get("/api/todo/list-with-refine", {
         params: {
           title:
             "A title big enough to test if nextlove is handling correct with nested .refine (from zod) with at least 101 characters long",

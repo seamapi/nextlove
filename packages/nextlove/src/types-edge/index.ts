@@ -1,24 +1,15 @@
-import { NextApiResponse } from "next"
-import { MiddlewareEdge as WrapperMiddlewareEdge } from "../with-route-spec/wrappers-edge"
 import { z } from "zod"
-import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
-import { SecuritySchemeObject, SecurityRequirementObject } from "openapi3-ts"
-import { NextloveRequest } from "../with-route-spec/response-edge"
+import { SecuritySchemeObject } from "openapi3-ts"
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 import { NextResponse } from "next/server"
-
-export type MiddlewareEdge<T, Dep = {}> = WrapperMiddlewareEdge<T, Dep> & {
-  /**
-   * @deprecated moved to setupParams
-   */
-  securitySchema?: SecuritySchemeObject
-  securityObjects?: SecurityRequirementObject[]
-}
+import { MiddlewareEdge } from "../wrappers-edge"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
 export interface RouteSpecEdge<
   Auth extends string = string,
-  Methods extends HTTPMethods[] = any,
+  // we don't need the withMethods middleware in Edge
+  // Methods extends HTTPMethods[] = any,
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
@@ -26,7 +17,8 @@ export interface RouteSpecEdge<
   JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
   FormData extends ParamDef = z.ZodTypeAny
 > {
-  methods: Methods
+  // we don't need the withMethods middleware in Edge
+  // methods: Methods
   auth: Auth
   jsonBody?: JsonBody
   queryParams?: QueryParams
@@ -66,6 +58,9 @@ export interface SetupParamsEdge<
   productionServerUrl: string
 
   addOkStatus?: boolean
+  okStatusOptions?: {
+    addIf?: (req: NextloveRequest) => boolean;
+  }
 
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
@@ -76,23 +71,23 @@ const defaultMiddlewareMap = {
   none: (next) => next,
 } as const
 
-type Send<T> = (body: T) => void
-type NextApiResponseWithoutJsonAndStatusMethods = Omit<
-  NextApiResponse,
+type Send<T> = (body: T, params?: ResponseInit) => NextResponse
+type NextloveResponseWithoutJsonAndStatusMethods = Omit<
+  NextloveResponse,
   "json" | "status"
 >
 
-type SuccessfulNextApiResponseMethods<T> = {
+type SuccessfulNextloveResponseMethods<T> = {
   status: (
     statusCode: 200 | 201
-  ) => NextApiResponseWithoutJsonAndStatusMethods & {
+  ) => NextloveResponseWithoutJsonAndStatusMethods & {
     json: Send<T>
   }
   json: Send<T>
 }
 
-type ErrorNextApiResponseMethods = {
-  status: (statusCode: number) => NextApiResponseWithoutJsonAndStatusMethods & {
+type ErrorNextloveResponseMethods = {
+  status: (statusCode: number) => NextloveResponseWithoutJsonAndStatusMethods & {
     json: Send<any>
   }
   json: Send<any>
@@ -107,7 +102,7 @@ export type RouteEdgeFunction<
     infer AuthMWOut,
     any
   >
-    ? Omit<NextloveRequest, "query" | "body"> &
+    ? Omit<NextloveRequest, "responseEdge"> &
         AuthMWOut &
         MiddlewareEdgeChainOutput<
           RS["middlewares"] extends readonly MiddlewareEdge<any, any>[]
@@ -125,15 +120,15 @@ export type RouteEdgeFunction<
           commonParams: RS["commonParams"] extends z.ZodTypeAny
             ? z.infer<RS["commonParams"]>
             : {}
+          responseEdge: NextloveResponseWithoutJsonAndStatusMethods &
+            SuccessfulNextloveResponseMethods<
+              RS["jsonResponse"] extends z.ZodTypeAny
+                ? z.infer<RS["jsonResponse"]>
+                : any
+            > &
+            ErrorNextloveResponseMethods
         }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
-  // res: NextApiResponseWithoutJsonAndStatusMethods &
-  //   SuccessfulNextApiResponseMethods<
-  //     RS["jsonResponse"] extends z.ZodTypeAny
-  //       ? z.infer<RS["jsonResponse"]>
-  //       : any
-  //   > &
-  //   ErrorNextApiResponseMethods
 ) => NextResponse | Promise<NextResponse>
 
 export type CreateWithRouteSpecEdgeFunction = <
@@ -143,7 +138,8 @@ export type CreateWithRouteSpecEdgeFunction = <
 ) => <
   RS extends RouteSpecEdge<
     string,
-    any,
+    // we don't need the withMethods middleware in Edge
+    // any,
     any,
     any,
     any,

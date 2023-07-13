@@ -1,5 +1,4 @@
 import * as fs from "node:fs/promises"
-import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "zod-to-ts"
 import prettier from "prettier"

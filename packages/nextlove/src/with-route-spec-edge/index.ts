@@ -1,10 +1,8 @@
-import type { NextApiResponse, NextApiRequest } from "next"
-import { NextRequest, NextResponse } from "next/server"
-import { wrappersEdge } from "./wrappers-edge"
-import { withValidationEdge } from "./middlewares/with-validation-edge"
-import { NextloveRequest, getResponseEdge } from "./response-edge"
-import { CreateWithRouteSpecEdgeFunction, RouteSpecEdge } from "../types/edge"
-import { withExceptionHandling } from "nextjs-exception-middleware"
+import { wrappersEdge } from "../wrappers-edge"
+import { withValidationEdge } from "./with-validation-edge"
+import { NextloveRequest, getResponse } from "../edge-helpers"
+import { CreateWithRouteSpecEdgeFunction, RouteSpecEdge } from "../types-edge"
+import { withExceptionHandlingEdge } from "../exceptions-middleware-egde"
 
 export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
   setupParams
@@ -14,18 +12,17 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
     globalMiddlewares = [],
     shouldValidateResponses,
     shouldValidateGetRequestBody = true,
-    // exceptionHandlingMiddleware = withExceptionHandling({
-    //   addOkStatus: setupParams.addOkStatus,
-    //   exceptionHandlingOptions: {
-    //     getErrorContext: (req, error) => {
-    //       if (process.env.NODE_ENV === "production") {
-    //         return {}
-    //       }
+    exceptionHandlingMiddleware = withExceptionHandlingEdge({
+      exceptionHandlingOptions: {
+        getErrorContext: (req, error) => {
+          if (process.env.NODE_ENV === "production") {
+            return {}
+          }
 
-    //       return error
-    //     },
-    //   },
-    // }) as any,
+          return error
+        },
+      },
+    }) as any,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpecEdge) => {
@@ -33,23 +30,27 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
       const rootRequestHandler = async (
         req: NextloveRequest,
       ) => {
-        req.responseEdge = getResponseEdge()
+        req.responseEdge = getResponse(req, {
+          addIf: setupParams.okStatusOptions?.addIf,
+          addOkStatus: setupParams.addOkStatus,
+        })
 
         authMiddlewareMap["none"] = (next) => next;
 
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        // return userDefinedRouteFn(req)
-        return wrappersEdge(
-          // ...((exceptionHandlingMiddleware
-          //   ? [exceptionHandlingMiddleware]
-          //   : []) as [any]),
+        return wrappersEdge<NextloveRequest, NextloveRequest, NextloveRequest, NextloveRequest
+        , NextloveRequest, NextloveRequest
+         >(
+          ...((exceptionHandlingMiddleware
+            ? [exceptionHandlingMiddleware]
+            : []) as [any]),
           ...((globalMiddlewares || []) as []),
           auth_middleware,
           ...((spec.middlewares || []) as []),
+          // we don't need the withMethods middleware in Edge
           // withMethods(spec.methods),
-          // @ts-ignore
           withValidationEdge({
             jsonBody: spec.jsonBody,
             queryParams: spec.queryParams,

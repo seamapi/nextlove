@@ -9,7 +9,7 @@ test("GET /todo/list-optional-ids", async (t) => {
 
   const ids = [uuidv4(), uuidv4()]
 
-  const responseWithArray = await axios.get("/todo/list-optional-ids", {
+  const responseWithArray = await axios.get("/api/todo/list-optional-ids", {
     params: {
       ids,
     },
@@ -22,7 +22,7 @@ test("GET /todo/list-optional-ids", async (t) => {
     })),
   })
 
-  const responseWithCommas = await axios.get("/todo/list-optional-ids", {
+  const responseWithCommas = await axios.get("/api/todo/list-optional-ids", {
     params: {
       ids: ids.join(","),
     },
@@ -35,7 +35,7 @@ test("GET /todo/list-optional-ids", async (t) => {
     })),
   })
 
-  const responseWithOptionalIds = await axios.get("/todo/list-optional-ids")
+  const responseWithOptionalIds = await axios.get("/api/todo/list-optional-ids")
 
   t.deepEqual(responseWithOptionalIds.data, {
     ok: true,
