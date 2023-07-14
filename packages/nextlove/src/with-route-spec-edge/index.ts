@@ -1,4 +1,4 @@
-import { wrappersEdge } from "../wrappers-edge"
+import { wrappers } from "../wrappers"
 import { withValidationEdge } from "./with-validation-edge"
 import { NextloveRequest, NextloveResponse, getResponse } from "../edge-helpers"
 import { CreateWithRouteSpecEdgeFunction, RouteSpecEdge } from "../types-edge"
@@ -42,7 +42,7 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        return wrappersEdge<
+        return wrappers<
           NextloveRequest,
           NextloveResponse,
           NextloveRequest,

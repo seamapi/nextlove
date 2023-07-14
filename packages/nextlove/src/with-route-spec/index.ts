@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { withExceptionHandling } from "../exceptions-middleware-nodejs"
-import wrappers, { Middleware } from "../wrappers-nodejs"
+import { Middleware, wrappers } from "../wrappers"
 import { CreateWithRouteSpecFunction, RouteSpec } from "../types"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
@@ -14,7 +14,9 @@ export const checkRouteSpec = <
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
   CommonParams extends ParamDef = z.ZodTypeAny,
-  Middlewares extends readonly Middleware<any, any>[] = readonly Middleware<
+  Middlewares extends readonly Middleware<any, any, any, any>[] = readonly Middleware<
+    any,
+    any,
     any,
     any
   >[],

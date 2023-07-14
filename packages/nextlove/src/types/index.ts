@@ -2,7 +2,7 @@ import { NextApiResponse, NextApiRequest } from "next"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
 import { SecuritySchemeObject } from "openapi3-ts"
-import { Middleware } from "../wrappers-nodejs"
+import { Middleware } from "../wrappers"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -12,7 +12,7 @@ export interface RouteSpec<
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  Middlewares extends readonly Middleware<any, any>[] = any[],
+  Middlewares extends readonly Middleware<any, any, any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
   FormData extends ParamDef = z.ZodTypeAny
 > {
@@ -27,25 +27,25 @@ export interface RouteSpec<
 }
 
 export type MiddlewareChainOutput<
-  MWChain extends readonly Middleware<any, any>[]
+  MWChain extends readonly Middleware<any, any, any, any>[]
 > = MWChain extends readonly []
   ? {}
   : MWChain extends readonly [infer First, ...infer Rest]
-  ? First extends Middleware<infer T, any>
+  ? First extends Middleware<any, any, infer T, any>
     ? T &
-        (Rest extends readonly Middleware<any, any>[]
+        (Rest extends readonly Middleware<any, any, any, any>[]
           ? MiddlewareChainOutput<Rest>
           : never)
     : never
   : never
 
 export type AuthMiddlewares = {
-  [auth_type: string]: Middleware<any, any>
+  [auth_type: string]: Middleware<any, any, any, any>
 }
 
 export interface SetupParams<
   AuthMW extends AuthMiddlewares = AuthMiddlewares,
-  GlobalMW extends Middleware<any, any>[] = any[]
+  GlobalMW extends Middleware<any, any, any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
@@ -94,13 +94,15 @@ export type RouteFunction<
 > = (
   req: (SP["authMiddlewareMap"] &
     typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
+    any,
+    any,
     infer AuthMWOut,
     any
   >
     ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
         MiddlewareChainOutput<
-          RS["middlewares"] extends readonly Middleware<any, any>[]
+          RS["middlewares"] extends readonly Middleware<any, any, any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
