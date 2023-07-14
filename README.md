@@ -2,12 +2,11 @@
 
 Make type-safe routes that automatically generate OpenAPI in NextJS easy!
 
-* Define endpoints with middleware and have your request objects and responses automatically be typed
-* The same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
-`openapi.json` file!
-* Throw [http exceptions and they'll magically be handled](https://github.com/seamapi/nextjs-exception-middleware#exception-types)
-* Have well-typed middleware
-
+- Define endpoints with middleware and have your request objects and responses automatically be typed
+- The same [zod](https://github.com/colinhacks/zod) schemas used for your types will be in the generated
+  `openapi.json` file!
+- Throw [http exceptions and they'll magically be handled](https://github.com/seamapi/nextjs-exception-middleware#exception-types)
+- Have well-typed middleware
 
 ## Installation
 
@@ -20,13 +19,13 @@ two main functions to know are `createWithRouteSpec`, which allows you to create
 that can be used with all your endpoints, and the `Middleware` utility function which makes middleware type-safe.
 
 Let's take a look at an example project with three files:
-* **lib/with-route-spec.ts** - This file is used to create the `withRouteSpec` middleware. This middleware should
-  be used for all your routes.
-* **lib/middlewares/with-auth-token.ts** - This is an authentication middleware we'll be using to make sure requests are authenticating
-* **lib/middlewares/with-db.ts** - A common global middleware that attaches a database client to the request object
-* **pages/api/health.ts** - Just a health endpoint to see if the server is running! It won't have any auth
-* **pages/api/todos/add.ts** - An endpoint to add a TODO, this will help show how we can use auth!
 
+- **lib/with-route-spec.ts** - This file is used to create the `withRouteSpec` middleware. This middleware should
+  be used for all your routes.
+- **lib/middlewares/with-auth-token.ts** - This is an authentication middleware we'll be using to make sure requests are authenticating
+- **lib/middlewares/with-db.ts** - A common global middleware that attaches a database client to the request object
+- **pages/api/health.ts** - Just a health endpoint to see if the server is running! It won't have any auth
+- **pages/api/todos/add.ts** - An endpoint to add a TODO, this will help show how we can use auth!
 
 ```ts
 // pages/api/health.ts
@@ -37,8 +36,8 @@ const routeSpec = {
   methods: ["GET"],
   auth: "none",
   jsonResponse: z.object({
-    healthy: z.boolean()
-  })
+    healthy: z.boolean(),
+  }),
 } as const
 
 export default withRouteSpec(routeSpec)(async (req, res) => {
@@ -68,7 +67,6 @@ export const withAuthToken: Middleware<{
     authorized_by: "auth_token"
   }
 }> = (next) => async (req, res) => {
-
   req.auth = {
     authorized_by: "auth_token",
   }
@@ -91,8 +89,8 @@ const routeSpec = {
     content: z.string(),
   }),
   jsonResponse: z.object({
-    ok: z.boolean()
-  })
+    ok: z.boolean(),
+  }),
 } as const
 
 export default withRouteSpec(routeSpec)(async (req, res) => {
@@ -100,7 +98,7 @@ export default withRouteSpec(routeSpec)(async (req, res) => {
   if (req.auth.authorized_by !== "auth_token") {
     throw new UnauthorizedException({
       type: "unauthorized",
-      message: "Authenticate yourself to get the requested response"
+      message: "Authenticate yourself to get the requested response",
     })
   }
   // TODO add todo
@@ -110,30 +108,30 @@ export default withRouteSpec(routeSpec)(async (req, res) => {
 
 ## createWithRouteSpec Parameters
 
-| Parameter | Description |
-| --------- | ----------- |
-| `authMiddlewareMap` | Object that maps different types of auth to their middleware |
-| `globalMiddlewares` | Middlewares that should be applied on every route |
-| `apiName` | Used as the name of the api in openapi.json |
-| `productionServerUrl` | Used as the default server url in openapi.json |
-
+| Parameter             | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| `authMiddlewareMap`   | Object that maps different types of auth to their middleware |
+| `globalMiddlewares`   | Middlewares that should be applied on every route            |
+| `apiName`             | Used as the name of the api in openapi.json                  |
+| `productionServerUrl` | Used as the default server url in openapi.json               |
 
 ## withRouteSpec Parameters
 
-| Parameter | Description |
-| --------- | ----------- |
-| `methods` | HTTP Methods accepted by this route |
-| `auth`    | `none` or a key from your `authMiddlewareMap`, this authentication middleware will be applied |
-| `queryParams` | Any GET query parameters on the request as a zod object |
-| `jsonBody` | The JSON body this endpoint accepts as a zod object |
+| Parameter      | Description                                                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `methods`      | HTTP Methods accepted by this route                                                                                        |
+| `auth`         | `none` or a key from your `authMiddlewareMap`, this authentication middleware will be applied                              |
+| `queryParams`  | Any GET query parameters on the request as a zod object                                                                    |
+| `jsonBody`     | The JSON body this endpoint accepts as a zod object                                                                        |
 | `commonParams` | Parameters common to both the query and json body as a zod object, this is sometimes used if a GET route also accepts POST |
-| `jsonResponse` | A zod object representing the json resposne |
+| `jsonResponse` | A zod object representing the json resposne                                                                                |
 
 ### Generating OpenAPI Types (Command Line)
 
 Just run `nextlove generate-openapi` in your project root!
 
 Examples:
+
 ```bash
 # Print OpenAPI JSON directly to the command line for the package in the current directory
 nextlove generate-openapi --packageDir .
@@ -145,11 +143,11 @@ nextlove generate-openapi . --outputFile openapi.json
 nextlove generate-openapi . --pathGlob '/pages/api/public/**/*.ts'
 ```
 
-| Parameter | Description |
-| --------- | ----------- |
-| `packageDir`| Path to directory containing package.json and NextJS project |
-| `outputFile` | Path to output openapi.json file |
-| `pathGlob` | Paths to consider as valid routes for OpenAPI generation, defaults to `/pages/api/**/*.ts` |
+| Parameter    | Description                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| `packageDir` | Path to directory containing package.json and NextJS project                               |
+| `outputFile` | Path to output openapi.json file                                                           |
+| `pathGlob`   | Paths to consider as valid routes for OpenAPI generation, defaults to `/pages/api/**/*.ts` |
 
 ### Generating OpenAPI Types (Script)
 
@@ -163,11 +161,7 @@ generateOpenAPI({
 
   // Tags improve the organization of an OpenAPI spec by making "expandable"
   // sections including routes
-  tags: [
-    "users",
-    "teams",
-    "workspaces"
-  ].map((t) => ({
+  tags: ["users", "teams", "workspaces"].map((t) => ({
     name: `/${t}`,
     description: t,
     doesRouteHaveTag: (route) => route.includes(`/${t}`),
@@ -180,7 +174,6 @@ generateOpenAPI({
   },
 })
 ```
-
 
 ### Wrap middlewares together using `wrappers`!
 

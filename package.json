@@ -11,6 +11,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
     "test": "cd packages/nextlove && yarn test",
     "example:start": "cd apps/example-todo-app && yarn start",
     "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",

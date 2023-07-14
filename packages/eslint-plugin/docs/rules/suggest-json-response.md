@@ -25,9 +25,9 @@ const route_spec = {
   jsonResponse: z.object({
     id: z.string(),
     name: z.string(),
-    email: z.email()
-  })
-};
+    email: z.email(),
+  }),
+}
 ```
 
 ### Invalid
@@ -40,7 +40,7 @@ import { z } from "zod"
 const route_spec = {
   auth: "none",
   methods: ["GET"],
-};
+}
 ```
 
 ## When Not To Use

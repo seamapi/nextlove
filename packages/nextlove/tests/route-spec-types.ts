@@ -176,13 +176,13 @@ export const myRoute7Spec = {
 
 export const myRoute7 = withRouteSpec(myRoute7Spec)(async (req, res) => {
   const sucessfulApiResponse200 = res.status(200)
-  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<(body: {
-    ok: boolean
-  }) => void>()
+  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<
+    (body: { ok: boolean }) => void
+  >()
   const sucessfulApiResponse201 = res.status(201)
-  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<(body: {
-    ok: boolean
-  }) => void>()
+  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<
+    (body: { ok: boolean }) => void
+  >()
   const errorApiResponse400 = res.status(400)
   expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
 })
