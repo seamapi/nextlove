@@ -13,7 +13,7 @@ export interface RouteSpecEdge<
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  Middlewares extends readonly MiddlewareEdge<any, any>[] = any[],
+  Middlewares extends readonly MiddlewareEdge<any, any, any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
   FormData extends ParamDef = z.ZodTypeAny
 > {
@@ -29,25 +29,25 @@ export interface RouteSpecEdge<
 }
 
 export type MiddlewareEdgeChainOutput<
-  MWChain extends readonly MiddlewareEdge<any, any>[]
+  MWChain extends readonly MiddlewareEdge<any, any, any, any>[]
 > = MWChain extends readonly []
   ? {}
   : MWChain extends readonly [infer First, ...infer Rest]
-  ? First extends MiddlewareEdge<infer T, any>
+  ? First extends MiddlewareEdge<any, any, infer T, any>
     ? T &
-        (Rest extends readonly MiddlewareEdge<any, any>[]
+        (Rest extends readonly MiddlewareEdge<any, any, any, any>[]
           ? MiddlewareEdgeChainOutput<Rest>
           : never)
     : never
   : never
 
 export type AuthMiddlewaresEdge = {
-  [auth_type: string]: MiddlewareEdge<any, any>
+  [auth_type: string]: MiddlewareEdge<any, any, any, any>
 }
 
 export interface SetupParamsEdge<
   AuthMW extends AuthMiddlewaresEdge = AuthMiddlewaresEdge,
-  GlobalMW extends MiddlewareEdge<any, any>[] = any[]
+  GlobalMW extends MiddlewareEdge<any, any, any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
@@ -99,13 +99,15 @@ export type RouteEdgeFunction<
 > = (
   req: (SP["authMiddlewareMap"] &
     typeof defaultMiddlewareMap)[RS["auth"]] extends MiddlewareEdge<
+    any,
+    any,
     infer AuthMWOut,
     any
   >
     ? Omit<NextloveRequest, "responseEdge"> &
         AuthMWOut &
         MiddlewareEdgeChainOutput<
-          RS["middlewares"] extends readonly MiddlewareEdge<any, any>[]
+          RS["middlewares"] extends readonly MiddlewareEdge<any, any, any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
@@ -129,6 +131,7 @@ export type RouteEdgeFunction<
             ErrorNextloveResponseMethods
         }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
+  res: NextloveResponse
 ) => NextResponse | Promise<NextResponse>
 
 export type CreateWithRouteSpecEdgeFunction = <

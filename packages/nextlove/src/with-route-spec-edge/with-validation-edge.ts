@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from "../http-exceptions"
 import { isEmpty } from "lodash"
-import { NextloveRequest } from "../edge-helpers"
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 import { parseQueryParams, zodIssueToString } from "../zod-helpers"
 
 export interface RequestInput<
@@ -26,15 +26,15 @@ export interface RequestInput<
 // NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
 function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
-  req: NextloveRequest
+  res: NextloveResponse
 ) {
-  const original_res_json = req.responseEdge.json
-  const override_res_json: NextloveRequest["responseEdge"]["json"] = (
+  const original_res_json = res.json
+  const override_res_json: NextloveResponse["json"] = (
     body,
     params
   ) => {
     const is_success =
-      req.responseEdge.statusCode >= 200 && req.responseEdge.statusCode < 300
+      res.statusCode >= 200 && res.statusCode < 300
     if (!is_success) {
       return original_res_json(body, params)
     }
@@ -52,7 +52,9 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
     return original_res_json(body, params)
   }
 
-  req.responseEdge.json = override_res_json
+  res.json = override_res_json
+
+  return res;
 }
 
 export const withValidationEdge =
@@ -72,7 +74,7 @@ export const withValidationEdge =
     >
   ) =>
   (next) =>
-  async (req: NextloveRequest) => {
+  async (req: NextloveRequest, res: NextloveResponse) => {
     if (
       (input.formData && input.jsonBody) ||
       (input.formData && input.commonParams)
@@ -180,12 +182,8 @@ export const withValidationEdge =
       })
     }
 
-    /**
-     * this will override the res.json method to validate the response
-     */
-    if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, req)
-    }
-
-    return next(req)
+    return next(
+      req,
+      input.shouldValidateResponses ? validateJsonResponse(input.jsonResponse, res) : res
+    )
   }

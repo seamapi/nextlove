@@ -1,4 +1,4 @@
-import type { NextRequest as Req } from "next/server"
+// import type { NextRequest as Req } from "next/server"
 /*
 
 Wraps a function in layers of other functions, while preserving the input/output
@@ -47,44 +47,56 @@ const withLoggedArguments =
 
 */
 
-export type MiddlewareEdge<T, Dep = {}> = (
-  next: (req: Req & Dep & T) => any
-) => (req: Req & Dep & T) => any
+export type MiddlewareEdge<Req, Res, T, Dep = {}> = (
+  next: (req: Req & Dep & T, res: Res) => any
+) => (req: Req & Dep & T, res: Res) => any
 
 // Safer Middleware requires the use of extendRequest to ensure that the
 // new context (T) was actually added to the request. It's kind of annoying
 // to use in practice, so we don't use it for our Wrappers (yet)
-export type SaferMiddlewareEgde<T, Dep = {}> = (
-  next: (req: Req & Dep & T) => any
-) => (req: Req & Dep) => any
+export type SaferMiddlewareEgde<Req, Res, T, Dep = {}> = (
+  next: (req: Req & Dep & T, res: Res) => any
+) => (req: Req & Dep, res: Res) => any
 
-export const extendRequestEdge = <T extends Req, K extends ArrayLike<unknown>>(req: T, merge: K): T & K => {
+export const extendRequestEdge = <
+  Req,
+  Res,
+  T extends Req,
+  K extends ArrayLike<unknown>
+>(
+  req: T,
+  merge: K
+): T & K => {
   for (const [key, v] of Object.entries(merge)) {
     ;(req as any)[key] = v
   }
   return req as any
 }
 
-type WrappersEdge1 = <Mw1RequestContext, Mw1Dep>(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  endpoint: (req: Req & Mw1RequestContext) => any
-) => (req: Req) => any
+type WrappersEdge1 = <Req, Res, Mw1RequestContext, Mw1Dep>(
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  endpoint: (req: Req & Mw1RequestContext, res: Res) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge2 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
   Mw2Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
-  endpoint: (req: Req & Mw1RequestContext & Mw2RequestContext) => any
-) => (req: Req) => any
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
+  endpoint: (req: Req & Mw1RequestContext & Mw2RequestContext, res: Res) => any
+) => (req: Req, res: Res) => any
 
 // TODO figure out how to do a recursive definition, or one that simplifies
 // these redundant WrappersEdge
 
 type WrappersEdge3 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
@@ -92,18 +104,23 @@ type WrappersEdge3 = <
   Mw3RequestContext,
   Mw3Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
   mw3: MiddlewareEdge<
+    Req,
+    Res,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext
+    req: Req & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext,
+    res: Res
   ) => any
-) => (req: Req) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge4 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
@@ -113,27 +130,35 @@ type WrappersEdge4 = <
   Mw4RequestContext,
   Mw4Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
   mw3: MiddlewareEdge<
+    Req,
+    Res,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
   mw4: MiddlewareEdge<
+    Req,
+    Res,
     Mw4RequestContext,
     Mw1RequestContext & Mw2RequestContext & Mw3RequestContext extends Mw4Dep
       ? Mw4Dep
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
-      Mw4RequestContext
+      Mw4RequestContext,
+    res: Res
   ) => any
-) => (req: Req) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge5 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
@@ -145,19 +170,25 @@ type WrappersEdge5 = <
   Mw5RequestContext,
   Mw5Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
   mw3: MiddlewareEdge<
+    Req,
+    Res,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
   mw4: MiddlewareEdge<
+    Req,
+    Res,
     Mw4RequestContext,
     Mw1RequestContext & Mw2RequestContext & Mw3RequestContext extends Mw4Dep
       ? Mw4Dep
       : never
   >,
   mw5: MiddlewareEdge<
+    Req,
+    Res,
     Mw5RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -167,15 +198,19 @@ type WrappersEdge5 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
-      Mw5RequestContext
+      Mw5RequestContext,
+    res: Res
   ) => any
-) => (req: Req) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge6 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
@@ -189,19 +224,25 @@ type WrappersEdge6 = <
   Mw6RequestContext,
   Mw6Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
   mw3: MiddlewareEdge<
+    Req,
+    Res,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
   mw4: MiddlewareEdge<
+    Req,
+    Res,
     Mw4RequestContext,
     Mw1RequestContext & Mw2RequestContext & Mw3RequestContext extends Mw4Dep
       ? Mw4Dep
       : never
   >,
   mw5: MiddlewareEdge<
+    Req,
+    Res,
     Mw5RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -211,6 +252,8 @@ type WrappersEdge6 = <
       : never
   >,
   mw6: MiddlewareEdge<
+    Req,
+    Res,
     Mw6RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -221,16 +264,20 @@ type WrappersEdge6 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
       Mw5RequestContext &
-      Mw6RequestContext
+      Mw6RequestContext,
+    res: Res
   ) => any
-) => (req: Req) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge7 = <
+  Req,
+  Res,
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
   Mw2RequestContext,
@@ -246,19 +293,25 @@ type WrappersEdge7 = <
   Mw7RequestContext,
   Mw7Dep
 >(
-  mw1: MiddlewareEdge<Mw1RequestContext, Mw1Dep>,
-  mw2: MiddlewareEdge<Mw2RequestContext, Mw2Dep>,
+  mw1: MiddlewareEdge<Req, Res, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareEdge<Req, Res, Mw2RequestContext, Mw2Dep>,
   mw3: MiddlewareEdge<
+    Req,
+    Res,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
   mw4: MiddlewareEdge<
+    Req,
+    Res,
     Mw4RequestContext,
     Mw1RequestContext & Mw2RequestContext & Mw3RequestContext extends Mw4Dep
       ? Mw4Dep
       : never
   >,
   mw5: MiddlewareEdge<
+    Req,
+    Res,
     Mw5RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -268,6 +321,8 @@ type WrappersEdge7 = <
       : never
   >,
   mw6: MiddlewareEdge<
+    Req,
+    Res,
     Mw6RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -278,6 +333,8 @@ type WrappersEdge7 = <
       : never
   >,
   mw7: MiddlewareEdge<
+    Req,
+    Res,
     Mw7RequestContext,
     Mw1RequestContext &
       Mw2RequestContext &
@@ -289,15 +346,17 @@ type WrappersEdge7 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
       Mw5RequestContext &
       Mw6RequestContext &
-      Mw7RequestContext
+      Mw7RequestContext,
+    res: Res
   ) => any
-) => (req: Req) => any
+) => (req: Req, res: Res) => any
 
 type WrappersEdge = WrappersEdge1 &
   WrappersEdge2 &

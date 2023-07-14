@@ -1,6 +1,6 @@
 import { wrappersEdge } from "../wrappers-edge"
 import { withValidationEdge } from "./with-validation-edge"
-import { NextloveRequest, getResponse } from "../edge-helpers"
+import { NextloveRequest, NextloveResponse, getResponse } from "../edge-helpers"
 import { CreateWithRouteSpecEdgeFunction, RouteSpecEdge } from "../types-edge"
 import { withExceptionHandlingEdge } from "../exceptions-middleware-egde"
 
@@ -26,7 +26,7 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpecEdge) => {
-    const createRouteExport = (userDefinedRouteFn: (req: NextloveRequest) => any) => {
+    const createRouteExport = (userDefinedRouteFn: (req: NextloveRequest, res: NextloveResponse) => any) => {
       const rootRequestHandler = async (
         req: NextloveRequest,
       ) => {
@@ -35,13 +35,22 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
           addOkStatus: setupParams.addOkStatus,
         })
 
+        const res = req.responseEdge
+
         authMiddlewareMap["none"] = (next) => next;
 
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        return wrappersEdge<NextloveRequest, NextloveRequest, NextloveRequest, NextloveRequest
-        , NextloveRequest, NextloveRequest
+        return wrappersEdge<
+          NextloveRequest,
+          NextloveResponse,
+          NextloveRequest,
+          NextloveRequest,
+          NextloveRequest,
+          NextloveRequest,
+          NextloveRequest,
+          NextloveRequest
          >(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
@@ -61,7 +70,7 @@ export const createWithRouteSpecEdge: CreateWithRouteSpecEdgeFunction = ((
             shouldValidateGetRequestBody,
           }),
           userDefinedRouteFn
-        )(req)
+        )(req, res)
       }
 
       rootRequestHandler._setupParams = setupParams
