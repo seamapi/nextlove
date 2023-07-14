@@ -1,10 +1,14 @@
 import { UnauthorizedException, MiddlewareEdge } from "nextlove"
+import { NextloveRequest, NextloveResponse } from "nextlove/dist/edge-helpers"
 
-export const withAuthTokenEdge: MiddlewareEdge<{
-  auth: {
-    authorized_by: "auth_token"
+export const withAuthTokenEdge: MiddlewareEdge<NextloveRequest,
+  NextloveResponse,
+  {
+    auth: {
+      authorized_by: "auth_token"
+    }
   }
-}> = (next) => async (req) => {
+> = (next) => async (req, res) => {
   const authorization = req.headers.get("authorization")
 
   if (authorization?.split("Bearer ")?.[1] !== "auth_token") {
@@ -18,7 +22,7 @@ export const withAuthTokenEdge: MiddlewareEdge<{
     authorized_by: "auth_token",
   }
 
-  return next(req)
+  return next(req, res)
 }
 
 export default withAuthTokenEdge

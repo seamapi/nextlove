@@ -1,4 +1,4 @@
-import { NextloveRequest } from "../edge-helpers";
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 import unwrappedWithExceptionHandlingEdge, {
   WithExceptionHandlingEdgeOptions,
 } from "./with-exception-handling"
@@ -8,13 +8,13 @@ export interface ExceptionHandlingEdgeOptions {
 }
 
 export const withExceptionHandlingEdge =
-  ({
-    exceptionHandlingOptions,
-  }: ExceptionHandlingEdgeOptions = {}) =>
+  ({ exceptionHandlingOptions }: ExceptionHandlingEdgeOptions = {}) =>
   (next: (req: NextloveRequest) => Promise<void>) =>
-  (req: NextloveRequest) => {
-
-    return unwrappedWithExceptionHandlingEdge(exceptionHandlingOptions)(next)(req)
+  (req: NextloveRequest, res: NextloveResponse) => {
+    return unwrappedWithExceptionHandlingEdge(exceptionHandlingOptions)(next)(
+      req,
+      res
+    )
   }
 
 export * from "../http-exceptions"

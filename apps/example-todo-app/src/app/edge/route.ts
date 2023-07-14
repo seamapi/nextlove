@@ -10,6 +10,6 @@ const route_spec = {
   auth: "none",
 } as const
 
-export const GET = withRouteSpecEdge(route_spec)((req) => {
-  return req.responseEdge.status(200).json({ return: true })
+export const GET = withRouteSpecEdge(route_spec)((req, res) => {
+  return res.status(200).json({ return: true })
 })

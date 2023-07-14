@@ -1,4 +1,4 @@
-import { NextloveRequest } from "../edge-helpers"
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 import { HttpException } from "../http-exceptions"
 
 export interface WithExceptionHandlingEdgeOptions {
@@ -10,11 +10,10 @@ export interface WithExceptionHandlingEdgeOptions {
 
 const withExceptionHandlingEdge =
   (options: WithExceptionHandlingEdgeOptions = {}) =>
-  (next: (req: NextloveRequest) => Promise<void>) =>
-  async (req: NextloveRequest) => {
-    const res = req.responseEdge
+  (next: (req: NextloveRequest, res: NextloveResponse) => Promise<void>) =>
+  async (req: NextloveRequest, res: NextloveResponse) => {
     try {
-      return await next(req)
+      return await next(req, res)
     } catch (error: unknown) {
       let errorContext: any = {}
 
