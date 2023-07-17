@@ -1,7 +1,8 @@
-import { UnauthorizedException, MiddlewareEdge } from "nextlove"
+import { UnauthorizedException, Middleware } from "nextlove"
 import { NextloveRequest, NextloveResponse } from "nextlove/dist/edge-helpers"
 
-export const withAuthTokenEdge: MiddlewareEdge<NextloveRequest,
+export const withAuthTokenEdge: Middleware<
+  NextloveRequest,
   NextloveResponse,
   {
     auth: {

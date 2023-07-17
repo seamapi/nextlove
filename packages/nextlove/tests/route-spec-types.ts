@@ -7,38 +7,53 @@ import {
 } from "../src"
 import { expectTypeOf } from "expect-type"
 import { z } from "zod"
+import { NextApiRequest, NextApiResponse } from "next"
 
-const authTokenMiddleware: Middleware<{
-  auth: {
-    authorized_by: "auth_token"
+const authTokenMiddleware: Middleware<
+  NextApiRequest,
+  NextApiResponse,
+  {
+    auth: {
+      authorized_by: "auth_token"
+    }
   }
-}> = (next) => (req, res) => {
+> = (next) => (req, res) => {
   req.auth = {
     authorized_by: "auth_token",
   }
   return next(req, res)
 }
-const bearerMiddleware: Middleware<{
-  auth: {
-    authorized_by: "bearer"
+const bearerMiddleware: Middleware<
+  NextApiRequest,
+  NextApiResponse,
+  {
+    auth: {
+      authorized_by: "bearer"
+    }
   }
-}> = (next) => (req, res) => {
+> = (next) => (req, res) => {
   req.auth = {
     authorized_by: "bearer",
   }
   return next(req, res)
 }
 
-const dbMiddleware: Middleware<{
-  db: {
-    client: any
+const dbMiddleware: Middleware<
+  NextApiRequest,
+  NextApiResponse,
+  {
+    db: {
+      client: any
+    }
   }
-}> = (next) => (req, res) => {
+> = (next) => (req, res) => {
   req.db = { client: "..." }
   return next(req, res)
 }
 
 const userMiddleware: Middleware<
+  NextApiRequest,
+  NextApiResponse,
   {
     user: {
       user_id: string
@@ -176,13 +191,13 @@ export const myRoute7Spec = {
 
 export const myRoute7 = withRouteSpec(myRoute7Spec)(async (req, res) => {
   const sucessfulApiResponse200 = res.status(200)
-  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<(body: {
-    ok: boolean
-  }) => void>()
+  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<
+    (body: { ok: boolean }) => void
+  >()
   const sucessfulApiResponse201 = res.status(201)
-  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<(body: {
-    ok: boolean
-  }) => void>()
+  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<
+    (body: { ok: boolean }) => void
+  >()
   const errorApiResponse400 = res.status(400)
   expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
 })

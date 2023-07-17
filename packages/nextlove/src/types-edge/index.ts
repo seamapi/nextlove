@@ -2,7 +2,8 @@ import { z } from "zod"
 import { SecuritySchemeObject } from "openapi3-ts"
 import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 import { NextResponse } from "next/server"
-import { MiddlewareEdge } from "../wrappers-edge"
+import { Middleware } from "../wrappers"
+import { MiddlewareChainOutput } from "../types"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -13,7 +14,7 @@ export interface RouteSpecEdge<
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  Middlewares extends readonly MiddlewareEdge<any, any, any, any>[] = any[],
+  Middlewares extends readonly Middleware<any, any, any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodObject<any, any, any, any, any>,
   FormData extends ParamDef = z.ZodTypeAny
 > {
@@ -28,26 +29,13 @@ export interface RouteSpecEdge<
   formData?: FormData
 }
 
-export type MiddlewareEdgeChainOutput<
-  MWChain extends readonly MiddlewareEdge<any, any, any, any>[]
-> = MWChain extends readonly []
-  ? {}
-  : MWChain extends readonly [infer First, ...infer Rest]
-  ? First extends MiddlewareEdge<any, any, infer T, any>
-    ? T &
-        (Rest extends readonly MiddlewareEdge<any, any, any, any>[]
-          ? MiddlewareEdgeChainOutput<Rest>
-          : never)
-    : never
-  : never
-
 export type AuthMiddlewaresEdge = {
-  [auth_type: string]: MiddlewareEdge<any, any, any, any>
+  [auth_type: string]: Middleware<any, any, any, any>
 }
 
 export interface SetupParamsEdge<
   AuthMW extends AuthMiddlewaresEdge = AuthMiddlewaresEdge,
-  GlobalMW extends MiddlewareEdge<any, any, any, any>[] = any[]
+  GlobalMW extends Middleware<any, any, any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
@@ -98,7 +86,7 @@ export type RouteEdgeFunction<
   RS extends RouteSpecEdge
 > = (
   req: (SP["authMiddlewareMap"] &
-    typeof defaultMiddlewareMap)[RS["auth"]] extends MiddlewareEdge<
+    typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
     any,
     any,
     infer AuthMWOut,
@@ -106,8 +94,8 @@ export type RouteEdgeFunction<
   >
     ? Omit<NextloveRequest, "responseEdge"> &
         AuthMWOut &
-        MiddlewareEdgeChainOutput<
-          RS["middlewares"] extends readonly MiddlewareEdge<any, any, any, any>[]
+        MiddlewareChainOutput<
+          RS["middlewares"] extends readonly Middleware<any, any, any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
