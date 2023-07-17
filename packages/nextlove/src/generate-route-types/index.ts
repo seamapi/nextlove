@@ -30,14 +30,21 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   // TODO when less lazy, use ts-morph for better generation
   const routeDefs: string[] = []
   for (const [_, { route, routeSpec, setupParams }] of filteredRoutes) {
+    const queryKeys = Object.keys(routeSpec.queryParams?.shape ?? {})
+    const pathParameters = queryKeys.filter((key) => route.includes(`[${key}]`))
+
+    const queryParamsSchemaWithoutPathParameters = routeSpec.queryParams?.omit(
+      Object.fromEntries(pathParameters.map((param) => [param, true]))
+    )
+
     routeDefs.push(
       `
 "${route}": {
   route: "${route}",
   method: ${routeSpec.methods.map((m) => `"${m}"`).join(" | ")},
   queryParams: ${
-    routeSpec.queryParams
-      ? printNode(zodToTs(routeSpec.queryParams).node)
+    queryParamsSchemaWithoutPathParameters
+      ? printNode(zodToTs(queryParamsSchemaWithoutPathParameters).node)
       : "{}"
   },
   jsonBody: ${
