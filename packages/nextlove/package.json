@@ -27,7 +27,8 @@
     "react": ">=18",
     "react-dom": ">=18",
     "nextjs-server-modules": ">=1",
-    "zod": "^3"
+    "zod": "^3.0.0",
+    "prettier": "^2.0.0 || ^3.0.0"
   },
   "dependencies": {
     "lodash": "^4.17.21",
