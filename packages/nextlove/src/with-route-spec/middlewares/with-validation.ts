@@ -74,8 +74,14 @@ const parseQueryParams = (
           parsed_input[key] = array_input.split(",")
         }
 
-        if (Array.isArray(input[`${key}[]`])) {
-          parsed_input[key] = input[`${key}[]`]
+        const bracket_syntax_array_input = input[`${key}[]`]
+        if (typeof bracket_syntax_array_input === "string") {
+          const pre_split_array = bracket_syntax_array_input
+          parsed_input[key] = pre_split_array.split(",")
+        }
+
+        if (Array.isArray(bracket_syntax_array_input)) {
+          parsed_input[key] = bracket_syntax_array_input
         }
 
         continue
