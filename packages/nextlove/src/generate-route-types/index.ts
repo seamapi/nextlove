@@ -3,7 +3,7 @@ import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-h
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "zod-to-ts"
 import prettier from "prettier"
-import { z } from "zod"
+import { z, objectUtil, ZodEffects, ZodOptional } from "zod"
 
 interface GenerateRouteTypesOpts {
   packageDir: string
@@ -33,7 +33,20 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
     const queryKeys = Object.keys(routeSpec.queryParams?.shape ?? {})
     const pathParameters = queryKeys.filter((key) => route.includes(`[${key}]`))
 
-    const queryParamsSchemaWithoutPathParameters = routeSpec.queryParams?.omit(
+    // queryParams might be a ZodEffects or ZodOptional in some cases
+    let queryParams = routeSpec.queryParams
+    while (
+      queryParams &&
+      ("sourceType" in queryParams || "unwrap" in queryParams)
+    ) {
+      if ("sourceType" in queryParams) {
+        queryParams = (queryParams as unknown as ZodEffects<any>).sourceType()
+      } else if ("unwrap" in queryParams) {
+        queryParams = (queryParams as unknown as ZodOptional<any>).unwrap()
+      }
+    }
+
+    const queryParamsSchemaWithoutPathParameters = queryParams?.omit(
       Object.fromEntries(pathParameters.map((param) => [param, true]))
     )
 
