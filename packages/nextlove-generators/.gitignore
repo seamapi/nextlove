@@ -37,3 +37,4 @@ yarn-error.log*
 .nsm
 dist
 .yalc
+yalc*
