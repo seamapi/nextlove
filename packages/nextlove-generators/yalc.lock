@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "nextlove-generators": {
+      "signature": "2eb59d977d3cab6e342dda6d7354ed19",
+      "file": true
+    }
+  }
+}
