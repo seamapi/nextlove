@@ -17,6 +17,13 @@
   dependencies:
     ts-deepmerge "^4.0.0"
 
+"@anatine/zod-openapi@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@anatine/zod-openapi/-/zod-openapi-2.0.1.tgz#3f9b114d4d72dccd41170fa647e39dd12963cbf3"
+  integrity sha512-ks13oMq3wKFobQ6W+C9h893b2kYAff4Giqwmr5gxgP1HyoBhM4Iub1Z/Q3x5EsAfqfTi8qEOBuqTf0Tnv10D2w==
+  dependencies:
+    ts-deepmerge "^6.0.3"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.18.6":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.18.6.tgz#3b25d38c89600baa2dcc219edfa88a74eb2c427a"
@@ -2293,6 +2300,11 @@ chalk@^5.0.0, chalk@^5.1.2:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.2.0.tgz#249623b7d66869c673699fb66d65723e54dfcfb3"
   integrity sha512-ree3Gqw/nazQAPuJJEy+avdl7QfZMcUvmHIKgEZkGL+xOBzRvup5Hxo6LHuMceSxOabuJLJm5Yp/92R9eMmMvA==
+
+chalk@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.3.0.tgz#67c20a7ebef70e7f3970a01f90fa210cb6860385"
+  integrity sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==
 
 char-regex@^1.0.2:
   version "1.0.2"
@@ -6476,6 +6488,13 @@ openapi3-ts@^3.1.1:
   dependencies:
     yaml "^2.2.1"
 
+openapi3-ts@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-4.1.2.tgz#f15cd4794e3a7c9b388fd45dfbefc78501f7043e"
+  integrity sha512-B7gOkwsYMZO7BZXwJzXCuVagym2xhqsrilVvV0dnq2Di4+iLUXKVX9gOK23ZqaAHZOwABXN0QTdW8QnkUTX6DA==
+  dependencies:
+    yaml "^2.2.2"
+
 opener@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/opener/-/opener-1.5.2.tgz#5d37e1f35077b9dcac4301372271afdeb2a13598"
@@ -6880,6 +6899,11 @@ prettier@^2.5.1, prettier@^2.7.1:
   version "2.8.4"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.4.tgz#34dd2595629bfbb79d344ac4a91ff948694463c3"
   integrity sha512-vIS4Rlc2FNh0BySk3Wkd6xmwxB0FpOndW5fisM5H8hsZSxU2VWVB5CWIkIjWvrHjIhxk2g3bfMKM87zNTrZddw==
+
+prettier@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.0.0.tgz#e7b19f691245a21d618c68bc54dc06122f6105ae"
+  integrity sha512-zBf5eHpwHOGPC47h0zrPyNn+eAEIdEzfywMoYn2XPi0P44Zp0tSq64rq0xAREh4auw2cJZHo9QUob+NqCQky4g==
 
 pretty-format@^29.5.0:
   version "29.5.0"
@@ -8053,6 +8077,11 @@ ts-deepmerge@^4.0.0:
   resolved "https://registry.yarnpkg.com/ts-deepmerge/-/ts-deepmerge-4.0.0.tgz#e236314a601ff9a6526cbd07c4b97e885f58532a"
   integrity sha512-IrjjAwfM/J6ajWv5wDRZBdpVaTmuONJN1vC85mXlWVPXKelouLFiqsjR7m0h245qY6zZEtcDtcOTc4Rozgg1TQ==
 
+ts-deepmerge@^6.0.3:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/ts-deepmerge/-/ts-deepmerge-6.2.0.tgz#77554381a4884d66cab799470bc2620a1c9d84e8"
+  integrity sha512-2qxI/FZVDPbzh63GwWIZYE7daWKtwXZYuyc8YNq0iTmMUwn4mL0jRLsp6hfFlgbdRSR4x2ppe+E86FnvEpN7Nw==
+
 ts-interface-checker@^0.1.9:
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
@@ -8579,6 +8608,11 @@ yaml@^2.2.1:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.2.1.tgz#3014bf0482dcd15147aa8e56109ce8632cd60ce4"
   integrity sha512-e0WHiYql7+9wr4cWMx3TVQrNwejKaEe7/rHNmQmqRjazfOP5W8PB6Jpebb5o6fIapbz9o9+2ipcaTM2ZwDI6lw==
 
+yaml@^2.2.2:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.3.1.tgz#02fe0975d23cd441242aa7204e09fc28ac2ac33b"
+  integrity sha512-2eHWfjaoXgTBC2jNM1LRef62VQa0umtvRiDSk6HSzW7RvS5YtkabJrwYLLEKWBc8a5U2PTSCs+dJjUTJdlHsWQ==
+
 yargs-parser@^20.2.2, yargs-parser@^20.2.3, yargs-parser@^20.2.9:
   version "20.2.9"
   resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-20.2.9.tgz#2eb7dc3b0289718fc295f362753845c41a0c94ee"
@@ -8625,7 +8659,12 @@ zod-to-ts@^1.1.1:
   resolved "https://registry.yarnpkg.com/zod-to-ts/-/zod-to-ts-1.1.2.tgz#d505e46f99edd50a2e53e6dcd156494d2ef82a40"
   integrity sha512-IZdM0Ga1l/vQnrNy63aV3qsLNchD0aUYZEtXcyt8A3xA7+erFO0zeImEcUH5qNLA6tXDTjRpcWp0paoVoH/D0A==
 
-zod@^3.17.3:
+zod-to-ts@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/zod-to-ts/-/zod-to-ts-1.1.4.tgz#074aae94cca498698d6fa20b06264f4cd64fdec2"
+  integrity sha512-jsCg+pTNxLAdJOfW4ul+SpechdGYEJPPnssSbqWdR2LSIkotT22k+UvqPb1nEHwe/YbEcbUOlZUfGM0npgR+Jg==
+
+zod@^3.17.3, zod@^3.21.4:
   version "3.21.4"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.4.tgz#10882231d992519f0a10b5dd58a38c9dabbb64db"
   integrity sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==
