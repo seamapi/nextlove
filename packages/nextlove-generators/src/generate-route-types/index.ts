@@ -20,10 +20,10 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   const filepathToRoute = await parseRoutesInPackage(opts)
 
   const sortedRoutes = Array.from(filepathToRoute.entries()).sort((a, b) =>
-    a[1].route.localeCompare(b[1].route)
+    a[1].route.localeCompare(b[1].route),
   )
   const filteredRoutes = sortedRoutes.filter(
-    ([_, { route }]) => !opts.filterRoutes || opts.filterRoutes(route)
+    ([_, { route }]) => !opts.filterRoutes || opts.filterRoutes(route),
   )
 
   // TODO when less lazy, use ts-morph for better generation
@@ -46,7 +46,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
     }
 
     const queryParamsSchemaWithoutPathParameters = queryParams?.omit(
-      Object.fromEntries(pathParameters.map((param) => [param, true]))
+      Object.fromEntries(pathParameters.map((param) => [param, true])),
     )
 
     routeDefs.push(
@@ -76,12 +76,12 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
           zodToTs(
             setupParams.addOkStatus
               ? routeSpec.jsonResponse.extend({ ok: z.boolean() })
-              : routeSpec.jsonResponse
-          ).node
+              : routeSpec.jsonResponse,
+          ).node,
         )
       : "{}"
   }
-}`.trim()
+}`.trim(),
     )
   }
   const routeDefStr = routeDefs.join(",\n")
@@ -99,7 +99,7 @@ export type RouteRequestBody<Path extends keyof Routes> =
 export type RouteRequestParams<Path extends keyof Routes> =
   Routes[Path]["queryParams"] & Routes[Path]["commonParams"]
 `.trim(),
-    { semi: false, parser: "typescript" }
+    { semi: false, parser: "typescript" },
   )
 
   if (opts.outputFile) {
