@@ -30,14 +30,14 @@ function transformPathToOperationId(path: string): string {
       const serviceName = part.slice(1, -1)
       const words = serviceName.split("_")
       const capitalizedWords = words.map(
-        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+        (word) => word.charAt(0).toUpperCase() + word.slice(1)
       )
       return `By${capitalizedWords.join("")}`
     } else {
       // Convert api_path to ApiPath
       const words = part.split("_")
       const capitalizedWords = words.map(
-        (word) => word.charAt(0).toUpperCase() + word.slice(1),
+        (word) => word.charAt(0).toUpperCase() + word.slice(1)
       )
       return capitalizedWords.join("")
     }
@@ -49,7 +49,7 @@ function transformPathToOperationId(path: string): string {
 function pascalCase(input: string): string {
   const words = input.split(" ")
   const capitalizedWords = words.map(
-    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   )
   const pascalCaseString = capitalizedWords.join("")
   return pascalCaseString
@@ -94,8 +94,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     } else {
       console.warn(
         chalk.yellow(
-          `Authentication middleware "${authName}" has no securitySchema. You can define this on the function (e.g. after the export do... \n\nmyMiddleware.securitySchema = {\n  type: "http"\n  scheme: "bearer"\n  bearerFormat: "JWT"\n // or API Token etc.\n}\n\nYou can also define "securityObjects" this way, if you want to make the endpoint support multiple modes of authentication.\n\n`,
-        ),
+          `Authentication middleware "${authName}" has no securitySchema. You can define this on the function (e.g. after the export do... \n\nmyMiddleware.securitySchema = {\n  type: "http"\n  scheme: "bearer"\n  bearerFormat: "JWT"\n // or API Token etc.\n}\n\nYou can also define "securityObjects" this way, if you want to make the endpoint support multiple modes of authentication.\n\n`
+        )
       )
     }
 
@@ -130,7 +130,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     { setupParams, routeSpec, route: routePath },
   ] of filepathToRouteFn) {
     const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].some((method) =>
-      routeSpec.methods.includes(method),
+      routeSpec.methods.includes(method)
     )
     // TODO: support multipart/form-data
 
@@ -141,7 +141,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
       if (routeSpec.jsonBody && routeSpec.commonParams) {
         body_to_generate_schema = routeSpec.jsonBody.merge(
-          routeSpec.commonParams,
+          routeSpec.commonParams
         )
       }
     } else {
@@ -157,7 +157,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
       if (routeSpec.queryParams && routeSpec.commonParams) {
         query_to_generate_schema = routeSpec.queryParams.merge(
-          routeSpec.commonParams,
+          routeSpec.commonParams
         )
       }
     }
@@ -175,7 +175,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
     if (methods.length === 0) {
       console.warn(
-        chalk.yellow(`Skipping route ${routePath} because it has no methods.`),
+        chalk.yellow(`Skipping route ${routePath} because it has no methods.`)
       )
       continue
     }
@@ -210,7 +210,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       const schema = generateSchema(query_to_generate_schema as any)
       if (schema.properties) {
         const parameters: ParameterObject[] = Object.keys(
-          schema.properties as any,
+          schema.properties as any
         ).map((name) => {
           return {
             name,
@@ -232,7 +232,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           schema: generateSchema(
             addOkStatus
               ? jsonResponse.extend({ ok: z.boolean() })
-              : jsonResponse,
+              : jsonResponse
           ),
         },
       }
@@ -252,7 +252,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           [method.toLowerCase()]: {
             ...route,
             operationId: `${transformPathToOperationId(routePath)}${pascalCase(
-              method,
+              method
             )}`,
           },
         }))

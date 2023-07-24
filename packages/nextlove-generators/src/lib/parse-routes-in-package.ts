@@ -40,8 +40,8 @@ export const parseRoutesInPackage = async (opts: {
         if (!routeFn._setupParams) {
           console.warn(
             chalk.yellow(
-              `Ignoring "${p}" because it wasn't created with withRouteSpec`,
-            ),
+              `Ignoring "${p}" because it wasn't created with withRouteSpec`
+            )
           )
           return
         }
@@ -54,7 +54,7 @@ export const parseRoutesInPackage = async (opts: {
       } else {
         console.warn(chalk.yellow(`Couldn't find route ${p}`))
       }
-    }),
+    })
   )
 
   return filepathToRouteFn
