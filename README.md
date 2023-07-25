@@ -55,6 +55,11 @@ export const withRouteSpec = createWithRouteSpec({
   // For OpenAPI Generation
   apiName: "My API",
   productionServerUrl: "https://example.com",
+  globalSchemas: {
+    user: z.object({
+      user_id: z.string().uuid(),
+    }),
+  },
 } as const)
 ```
 
