@@ -5,7 +5,7 @@ import {
   OperationObject,
   ParameterObject,
 } from "openapi3-ts/oas31"
-import { SetupParams } from "nextlove"
+import { SetupParams } from "../../types"
 import chalk from "chalk"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
