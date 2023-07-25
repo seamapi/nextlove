@@ -33,7 +33,6 @@
     "zod-to-ts": "^1.1.4"
   },
   "devDependencies": {
-    "@anatine/zod-openapi": "^1.10.0",
     "@types/lodash": "^4.14.182",
     "@types/node": "18.0.0",
     "@types/prettier": "^2.7.1",
