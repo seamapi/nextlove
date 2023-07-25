@@ -1,7 +1,6 @@
-import { z } from "zod";
+import { z } from "zod"
 
-export const todo = z
-.object({
+export const todo = z.object({
   id: z.string().uuid(),
 })
 

@@ -108,7 +108,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   }
 
   const globalSchemas = {}
-  for (const [schemaName, zodSchema] of Object.entries(globalSetupParams.globalSchemas ?? {})) {
+  for (const [schemaName, zodSchema] of Object.entries(
+    globalSetupParams.globalSchemas ?? {}
+  )) {
     globalSchemas[schemaName] = generateSchema(zodSchema)
   }
 
@@ -128,7 +130,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     paths: {},
     components: {
       securitySchemes,
-      schemas: globalSchemas
+      schemas: globalSchemas,
     },
   })
 
@@ -235,20 +237,27 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     const { addOkStatus = true } = setupParams
 
     if (jsonResponse) {
-      if (!jsonResponse._def || !jsonResponse._def.typeName || jsonResponse._def.typeName !== "ZodObject") {
+      if (
+        !jsonResponse._def ||
+        !jsonResponse._def.typeName ||
+        jsonResponse._def.typeName !== "ZodObject"
+      ) {
         console.warn(
-          chalk.yellow(`Skipping route ${routePath} because the response is not a ZodObject.`)
+          chalk.yellow(
+            `Skipping route ${routePath} because the response is not a ZodObject.`
+          )
         )
         continue
       }
 
       const responseSchema = generateSchema(
-        addOkStatus
-          ? jsonResponse.extend({ ok: z.boolean() })
-          : jsonResponse
+        addOkStatus ? jsonResponse.extend({ ok: z.boolean() }) : jsonResponse
       )
-      
-      const schemaWithReferences = embedSchemaReferences(responseSchema, globalSchemas)
+
+      const schemaWithReferences = embedSchemaReferences(
+        responseSchema,
+        globalSchemas
+      )
 
       route.responses[200].content = {
         "application/json": {

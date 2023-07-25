@@ -11,8 +11,8 @@ export const withRouteSpec = createWithRouteSpec({
   shouldValidateResponses: true,
   globalSchemas: {
     todo: ZT.todo,
-    ok: ZT.ok
-  }
+    ok: ZT.ok,
+  },
 } as const)
 
 export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
@@ -23,8 +23,8 @@ export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
   shouldValidateGetRequestBody: false,
   globalSchemas: {
     todo: ZT.todo,
-    ok: ZT.ok
-  }
+    ok: ZT.ok,
+  },
 } as const)
 
 export const withRouteSpecWithoutValidateResponse = createWithRouteSpec({
@@ -34,6 +34,6 @@ export const withRouteSpecWithoutValidateResponse = createWithRouteSpec({
   productionServerUrl: "https://example.com",
   globalSchemas: {
     todo: ZT.todo,
-    ok: ZT.ok
-  }
+    ok: ZT.ok,
+  },
 } as const)

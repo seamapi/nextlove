@@ -1,6 +1,6 @@
 import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
 import { z } from "zod"
-import * as ZT from 'lib/zod'
+import * as ZT from "lib/zod"
 
 export const commonParams = z.object({
   ids: z.array(z.string().uuid()).optional(),
@@ -12,8 +12,7 @@ export const route_spec = checkRouteSpec({
   commonParams,
   jsonResponse: z.object({
     ok: z.boolean(),
-    todos: z
-      .array(ZT.todo),
+    todos: z.array(ZT.todo),
   }),
 })
 

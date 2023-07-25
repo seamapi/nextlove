@@ -62,7 +62,11 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         },
       },
     }) as any,
-    globalSchemas = {}
+    globalSchemas = setupParams.addOkStatus
+      ? {
+          ok: z.boolean(),
+        }
+      : {},
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
