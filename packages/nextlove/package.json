@@ -35,10 +35,7 @@
     "nextjs-exception-middleware": "^2.0.1",
     "nextjs-middleware-wrappers": "^1.3.0",
     "@anatine/zod-openapi": "^2.0.1",
-    "chalk": "^5.3.0",
     "openapi3-ts": "^4.1.2",
-    "prettier": "^3.0.0",
-    "zod": "^3.21.4",
     "zod-to-ts": "^1.1.4"
   },
   "devDependencies": {
@@ -47,7 +44,7 @@
     "@types/prettier": "^2.7.1",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
-    "chalk": "^5.1.2",
+    "chalk": "^5.3.0",
     "esbuild": "^0.14.7",
     "esbuild-register": "^3.3.3",
     "esbuild-runner": "^2.2.1",
@@ -64,6 +61,7 @@
     "tsup": "^5.6.3",
     "turbo": "^1.3.1",
     "type-fest": "^3.1.0",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "zod": "^3.21.4"
   }
 }
