@@ -10,13 +10,6 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@anatine/zod-openapi@^1.10.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@anatine/zod-openapi/-/zod-openapi-1.12.0.tgz#e0320856a47151e1810fef2f0bcbe1c240667302"
-  integrity sha512-ZdkmQFXdc2us0nTBPWiJ3joHxsZoc5G79hKB8QzUuo73zp2A4t4TlBmOjS+hJfMnTBATfJutrlN/wK4DUq6ztg==
-  dependencies:
-    ts-deepmerge "^4.0.0"
-
 "@anatine/zod-openapi@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@anatine/zod-openapi/-/zod-openapi-2.0.1.tgz#3f9b114d4d72dccd41170fa647e39dd12963cbf3"
@@ -6481,13 +6474,6 @@ onetime@^5.1.0, onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openapi3-ts@^3.1.1:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-3.2.0.tgz#7e30d33c480e938e67e809ab16f419bc9beae3f8"
-  integrity sha512-/ykNWRV5Qs0Nwq7Pc0nJ78fgILvOT/60OxEmB3v7yQ8a8Bwcm43D4diaYazG/KBn6czA+52XYy931WFLMCUeSg==
-  dependencies:
-    yaml "^2.2.1"
-
 openapi3-ts@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-4.1.2.tgz#f15cd4794e3a7c9b388fd45dfbefc78501f7043e"
@@ -8072,11 +8058,6 @@ trim-off-newlines@^1.0.1:
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.3.tgz#8df24847fcb821b0ab27d58ab6efec9f2fe961a1"
   integrity sha512-kh6Tu6GbeSNMGfrrZh6Bb/4ZEHV1QlB4xNDBeog8Y9/QwFlKTRyWvY3Fs9tRDAMZliVUwieMgEdIeL/FtqjkJg==
 
-ts-deepmerge@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ts-deepmerge/-/ts-deepmerge-4.0.0.tgz#e236314a601ff9a6526cbd07c4b97e885f58532a"
-  integrity sha512-IrjjAwfM/J6ajWv5wDRZBdpVaTmuONJN1vC85mXlWVPXKelouLFiqsjR7m0h245qY6zZEtcDtcOTc4Rozgg1TQ==
-
 ts-deepmerge@^6.0.3:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/ts-deepmerge/-/ts-deepmerge-6.2.0.tgz#77554381a4884d66cab799470bc2620a1c9d84e8"
@@ -8603,11 +8584,6 @@ yaml@^1.10.0, yaml@^1.10.2:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
-yaml@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.2.1.tgz#3014bf0482dcd15147aa8e56109ce8632cd60ce4"
-  integrity sha512-e0WHiYql7+9wr4cWMx3TVQrNwejKaEe7/rHNmQmqRjazfOP5W8PB6Jpebb5o6fIapbz9o9+2ipcaTM2ZwDI6lw==
-
 yaml@^2.2.2:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.3.1.tgz#02fe0975d23cd441242aa7204e09fc28ac2ac33b"
@@ -8653,11 +8629,6 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-
-zod-to-ts@^1.1.1:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/zod-to-ts/-/zod-to-ts-1.1.2.tgz#d505e46f99edd50a2e53e6dcd156494d2ef82a40"
-  integrity sha512-IZdM0Ga1l/vQnrNy63aV3qsLNchD0aUYZEtXcyt8A3xA7+erFO0zeImEcUH5qNLA6tXDTjRpcWp0paoVoH/D0A==
 
 zod-to-ts@^1.1.4:
   version "1.1.4"
