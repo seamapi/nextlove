@@ -1,6 +1,6 @@
 {
   "name": "nextlove",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "private": false,
   "repository": "https://github.com/seamapi/nextlove",
   "files": [
@@ -19,14 +19,14 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./generators": {
-        "types": "./dist/generators/index.d.ts",
-        "import": "./dist/generators/index.mjs",
-        "require": "./dist/generators/index.js"
+      "types": "./dist/generators/index.d.ts",
+      "import": "./dist/generators/index.mjs",
+      "require": "./dist/generators/index.js"
     }
   },
   "scripts": {
