@@ -62,6 +62,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         },
       },
     }) as any,
+    globalSchemas = {}
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {

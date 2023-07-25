@@ -9,6 +9,7 @@ import { SetupParams } from "nextlove"
 import chalk from "chalk"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
+import { embedSchemaReferences } from "./embed-schema-references"
 
 function transformPathToOperationId(path: string): string {
   function replaceFirstCharToLowercase(str: string) {
@@ -106,6 +107,11 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     ]
   }
 
+  const globalSchemas = {}
+  for (const [schemaName, zodSchema] of Object.entries(globalSetupParams.globalSchemas ?? {})) {
+    globalSchemas[schemaName] = generateSchema(zodSchema)
+  }
+
   // Build OpenAPI spec
   const builder = OpenApiBuilder.create({
     openapi: "3.0.0",
@@ -122,6 +128,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     paths: {},
     components: {
       securitySchemes,
+      schemas: globalSchemas
     },
   })
 
@@ -226,14 +233,26 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
     const { jsonResponse } = routeSpec
     const { addOkStatus = true } = setupParams
+
     if (jsonResponse) {
+      if (!jsonResponse._def || !jsonResponse._def.typeName || jsonResponse._def.typeName !== "ZodObject") {
+        console.warn(
+          chalk.yellow(`Skipping route ${routePath} because the response is not a ZodObject.`)
+        )
+        continue
+      }
+
+      const responseSchema = generateSchema(
+        addOkStatus
+          ? jsonResponse.extend({ ok: z.boolean() })
+          : jsonResponse
+      )
+      
+      const schemaWithReferences = embedSchemaReferences(responseSchema, globalSchemas)
+
       route.responses[200].content = {
         "application/json": {
-          schema: generateSchema(
-            addOkStatus
-              ? jsonResponse.extend({ ok: z.boolean() })
-              : jsonResponse
-          ),
+          schema: schemaWithReferences,
         },
       }
     }

@@ -68,6 +68,7 @@ export interface SetupParams<
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
   securitySchemas?: Record<string, SecuritySchemeObject>
+  globalSchemas?: Record<string, z.ZodTypeAny>
 }
 
 const defaultMiddlewareMap = {
