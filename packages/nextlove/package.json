@@ -15,10 +15,24 @@
     "nextlove": "bin.js"
   },
   "main": "./dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+    },
+    "./generators": {
+        "types": "./dist/generators/index.d.ts",
+        "import": "./dist/generators/index.mjs",
+        "require": "./dist/generators/index.js"
+    }
+  },
   "scripts": {
     "test": "npm run typecheck",
     "typecheck": "tsc --noEmit",
-    "build": "tsup --dts --sourcemap inline src/index.ts src/generators/index.ts",
+    "build": "tsup --dts --sourcemap inline src/index.ts src/generators/index.ts --format cjs,esm",
     "yalc": "npm run build && yalc push"
   },
   "peerDependencies": {
@@ -31,10 +45,10 @@
     "prettier": "^2.0.0 || ^3.0.0"
   },
   "dependencies": {
+    "@anatine/zod-openapi": "^2.0.1",
     "lodash": "^4.17.21",
     "nextjs-exception-middleware": "^2.0.1",
     "nextjs-middleware-wrappers": "^1.3.0",
-    "@anatine/zod-openapi": "^2.0.1",
     "openapi3-ts": "^4.1.2",
     "zod-to-ts": "^1.1.4"
   },

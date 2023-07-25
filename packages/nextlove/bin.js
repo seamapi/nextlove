@@ -31,7 +31,7 @@ if (argv._[0] === "generate-openapi") {
   }
   if (!argv["packageDir"]) throw new Error("Missing --packageDir")
 
-  require("../dist/generate-openapi")
+  require("./dist/generators")
     .generateOpenAPI(argv)
     .then((result) => {
       if (!argv.outputFile) {
@@ -47,7 +47,7 @@ if (argv._[0] === "generate-openapi") {
   }
   if (!argv["packageDir"]) throw new Error("Missing --packageDir")
 
-  require("../dist/generate-route-types")
+  require("./dist/generators")
     .generateRouteTypes(argv)
     .then((result) => {
       if (!argv.outputFile) {
