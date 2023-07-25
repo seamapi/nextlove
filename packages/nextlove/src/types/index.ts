@@ -2,7 +2,10 @@ import { NextApiResponse, NextApiRequest } from "next"
 import { Middleware as WrapperMiddleware } from "nextjs-middleware-wrappers"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
-import { SecuritySchemeObject, SecurityRequirementObject } from "openapi3-ts/oas31"
+import {
+  SecuritySchemeObject,
+  SecurityRequirementObject,
+} from "openapi3-ts/oas31"
 
 export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
   /**
