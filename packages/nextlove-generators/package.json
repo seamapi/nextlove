@@ -22,9 +22,6 @@
     "build": "tsup --dts --sourcemap inline src --format cjs",
     "yalc": "npm run build && yalc push"
   },
-  "peerDependencies": {
-    "openapi3-ts": "^4.1.2"
-  },
   "dependencies": {
     "@anatine/zod-openapi": "^2.0.1",
     "chalk": "^5.3.0",
