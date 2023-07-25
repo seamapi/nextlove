@@ -1,9 +1,8 @@
 import * as fs from "node:fs/promises"
-import { defaultMapFilePathToHTTPRoute } from "../lib/default-map-file-path-to-http-route"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "zod-to-ts"
 import prettier from "prettier"
-import { z, objectUtil, ZodEffects, ZodOptional } from "zod"
+import { z, ZodEffects, ZodOptional } from "zod"
 
 interface GenerateRouteTypesOpts {
   packageDir: string
@@ -86,7 +85,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
     )
   }
   const routeDefStr = routeDefs.join(",\n")
-  const output = prettier.format(
+  const output = await prettier.format(
     `export type Routes = {
 ${routeDefStr}
 }

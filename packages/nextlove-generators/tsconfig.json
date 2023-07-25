@@ -1,0 +1,3 @@
+{
+  "extends": "../nextlove/tsconfig.json",
+}
