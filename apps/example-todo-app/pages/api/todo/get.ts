@@ -2,6 +2,7 @@ import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
 import { NotFoundException } from "nextlove"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
+import * as ZT from "lib/zod"
 
 export const queryParams = z.object({
   id: z.string().uuid(),
@@ -18,9 +19,7 @@ export const route_spec = checkRouteSpec({
   queryParams,
   jsonResponse: z.object({
     ok: z.boolean(),
-    todo: z.object({
-      id: z.string().uuid(),
-    }),
+    todo: ZT.todo,
     error: z
       .object({
         type: z.string(),
