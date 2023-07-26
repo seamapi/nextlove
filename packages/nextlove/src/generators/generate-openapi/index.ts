@@ -160,7 +160,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     // handle query
     let query_to_generate_schema
     if (isPostOrPutOrPatch) {
-      query_to_generate_schema = routeSpec.jsonBody
+      query_to_generate_schema = routeSpec.queryParams
     } else {
       query_to_generate_schema = routeSpec.queryParams ?? routeSpec.commonParams
 
