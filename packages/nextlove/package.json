@@ -4,7 +4,8 @@
   "private": false,
   "repository": "https://github.com/seamapi/nextlove",
   "files": [
-    "dist"
+    "dist",
+    "generators.d.ts"
   ],
   "publishConfig": {
     "access": "public",
