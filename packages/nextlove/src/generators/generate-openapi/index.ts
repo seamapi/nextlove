@@ -22,7 +22,6 @@ function replaceFirstCharToLowercase(str: string) {
 }
 
 function transformPathToOperationId(path: string): string {
-
   const parts = path
     .replace(/-/g, "_")
     .split("/")
@@ -275,7 +274,10 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const methodsMappedToFernSdkMetadata = mapMethodsToFernSdkMetadata(methods, routePath)
+    const methodsMappedToFernSdkMetadata = mapMethodsToFernSdkMetadata(
+      methods,
+      routePath
+    )
 
     // Some routes accept multiple methods
     builder.addPath(routePath, {
