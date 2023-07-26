@@ -10,16 +10,18 @@ import chalk from "chalk"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { embedSchemaReferences } from "./embed-schema-references"
+import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
+
+function replaceFirstCharToLowercase(str: string) {
+  if (str.length === 0) {
+    return str
+  }
+
+  const firstChar = str.charAt(0).toLowerCase()
+  return firstChar + str.slice(1)
+}
 
 function transformPathToOperationId(path: string): string {
-  function replaceFirstCharToLowercase(str: string) {
-    if (str.length === 0) {
-      return str
-    }
-
-    const firstChar = str.charAt(0).toLowerCase()
-    return firstChar + str.slice(1)
-  }
 
   const parts = path
     .replace(/-/g, "_")
@@ -273,11 +275,14 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
+    const methodsMappedToFernSdkMetadata = mapMethodsToFernSdkMetadata(methods, routePath)
+
     // Some routes accept multiple methods
     builder.addPath(routePath, {
       ...methods
         .map((method) => ({
           [method.toLowerCase()]: {
+            ...methodsMappedToFernSdkMetadata[method],
             ...route,
             operationId: `${transformPathToOperationId(routePath)}${pascalCase(
               method
