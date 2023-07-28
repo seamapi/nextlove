@@ -12,6 +12,7 @@ function transformPathToFernSdkMethodName(path: string) {
   return lastPart
 }
 
+// fern docs: https://buildwithfern.com/docs/spec/extensions
 function transformPathToFernSdkGroupName(path: string) {
   const parts = path.split("/").filter((part) => part !== "")
   return parts.slice(0, parts.length - 1)
