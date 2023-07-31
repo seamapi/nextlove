@@ -3,7 +3,7 @@ import { z, ZodFirstPartyTypeKind } from "zod"
 import {
   BadRequestException,
   InternalServerErrorException,
-} from "nextjs-exception-middleware"
+} from "../../nextjs-exception-middleware"
 import { isEmpty } from "lodash"
 
 const getZodObjectSchemaFromZodEffectSchema = (
