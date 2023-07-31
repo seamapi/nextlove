@@ -1,13 +1,13 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next"
 import unwrappedWithExceptionHandling, {
   WithExceptionHandlingOptions,
-} from "./with-exception-handling";
-import withOkStatus, { WithOkStatusOptions } from "./with-ok-status";
+} from "./with-exception-handling"
+import withOkStatus, { WithOkStatusOptions } from "./with-ok-status"
 
 export interface ExceptionHandlingOptions {
-  addOkStatus?: boolean;
-  okStatusOptions?: WithOkStatusOptions;
-  exceptionHandlingOptions?: WithExceptionHandlingOptions;
+  addOkStatus?: boolean
+  okStatusOptions?: WithOkStatusOptions
+  exceptionHandlingOptions?: WithExceptionHandlingOptions
 }
 
 export const withExceptionHandling =
@@ -21,13 +21,13 @@ export const withExceptionHandling =
     if (addOkStatus) {
       return withOkStatus(okStatusOptions)(
         unwrappedWithExceptionHandling(exceptionHandlingOptions)(next)
-      )(req, res);
+      )(req, res)
     }
 
     return unwrappedWithExceptionHandling(exceptionHandlingOptions)(next)(
       req,
       res
-    );
-  };
+    )
+  }
 
-export * from "./http-exceptions";
+export * from "./http-exceptions"

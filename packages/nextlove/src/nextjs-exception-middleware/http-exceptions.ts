@@ -1,11 +1,11 @@
 export type HttpExceptionMetadata = {
-  type: string;
-  message: string;
-  data?: Record<string, unknown>;
-} & Record<string, unknown>;
+  type: string
+  message: string
+  data?: Record<string, unknown>
+} & Record<string, unknown>
 
 export interface ThrowingOptions {
-  json?: boolean;
+  json?: boolean
 }
 
 /**
@@ -23,24 +23,24 @@ export interface ThrowingOptions {
  *
  **/
 export class HttpException extends Error {
-  options: ThrowingOptions;
+  options: ThrowingOptions
 
   constructor(
     public status: number,
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(metadata.message);
+    super(metadata.message)
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
+      Error.captureStackTrace(this, this.constructor)
     }
 
-    this.options = options ?? { json: true };
+    this.options = options ?? { json: true }
   }
 
   toString() {
-    return `HttpException: ${this.status}, ${this.metadata.message} (${this.metadata.type})`;
+    return `HttpException: ${this.status}, ${this.metadata.message} (${this.metadata.type})`
   }
 }
 
@@ -64,7 +64,7 @@ export class BadRequestException extends HttpException {
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(400, metadata, options);
+    super(400, metadata, options)
   }
 }
 
@@ -73,7 +73,7 @@ export class UnauthorizedException extends HttpException {
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(401, metadata, options);
+    super(401, metadata, options)
   }
 }
 
@@ -82,7 +82,7 @@ export class NotFoundException extends HttpException {
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(404, metadata, options);
+    super(404, metadata, options)
   }
 }
 
@@ -91,7 +91,7 @@ export class MethodNotAllowedException extends HttpException {
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(405, metadata, options);
+    super(405, metadata, options)
   }
 }
 
@@ -100,6 +100,6 @@ export class InternalServerErrorException extends HttpException {
     public metadata: HttpExceptionMetadata,
     options?: ThrowingOptions
   ) {
-    super(500, metadata, options);
+    super(500, metadata, options)
   }
 }
