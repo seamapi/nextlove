@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import path from "node:path"
-import globby from "globby"
+import { globby } from "globby"
 import { RouteSpec, SetupParams } from "../../types"
 import { defaultMapFilePathToHTTPRoute } from "./default-map-file-path-to-http-route"
 
