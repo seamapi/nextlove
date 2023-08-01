@@ -30,7 +30,7 @@
       "import": "./dist/generators/index.mjs",
       "require": "./dist/generators/index.js"
     },
-    "./dist/nextjs-exception-middleware": {
+    "./exception-middleware": {
       "types": "./dist/nextjs-exception-middleware/index.d.ts",
       "import": "./dist/nextjs-exception-middleware/index.mjs",
       "require": "./dist/nextjs-exception-middleware/index.js"
