@@ -6,7 +6,7 @@
   "files": [
     "dist",
     "generators.d.ts",
-    "nextjs-exception-middleware.d.ts"
+    "exception-middleware.d.ts"
   ],
   "publishConfig": {
     "access": "public",
