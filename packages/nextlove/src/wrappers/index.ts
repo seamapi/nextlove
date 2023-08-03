@@ -58,7 +58,10 @@ export type SaferMiddleware<T, Dep = {}> = (
   next: (req: Req & Dep & T, res: Res) => any
 ) => (req: Req & Dep, res: Res) => any
 
-export const extendRequest = <T extends Req, K extends {}>(req: T, merge: K): T & K => {
+export const extendRequest = <T extends Req, K extends {}>(
+  req: T,
+  merge: K
+): T & K => {
   for (const [key, v] of Object.entries(merge)) {
     ;(req as any)[key] = v
   }
@@ -127,7 +130,8 @@ type Wrappers4 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext,
@@ -169,7 +173,8 @@ type Wrappers5 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
@@ -224,7 +229,8 @@ type Wrappers6 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
@@ -293,7 +299,8 @@ type Wrappers7 = <
       : never
   >,
   endpoint: (
-    req: Req & Mw1RequestContext &
+    req: Req &
+      Mw1RequestContext &
       Mw2RequestContext &
       Mw3RequestContext &
       Mw4RequestContext &
