@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { z, ZodFirstPartyTypeKind } from "zod"
+import _ from "lodash"
+
 import {
   BadRequestException,
   InternalServerErrorException,
 } from "../../nextjs-exception-middleware"
-import { isEmpty } from "lodash"
 
 const getZodObjectSchemaFromZodEffectSchema = (
   isZodEffect: boolean,
@@ -182,7 +183,7 @@ export const withValidation =
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
       !req.headers["content-type"]?.includes("application/json") &&
-      !isEmpty(req.body)
+      !_.isEmpty(req.body)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",
