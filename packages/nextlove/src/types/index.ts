@@ -1,5 +1,5 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { Middleware as WrapperMiddleware } from "nextjs-middleware-wrappers"
+import { Middleware as WrapperMiddleware } from "../wrappers"
 import { z } from "zod"
 import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
 import {
