@@ -54,6 +54,31 @@ const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
   return schema._def
 }
 
+const tryGetZodSchemaAsObject = (
+  schema: z.ZodTypeAny
+): z.ZodObject<any> | undefined => {
+  const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
+  const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
+  const isZodObject =
+    safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
+
+  if (!isZodObject) {
+    return undefined
+  }
+
+  return safe_schema as z.ZodObject<any>
+}
+
+const isZodSchemaArray = (schema: z.ZodTypeAny) => {
+  const def = getZodDefFromZodSchemaHelpers(schema)
+  return def.typeName === ZodFirstPartyTypeKind.ZodArray
+}
+
+const isZodSchemaBoolean = (schema: z.ZodTypeAny) => {
+  const def = getZodDefFromZodSchemaHelpers(schema)
+  return def.typeName === ZodFirstPartyTypeKind.ZodBoolean
+}
+
 const parseQueryParams = (
   schema: z.ZodTypeAny,
   input: Record<string, unknown>,
@@ -104,31 +129,6 @@ const parseQueryParams = (
   }
 
   return schema.parse(parsed_input)
-}
-
-function tryGetZodSchemaAsObject(
-  schema: z.ZodTypeAny
-): z.ZodObject<any> | undefined {
-  const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
-  const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
-  const isZodObject =
-    safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
-
-  if (!isZodObject) {
-    return undefined
-  }
-
-  return safe_schema as z.ZodObject<any>
-}
-
-function isZodSchemaArray(schema: z.ZodTypeAny) {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodArray
-}
-
-function isZodSchemaBoolean(schema: z.ZodTypeAny) {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodBoolean
 }
 
 const validateQueryParams = (
