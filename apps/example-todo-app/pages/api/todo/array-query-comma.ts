@@ -1,5 +1,5 @@
 import {
-  withRouteSpecSupportedArrayTypes,
+  withRouteSpecSupportedArrayFormats,
   checkRouteSpec,
 } from "lib/middlewares"
 import { z } from "zod"
@@ -18,7 +18,7 @@ export const route_spec = checkRouteSpec({
   queryParams,
 })
 
-export default withRouteSpecSupportedArrayTypes(["comma"])(route_spec)(
+export default withRouteSpecSupportedArrayFormats(["comma"])(route_spec)(
   async (req, res) => {
     return res.status(200).json({ ok: true, ids: req.query.ids })
   }

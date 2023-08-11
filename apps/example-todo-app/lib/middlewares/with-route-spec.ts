@@ -17,12 +17,12 @@ const defaultRouteSpec = {
 
 export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
 
-export const withRouteSpecSupportedArrayTypes = (
-  supportedArrayTypes: QueryArrayFormat[]
+export const withRouteSpecSupportedArrayFormats = (
+  supportedArrayFormats: QueryArrayFormat[]
 ) =>
   createWithRouteSpec({
     ...defaultRouteSpec,
-    supportedArrayTypes,
+    supportedArrayFormats,
   })
 
 export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({

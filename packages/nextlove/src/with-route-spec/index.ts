@@ -77,7 +77,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           ok: z.boolean(),
         }
       : {},
-    supportedArrayTypes = DEFAULT_ARRAY_FORMATS,
+    supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
@@ -107,7 +107,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             jsonResponse: spec.jsonResponse,
             shouldValidateResponses,
             shouldValidateGetRequestBody,
-            supportedArrayFormats: supportedArrayTypes,
+            supportedArrayFormats,
           }),
           userDefinedRouteFn
         )(req as any, res)
