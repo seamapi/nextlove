@@ -145,7 +145,7 @@ const validateQueryParams = (
     return
   }
 
-  for (const [key, _] of url.searchParams.entries()) {
+  for (const key of url.searchParams.keys()) {
     for (const [schemaKey, value] of Object.entries(obj_schema.shape)) {
       if (isZodSchemaArray(value as z.ZodTypeAny)) {
         if (
