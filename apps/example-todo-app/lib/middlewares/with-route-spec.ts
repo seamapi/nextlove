@@ -1,4 +1,4 @@
-import { createWithRouteSpec, QueryArrayFormat } from "nextlove"
+import { createWithRouteSpec, QueryArrayFormats } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 export { checkRouteSpec } from "nextlove"
 import * as ZT from "lib/zod"
@@ -18,7 +18,7 @@ const defaultRouteSpec = {
 export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
 
 export const withRouteSpecSupportedArrayFormats = (
-  supportedArrayFormats: QueryArrayFormat[]
+  supportedArrayFormats: QueryArrayFormats
 ) =>
   createWithRouteSpec({
     ...defaultRouteSpec,
