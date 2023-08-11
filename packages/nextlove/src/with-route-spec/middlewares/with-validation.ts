@@ -6,7 +6,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from "../../nextjs-exception-middleware"
-import { QueryArrayFormat } from "../../types"
+import { QueryArrayFormats } from "../../types"
 import { DEFAULT_ARRAY_FORMATS } from ".."
 
 const getZodObjectSchemaFromZodEffectSchema = (
@@ -82,7 +82,7 @@ const isZodSchemaBoolean = (schema: z.ZodTypeAny) => {
 const parseQueryParams = (
   schema: z.ZodTypeAny,
   input: Record<string, unknown>,
-  supportedArrayFormats: QueryArrayFormat[]
+  supportedArrayFormats: QueryArrayFormats
 ) => {
   const parsed_input = Object.assign({}, input)
   const obj_schema = tryGetZodSchemaAsObject(schema)
@@ -134,7 +134,7 @@ const parseQueryParams = (
 const validateQueryParams = (
   inputUrl: string,
   schema: z.ZodTypeAny,
-  supportedArrayFormats: QueryArrayFormat[]
+  supportedArrayFormats: QueryArrayFormats
 ) => {
   const url = new URL(inputUrl, "http://dummy.com")
 
@@ -191,7 +191,7 @@ export interface RequestInput<
   jsonResponse?: JsonResponse
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
-  supportedArrayFormats?: QueryArrayFormat[]
+  supportedArrayFormats?: QueryArrayFormats
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {

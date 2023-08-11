@@ -3,7 +3,7 @@ import { withExceptionHandling } from "../nextjs-exception-middleware"
 import wrappers, { Middleware } from "../wrappers"
 import {
   CreateWithRouteSpecFunction,
-  QueryArrayFormat,
+  QueryArrayFormats,
   RouteSpec,
 } from "../types"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
@@ -46,7 +46,7 @@ export const checkRouteSpec = <
   ? `your route spec is underspecified, add "as const"`
   : Spec => spec as any
 
-export const DEFAULT_ARRAY_FORMATS: QueryArrayFormat[] = [
+export const DEFAULT_ARRAY_FORMATS: QueryArrayFormats = [
   "brackets",
   "comma",
   "repeat",
