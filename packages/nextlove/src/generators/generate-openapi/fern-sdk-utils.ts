@@ -1,4 +1,7 @@
+import { SchemaObject } from "openapi3-ts/oas31"
 import { RouteSpec } from "../../types"
+import { askQuestion } from "./ask-question"
+import chalk from "chalk"
 
 function transformPathToFernSdkMethodName(path: string) {
   const parts = path.split("/").filter((part) => part !== "")
@@ -18,7 +21,7 @@ function transformPathToFernSdkGroupName(path: string) {
   return parts.slice(0, parts.length - 1)
 }
 
-function getFernSdkMetadata(path: string):
+function getFernSdkMetadata(path: string, keyToUseAsReturnValue: string):
   | {
       "x-fern-ignore": true
     }
@@ -35,14 +38,56 @@ function getFernSdkMetadata(path: string):
   return {
     "x-fern-sdk-group-name": transformPathToFernSdkGroupName(path),
     "x-fern-sdk-method-name": transformPathToFernSdkMethodName(path),
+    ...(keyToUseAsReturnValue ? {
+      "x-fern-sdk-return-value": keyToUseAsReturnValue,
+    }: {})
   }
 }
 
-export function mapMethodsToFernSdkMetadata(
-  methods: RouteSpec["methods"],
+
+async function askForWhichKeyToUseAsReturnValue(
+  keys: string[],
   path: string
 ) {
-  const fernSdkMetadata = getFernSdkMetadata(path)
+  if (keys.length === 1) {
+    return keys[0]
+  }
+
+  const choices = [...keys, "none"]
+  let answer: string = await askQuestion(
+    `Which key should be used as the return value for ${chalk.green(path)}?\n`,
+    choices
+  )
+
+  return answer
+}
+
+export async function mapMethodsToFernSdkMetadata({
+  methods,
+  path,
+  responseSchema,
+}:{
+  methods: RouteSpec["methods"],
+  path: string,
+  responseSchema: SchemaObject | undefined
+}
+) {
+  let keyToUseAsReturnValue;
+  if (responseSchema && responseSchema.type ==='object') {
+    const p = responseSchema.properties ?? {}
+    const ignore_keys = ['ok']
+    const keys = Object.keys(p).filter((key) => !ignore_keys.includes(key))
+
+    keyToUseAsReturnValue = keys[0]
+    if (keys.length > 1) {
+      keyToUseAsReturnValue = (await askForWhichKeyToUseAsReturnValue(
+        keys,
+        path
+      ))
+    }
+  }
+
+  const fernSdkMetadata = getFernSdkMetadata(path, keyToUseAsReturnValue)
   if (methods.length === 1) {
     return {
       [methods[0]]: fernSdkMetadata,

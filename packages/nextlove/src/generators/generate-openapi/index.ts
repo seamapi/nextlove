@@ -237,6 +237,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     const { jsonResponse } = routeSpec
     const { addOkStatus = true } = setupParams
 
+    let responseSchema;
+
     if (jsonResponse) {
       if (
         !jsonResponse._def ||
@@ -251,7 +253,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         continue
       }
 
-      const responseSchema = generateSchema(
+      responseSchema = generateSchema(
         addOkStatus ? jsonResponse.extend({ ok: z.boolean() }) : jsonResponse
       )
 
@@ -260,6 +262,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         globalSchemas
       )
 
+      // TODO: we should not hardcode 200 here
       route.responses[200].content = {
         "application/json": {
           schema: schemaWithReferences,
@@ -274,9 +277,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const methodsMappedToFernSdkMetadata = mapMethodsToFernSdkMetadata(
-      methods,
-      routePath
+    const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata(
+      {
+        methods,
+        path: routePath,
+        responseSchema,
+      }
     )
 
     // Some routes accept multiple methods
