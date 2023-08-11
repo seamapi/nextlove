@@ -6,6 +6,8 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from "../../nextjs-exception-middleware"
+import { QueryArrayFormat } from "../../types"
+import { DEFAULT_ARRAY_FORMATS } from ".."
 
 const getZodObjectSchemaFromZodEffectSchema = (
   isZodEffect: boolean,
@@ -52,44 +54,71 @@ const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
   return schema._def
 }
 
-const parseQueryParams = (
-  schema: z.ZodTypeAny,
-  input: Record<string, unknown>
-) => {
-  const parsed_input = Object.assign({}, input)
+const tryGetZodSchemaAsObject = (
+  schema: z.ZodTypeAny
+): z.ZodObject<any> | undefined => {
   const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
   const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
   const isZodObject =
     safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
 
-  if (isZodObject) {
-    const obj_schema = safe_schema as z.ZodObject<any>
+  if (!isZodObject) {
+    return undefined
+  }
 
+  return safe_schema as z.ZodObject<any>
+}
+
+const isZodSchemaArray = (schema: z.ZodTypeAny) => {
+  const def = getZodDefFromZodSchemaHelpers(schema)
+  return def.typeName === ZodFirstPartyTypeKind.ZodArray
+}
+
+const isZodSchemaBoolean = (schema: z.ZodTypeAny) => {
+  const def = getZodDefFromZodSchemaHelpers(schema)
+  return def.typeName === ZodFirstPartyTypeKind.ZodBoolean
+}
+
+const parseQueryParams = (
+  schema: z.ZodTypeAny,
+  input: Record<string, unknown>,
+  supportedArrayFormats: QueryArrayFormat[]
+) => {
+  const parsed_input = Object.assign({}, input)
+  const obj_schema = tryGetZodSchemaAsObject(schema)
+
+  if (obj_schema) {
     for (const [key, value] of Object.entries(obj_schema.shape)) {
-      const def = getZodDefFromZodSchemaHelpers(value as z.ZodTypeAny)
-      const isArray = def.typeName === ZodFirstPartyTypeKind.ZodArray
-      if (isArray) {
+      if (isZodSchemaArray(value as z.ZodTypeAny)) {
         const array_input = input[key]
 
-        if (typeof array_input === "string") {
+        if (
+          typeof array_input === "string" &&
+          supportedArrayFormats.includes("comma")
+        ) {
           parsed_input[key] = array_input.split(",")
         }
 
         const bracket_syntax_array_input = input[`${key}[]`]
-        if (typeof bracket_syntax_array_input === "string") {
+        if (
+          typeof bracket_syntax_array_input === "string" &&
+          supportedArrayFormats.includes("brackets")
+        ) {
           const pre_split_array = bracket_syntax_array_input
           parsed_input[key] = pre_split_array.split(",")
         }
 
-        if (Array.isArray(bracket_syntax_array_input)) {
+        if (
+          Array.isArray(bracket_syntax_array_input) &&
+          supportedArrayFormats.includes("brackets")
+        ) {
           parsed_input[key] = bracket_syntax_array_input
         }
 
         continue
       }
 
-      const isBoolean = def.typeName === ZodFirstPartyTypeKind.ZodBoolean
-      if (isBoolean) {
+      if (isZodSchemaBoolean(value as z.ZodTypeAny)) {
         const boolean_input = input[key]
 
         if (typeof boolean_input === "string") {
@@ -100,6 +129,52 @@ const parseQueryParams = (
   }
 
   return schema.parse(parsed_input)
+}
+
+const validateQueryParams = (
+  inputUrl: string,
+  schema: z.ZodTypeAny,
+  supportedArrayFormats: QueryArrayFormat[]
+) => {
+  const url = new URL(inputUrl, "http://dummy.com")
+
+  const seenKeys = new Set<string>()
+
+  const obj_schema = tryGetZodSchemaAsObject(schema)
+  if (!obj_schema) {
+    return
+  }
+
+  for (const key of url.searchParams.keys()) {
+    for (const [schemaKey, value] of Object.entries(obj_schema.shape)) {
+      if (isZodSchemaArray(value as z.ZodTypeAny)) {
+        if (
+          key === `${schemaKey}[]` &&
+          !supportedArrayFormats.includes("brackets")
+        ) {
+          throw new BadRequestException({
+            type: "invalid_query_params",
+            message: `Bracket syntax not supported for query param "${schemaKey}"`,
+          })
+        }
+      }
+    }
+
+    const key_schema = obj_schema.shape[key]
+
+    if (key_schema) {
+      if (isZodSchemaArray(key_schema)) {
+        if (seenKeys.has(key) && !supportedArrayFormats.includes("repeat")) {
+          throw new BadRequestException({
+            type: "invalid_query_params",
+            message: `Repeated parameters not supported for duplicate query param "${key}"`,
+          })
+        }
+      }
+    }
+
+    seenKeys.add(key)
+  }
 }
 
 export interface RequestInput<
@@ -116,6 +191,7 @@ export interface RequestInput<
   jsonResponse?: JsonResponse
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
+  supportedArrayFormats?: QueryArrayFormat[]
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -172,6 +248,8 @@ export const withValidation =
   ) =>
   (next) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
+    const { supportedArrayFormats = DEFAULT_ARRAY_FORMATS } = input
+
     if (
       (input.formData && input.jsonBody) ||
       (input.formData && input.commonParams)
@@ -223,7 +301,17 @@ export const withValidation =
       }
 
       if (input.queryParams) {
-        req.query = parseQueryParams(input.queryParams, req.query)
+        if (!req.url) {
+          throw new Error("req.url is undefined")
+        }
+
+        validateQueryParams(req.url, input.queryParams, supportedArrayFormats)
+
+        req.query = parseQueryParams(
+          input.queryParams,
+          req.query,
+          supportedArrayFormats
+        )
       }
 
       if (input.commonParams) {
@@ -232,10 +320,15 @@ export const withValidation =
          */
         ;(req as any).commonParams = parseQueryParams(
           input.commonParams,
-          original_combined_params
+          original_combined_params,
+          supportedArrayFormats
         )
       }
     } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
       if (error.name === "ZodError") {
         let message
         if (error.issues.length === 1) {

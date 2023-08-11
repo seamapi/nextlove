@@ -54,6 +54,8 @@ export type AuthMiddlewares = {
   [auth_type: string]: Middleware<any, any>
 }
 
+export type QueryArrayFormat = "brackets" | "comma" | "repeat"
+
 export interface SetupParams<
   AuthMW extends AuthMiddlewares = AuthMiddlewares,
   GlobalMW extends Middleware<any, any>[] = any[]
@@ -72,6 +74,8 @@ export interface SetupParams<
   shouldValidateGetRequestBody?: boolean
   securitySchemas?: Record<string, SecuritySchemeObject>
   globalSchemas?: Record<string, z.ZodTypeAny>
+
+  supportedArrayFormats?: QueryArrayFormat[]
 }
 
 const defaultMiddlewareMap = {

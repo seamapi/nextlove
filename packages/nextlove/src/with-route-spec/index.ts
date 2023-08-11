@@ -1,7 +1,11 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { withExceptionHandling } from "../nextjs-exception-middleware"
 import wrappers, { Middleware } from "../wrappers"
-import { CreateWithRouteSpecFunction, RouteSpec } from "../types"
+import {
+  CreateWithRouteSpecFunction,
+  QueryArrayFormat,
+  RouteSpec,
+} from "../types"
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 import { z } from "zod"
@@ -42,6 +46,12 @@ export const checkRouteSpec = <
   ? `your route spec is underspecified, add "as const"`
   : Spec => spec as any
 
+export const DEFAULT_ARRAY_FORMATS: QueryArrayFormat[] = [
+  "brackets",
+  "comma",
+  "repeat",
+]
+
 export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
   setupParams
 ) => {
@@ -67,6 +77,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           ok: z.boolean(),
         }
       : {},
+    supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
@@ -96,6 +107,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             jsonResponse: spec.jsonResponse,
             shouldValidateResponses,
             shouldValidateGetRequestBody,
+            supportedArrayFormats,
           }),
           userDefinedRouteFn
         )(req as any, res)
