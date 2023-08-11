@@ -1,9 +1,9 @@
-import { createWithRouteSpec } from "nextlove"
+import { createWithRouteSpec, QueryArrayFormat } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 export { checkRouteSpec } from "nextlove"
 import * as ZT from "lib/zod"
 
-export const withRouteSpec = createWithRouteSpec({
+const defaultRouteSpec = {
   authMiddlewareMap: { auth_token: withAuthToken },
   globalMiddlewares: [],
   apiName: "TODO API",
@@ -13,7 +13,17 @@ export const withRouteSpec = createWithRouteSpec({
     todo: ZT.todo,
     ok: ZT.ok,
   },
-} as const)
+} as const
+
+export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
+
+export const withRouteSpecSupportedArrayTypes = (
+  supportedArrayTypes: QueryArrayFormat[]
+) =>
+  createWithRouteSpec({
+    ...defaultRouteSpec,
+    supportedArrayTypes,
+  })
 
 export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },
