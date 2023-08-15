@@ -252,7 +252,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
 
       const responseSchema = generateSchema(
-        addOkStatus ? jsonResponse.extend({ ok: z.boolean() }) : jsonResponse
+        addOkStatus && jsonResponse instanceof z.ZodObject
+          ? jsonResponse.extend({ ok: z.boolean() })
+          : jsonResponse
       )
 
       const schemaWithReferences = embedSchemaReferences(

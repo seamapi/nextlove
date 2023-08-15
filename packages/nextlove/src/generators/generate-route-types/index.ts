@@ -74,7 +74,8 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
     routeSpec.jsonResponse
       ? printNode(
           zodToTs(
-            setupParams.addOkStatus
+            setupParams.addOkStatus &&
+              routeSpec.jsonResponse instanceof z.ZodObject
               ? routeSpec.jsonResponse.extend({ ok: z.boolean() })
               : routeSpec.jsonResponse
           ).node
