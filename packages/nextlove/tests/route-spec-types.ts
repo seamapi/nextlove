@@ -186,3 +186,44 @@ export const myRoute7 = withRouteSpec(myRoute7Spec)(async (req, res) => {
   const errorApiResponse400 = res.status(400)
   expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
 })
+
+export const myRoute8Spec = {
+  auth: "none",
+  methods: ["GET"],
+  jsonResponse: z.array(z.object({ id: z.string() })),
+}
+
+export const myRoute8 = withRouteSpec(myRoute8Spec)(async (req, res) => {
+  const sucessfulApiResponse200 = res.status(200)
+  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<
+    (body: { id: string }[]) => void
+  >()
+  const sucessfulApiResponse201 = res.status(201)
+  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<
+    (body: { id: string }[]) => void
+  >()
+  const errorApiResponse400 = res.status(400)
+  expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
+})
+
+export const myRoute9Spec = {
+  auth: "none",
+  methods: ["GET"],
+  jsonResponse: z.union([
+    z.object({ id: z.string() }),
+    z.object({ name: z.string() }),
+  ]),
+}
+
+export const myRoute9 = withRouteSpec(myRoute9Spec)(async (req, res) => {
+  const sucessfulApiResponse200 = res.status(200)
+  expectTypeOf(sucessfulApiResponse200.json).toMatchTypeOf<
+    (body: { id: string } | { name: string }) => void
+  >()
+  const sucessfulApiResponse201 = res.status(201)
+  expectTypeOf(sucessfulApiResponse201.json).toMatchTypeOf<
+    (body: { id: string } | { name: string }) => void
+  >()
+  const errorApiResponse400 = res.status(400)
+  expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
+})
