@@ -35,6 +35,7 @@ export interface RouteSpec<
   middlewares?: Middlewares
   jsonResponse?: JsonResponse
   formData?: FormData
+  sdkReturnValue?: string
 }
 
 export type MiddlewareChainOutput<

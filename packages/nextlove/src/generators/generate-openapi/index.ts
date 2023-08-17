@@ -281,7 +281,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       {
         methods,
         path: routePath,
-        responseSchema,
+        sdkReturnValue: routeSpec.sdkReturnValue,
       }
     )
 
