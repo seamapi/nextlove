@@ -237,8 +237,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     const { jsonResponse } = routeSpec
     const { addOkStatus = true } = setupParams
 
-    let responseSchema;
-
     if (jsonResponse) {
       if (
         !jsonResponse._def ||
@@ -253,7 +251,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         continue
       }
 
-      responseSchema = generateSchema(
+      const responseSchema = generateSchema(
         addOkStatus ? jsonResponse.extend({ ok: z.boolean() }) : jsonResponse
       )
 
