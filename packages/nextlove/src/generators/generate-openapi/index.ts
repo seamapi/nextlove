@@ -262,6 +262,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         globalSchemas
       )
 
+      // TODO: we should not hardcode 200 here
       route.responses[200].content = {
         "application/json": {
           schema: schemaWithReferences,
@@ -276,10 +277,11 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const methodsMappedToFernSdkMetadata = mapMethodsToFernSdkMetadata(
+    const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
       methods,
-      routePath
-    )
+      path: routePath,
+      sdkReturnValue: routeSpec.sdkReturnValue,
+    })
 
     // Some routes accept multiple methods
     builder.addPath(routePath, {

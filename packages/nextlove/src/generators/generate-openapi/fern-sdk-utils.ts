@@ -18,7 +18,10 @@ function transformPathToFernSdkGroupName(path: string) {
   return parts.slice(0, parts.length - 1)
 }
 
-function getFernSdkMetadata(path: string):
+function getFernSdkMetadata(
+  path: string,
+  sdkReturnValue?: string | string[]
+):
   | {
       "x-fern-ignore": true
     }
@@ -35,14 +38,24 @@ function getFernSdkMetadata(path: string):
   return {
     "x-fern-sdk-group-name": transformPathToFernSdkGroupName(path),
     "x-fern-sdk-method-name": transformPathToFernSdkMethodName(path),
+    ...(sdkReturnValue
+      ? {
+          "x-fern-sdk-return-value": sdkReturnValue,
+        }
+      : {}),
   }
 }
 
-export function mapMethodsToFernSdkMetadata(
-  methods: RouteSpec["methods"],
+export async function mapMethodsToFernSdkMetadata({
+  methods,
+  path,
+  sdkReturnValue,
+}: {
+  methods: RouteSpec["methods"]
   path: string
-) {
-  const fernSdkMetadata = getFernSdkMetadata(path)
+  sdkReturnValue?: string | string[]
+}) {
+  const fernSdkMetadata = getFernSdkMetadata(path, sdkReturnValue)
   if (methods.length === 1) {
     return {
       [methods[0]]: fernSdkMetadata,

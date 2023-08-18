@@ -35,6 +35,10 @@ export interface RouteSpec<
   middlewares?: Middlewares
   jsonResponse?: JsonResponse
   formData?: FormData
+  /**
+   * add x-fern-sdk-return-value to the openapi spec, useful when you want to return only a subset of the response
+   */
+  sdkReturnValue?: string | string[]
 }
 
 export type MiddlewareChainOutput<
