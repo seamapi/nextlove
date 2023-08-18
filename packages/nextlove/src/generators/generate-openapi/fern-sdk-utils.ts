@@ -20,7 +20,7 @@ function transformPathToFernSdkGroupName(path: string) {
 
 function getFernSdkMetadata(
   path: string,
-  sdkReturnValue?: string
+  sdkReturnValue?: string | string[]
 ):
   | {
       "x-fern-ignore": true
@@ -53,7 +53,7 @@ export async function mapMethodsToFernSdkMetadata({
 }: {
   methods: RouteSpec["methods"]
   path: string
-  sdkReturnValue?: string
+  sdkReturnValue?: string | string[]
 }) {
   const fernSdkMetadata = getFernSdkMetadata(path, sdkReturnValue)
   if (methods.length === 1) {
