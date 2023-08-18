@@ -275,13 +275,11 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata(
-      {
-        methods,
-        path: routePath,
-        sdkReturnValue: routeSpec.sdkReturnValue,
-      }
-    )
+    const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
+      methods,
+      path: routePath,
+      sdkReturnValue: routeSpec.sdkReturnValue,
+    })
 
     // Some routes accept multiple methods
     builder.addPath(routePath, {
