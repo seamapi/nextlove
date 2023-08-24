@@ -1,6 +1,6 @@
-import { UnauthorizedException, Middleware } from "nextlove"
+import { UnauthorizedException, MiddlewareLegacy } from "nextlove"
 
-export const withAuthToken: Middleware<{
+export const withAuthToken: MiddlewareLegacy<{
   auth: {
     authorized_by: "auth_token"
   }

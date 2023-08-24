@@ -53,8 +53,18 @@ export type MiddlewareBase<ReqT, ResT, T, Dep = {}> = (
   next: (req: ReqT & Dep & T, res: ResT) => any
 ) => (req: ReqT & Dep & T, res: ResT) => any
 
-export type MiddlewareLegacy<T, Dep = {}> = MiddlewareBase<NextApiRequest, NextApiResponse, T, Dep>
-export type Middleware<T, Dep = {}> = MiddlewareBase<NextRequest, NextloveResponse, T, Dep>
+export type MiddlewareLegacy<T, Dep = {}> = MiddlewareBase<
+  NextApiRequest,
+  NextApiResponse,
+  T,
+  Dep
+>
+export type Middleware<T, Dep = {}> = MiddlewareBase<
+  NextRequest,
+  NextloveResponse,
+  T,
+  Dep
+>
 
 // Safer Middleware requires the use of extendRequest to ensure that the
 // new context (T) was actually added to the request. It's kind of annoying
@@ -62,18 +72,27 @@ export type Middleware<T, Dep = {}> = MiddlewareBase<NextRequest, NextloveRespon
 export type SaferMiddlewareBase<ReqT, ResT, T, Dep = {}> = (
   next: (req: ReqT & Dep & T, res: ResT) => any
 ) => (req: ReqT & Dep, res: ResT) => any
-export type SaferMiddlewareLegacy<T, Dep = {}> = SaferMiddlewareBase<NextApiRequest, NextApiResponse, T, Dep>
-export type SaferMiddleware<T, Dep = {}> = SaferMiddlewareBase<NextRequest, NextloveResponse, T, Dep>
+export type SaferMiddlewareLegacy<T, Dep = {}> = SaferMiddlewareBase<
+  NextApiRequest,
+  NextApiResponse,
+  T,
+  Dep
+>
+export type SaferMiddleware<T, Dep = {}> = SaferMiddlewareBase<
+  NextRequest,
+  NextloveResponse,
+  T,
+  Dep
+>
 
-export const extendRequestFactory = <ReqT>() => <K extends ArrayLike<unknown>>(
-  req: ReqT,
-  merge: K
-): ReqT & K => {
-  for (const [key, v] of Object.entries(merge)) {
-    ;(req as any)[key] = v
+export const extendRequestFactory =
+  <ReqT>() =>
+  <K extends ArrayLike<unknown>>(req: ReqT, merge: K): ReqT & K => {
+    for (const [key, v] of Object.entries(merge)) {
+      ;(req as any)[key] = v
+    }
+    return req as any
   }
-  return req as any
-}
 
 export const extendRequestLegacy = extendRequestFactory<NextApiRequest>()
 export const extendRequest = extendRequestFactory<NextRequest>()
@@ -92,9 +111,12 @@ type Wrappers2Base<ReqT, ResT> = <
   Mw2RequestContext,
   Mw2Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  endpoint: (req: ReqT & Mw1RequestContext & Mw2RequestContext, res: ResT) => any
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  endpoint: (
+    req: ReqT & Mw1RequestContext & Mw2RequestContext,
+    res: ResT
+  ) => any
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers2Legacy = Wrappers2Base<NextApiRequest, NextApiResponse>
@@ -110,9 +132,11 @@ type Wrappers3Base<ReqT, ResT> = <
   Mw3RequestContext,
   Mw3Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  mw3: Middleware<
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  mw3: MiddlewareBase<
+    ReqT,
+    ResT,
     Mw3RequestContext,
     Mw1RequestContext & Mw2RequestContext extends Mw3Dep ? Mw3Dep : never
   >,
@@ -135,15 +159,19 @@ type Wrappers4Base<ReqT, ResT> = <
   Mw4RequestContext,
   Mw4Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  mw3: Middleware<Mw3RequestContext, Mw3Dep>,
-  mw4: Middleware<Mw4RequestContext, Mw4Dep>,
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  mw3: MiddlewareBase<ReqT, ResT, Mw3RequestContext, Mw3Dep>,
+  mw4: MiddlewareBase<ReqT, ResT, Mw4RequestContext, Mw4Dep>,
   endpoint: (
-    req: ReqT & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext & Mw4RequestContext,
+    req: ReqT &
+      Mw1RequestContext &
+      Mw2RequestContext &
+      Mw3RequestContext &
+      Mw4RequestContext,
     res: ResT
   ) => any
-) => (req: ReqT, res: ResT) => any;
+) => (req: ReqT, res: ResT) => any
 
 type Wrappers4Legacy = Wrappers4Base<NextApiRequest, NextApiResponse>
 type Wrappers4 = Wrappers4Base<NextRequest, NextloveResponse>
@@ -159,16 +187,21 @@ type Wrappers5Base<ReqT, ResT> = <
   Mw5RequestContext,
   Mw5Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  mw3: Middleware<Mw3RequestContext, Mw3Dep>,
-  mw4: Middleware<Mw4RequestContext, Mw4Dep>,
-  mw5: Middleware<Mw5RequestContext, Mw5Dep>,
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  mw3: MiddlewareBase<ReqT, ResT, Mw3RequestContext, Mw3Dep>,
+  mw4: MiddlewareBase<ReqT, ResT, Mw4RequestContext, Mw4Dep>,
+  mw5: MiddlewareBase<ReqT, ResT, Mw5RequestContext, Mw5Dep>,
   endpoint: (
-    req: ReqT & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext & Mw4RequestContext & Mw5RequestContext,
+    req: ReqT &
+      Mw1RequestContext &
+      Mw2RequestContext &
+      Mw3RequestContext &
+      Mw4RequestContext &
+      Mw5RequestContext,
     res: ResT
   ) => any
-) => (req: ReqT, res: ResT) => any;
+) => (req: ReqT, res: ResT) => any
 
 type Wrappers5Legacy = Wrappers5Base<NextApiRequest, NextApiResponse>
 type Wrappers5 = Wrappers5Base<NextRequest, NextloveResponse>
@@ -187,17 +220,23 @@ type Wrappers6Base<ReqT, ResT> = <
   Mw6RequestContext,
   Mw6Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  mw3: Middleware<Mw3RequestContext, Mw3Dep>,
-  mw4: Middleware<Mw4RequestContext, Mw4Dep>,
-  mw5: Middleware<Mw5RequestContext, Mw5Dep>,
-  mw6: Middleware<Mw6RequestContext, Mw6Dep>,
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  mw3: MiddlewareBase<ReqT, ResT, Mw3RequestContext, Mw3Dep>,
+  mw4: MiddlewareBase<ReqT, ResT, Mw4RequestContext, Mw4Dep>,
+  mw5: MiddlewareBase<ReqT, ResT, Mw5RequestContext, Mw5Dep>,
+  mw6: MiddlewareBase<ReqT, ResT, Mw6RequestContext, Mw6Dep>,
   endpoint: (
-    req: ReqT & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext & Mw4RequestContext & Mw5RequestContext & Mw6RequestContext,
+    req: ReqT &
+      Mw1RequestContext &
+      Mw2RequestContext &
+      Mw3RequestContext &
+      Mw4RequestContext &
+      Mw5RequestContext &
+      Mw6RequestContext,
     res: ResT
   ) => any
-) => (req: ReqT, res: ResT) => any;
+) => (req: ReqT, res: ResT) => any
 
 type Wrappers6Legacy = Wrappers6Base<NextApiRequest, NextApiResponse>
 type Wrappers6 = Wrappers6Base<NextRequest, NextloveResponse>
@@ -218,22 +257,28 @@ type Wrappers7Base<ReqT, ResT> = <
   Mw7RequestContext,
   Mw7Dep
 >(
-  mw1: Middleware<Mw1RequestContext, Mw1Dep>,
-  mw2: Middleware<Mw2RequestContext, Mw2Dep>,
-  mw3: Middleware<Mw3RequestContext, Mw3Dep>,
-  mw4: Middleware<Mw4RequestContext, Mw4Dep>,
-  mw5: Middleware<Mw5RequestContext, Mw5Dep>,
-  mw6: Middleware<Mw6RequestContext, Mw6Dep>,
-  mw7: Middleware<Mw7RequestContext, Mw7Dep>,
+  mw1: MiddlewareBase<ReqT, ResT, Mw1RequestContext, Mw1Dep>,
+  mw2: MiddlewareBase<ReqT, ResT, Mw2RequestContext, Mw2Dep>,
+  mw3: MiddlewareBase<ReqT, ResT, Mw3RequestContext, Mw3Dep>,
+  mw4: MiddlewareBase<ReqT, ResT, Mw4RequestContext, Mw4Dep>,
+  mw5: MiddlewareBase<ReqT, ResT, Mw5RequestContext, Mw5Dep>,
+  mw6: MiddlewareBase<ReqT, ResT, Mw6RequestContext, Mw6Dep>,
+  mw7: MiddlewareBase<ReqT, ResT, Mw7RequestContext, Mw7Dep>,
   endpoint: (
-    req: ReqT & Mw1RequestContext & Mw2RequestContext & Mw3RequestContext & Mw4RequestContext & Mw5RequestContext & Mw6RequestContext & Mw7RequestContext,
+    req: ReqT &
+      Mw1RequestContext &
+      Mw2RequestContext &
+      Mw3RequestContext &
+      Mw4RequestContext &
+      Mw5RequestContext &
+      Mw6RequestContext &
+      Mw7RequestContext,
     res: ResT
   ) => any
-) => (req: ReqT, res: ResT) => any;
+) => (req: ReqT, res: ResT) => any
 
 type Wrappers7Legacy = Wrappers7Base<NextApiRequest, NextApiResponse>
 type Wrappers7 = Wrappers7Base<NextRequest, NextloveResponse>
-
 
 type WrappersLegacy = Wrappers1Legacy &
   Wrappers2Legacy &

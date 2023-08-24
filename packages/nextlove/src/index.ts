@@ -1,4 +1,6 @@
 export * from "./nextjs-exception-middleware"
+export * from "./legacy/nextjs-exception-middleware"
 export * from "./with-route-spec"
-export { wrappers } from "./wrappers"
+export { wrappers, wrappersLegacy } from "./wrappers"
 export * from "./types"
+export * from "./legacy"

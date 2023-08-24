@@ -1,13 +1,14 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { Middleware as WrapperMiddleware } from "../wrappers"
+import { MiddlewareLegacy as WrapperMiddlewareLegacy } from "../wrappers"
 import { z } from "zod"
-import { HTTPMethodsLegacy } from "../legacy/with-route-spec/middlewares/with-methods"
+import { HTTPMethodsLegacy } from "./with-route-spec/middlewares/with-methods"
 import {
   SecuritySchemeObject,
   SecurityRequirementObject,
 } from "openapi3-ts/oas31"
+import { QueryArrayFormats } from "../types"
 
-export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
+export type MiddlewareLegacy<T, Dep = {}> = WrapperMiddlewareLegacy<T, Dep> & {
   /**
    * @deprecated moved to setupParams
    */
@@ -17,13 +18,13 @@ export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
-export interface RouteSpec<
+export interface RouteSpecLegacy<
   Auth extends string = string,
   Methods extends HTTPMethodsLegacy[] = any,
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  Middlewares extends readonly Middleware<any, any>[] = any[],
+  Middlewares extends readonly MiddlewareLegacy<any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodTypeAny,
   FormData extends ParamDef = z.ZodTypeAny
 > {
@@ -41,30 +42,26 @@ export interface RouteSpec<
   sdkReturnValue?: string | string[]
 }
 
-export type MiddlewareChainOutput<
-  MWChain extends readonly Middleware<any, any>[]
+export type MiddlewareChainOutputLegacy<
+  MWChain extends readonly MiddlewareLegacy<any, any>[]
 > = MWChain extends readonly []
   ? {}
   : MWChain extends readonly [infer First, ...infer Rest]
-  ? First extends Middleware<infer T, any>
+  ? First extends MiddlewareLegacy<infer T, any>
     ? T &
-        (Rest extends readonly Middleware<any, any>[]
-          ? MiddlewareChainOutput<Rest>
+        (Rest extends readonly MiddlewareLegacy<any, any>[]
+          ? MiddlewareChainOutputLegacy<Rest>
           : never)
     : never
   : never
 
-export type AuthMiddlewares = {
-  [auth_type: string]: Middleware<any, any>
+export type AuthMiddlewaresLegacy = {
+  [auth_type: string]: MiddlewareLegacy<any, any>
 }
 
-export type QueryArrayFormat = "brackets" | "comma" | "repeat"
-
-export type QueryArrayFormats = readonly QueryArrayFormat[]
-
-export interface SetupParams<
-  AuthMW extends AuthMiddlewares = AuthMiddlewares,
-  GlobalMW extends Middleware<any, any>[] = any[]
+export interface SetupParamsLegacy<
+  AuthMW extends AuthMiddlewaresLegacy = AuthMiddlewaresLegacy,
+  GlobalMW extends MiddlewareLegacy<any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
@@ -110,19 +107,19 @@ type ErrorNextApiResponseMethods = {
   json: Send<any>
 }
 
-export type RouteFunction<
-  SP extends SetupParams<AuthMiddlewares>,
-  RS extends RouteSpec
+export type RouteFunctionLegacy<
+  SP extends SetupParamsLegacy<AuthMiddlewaresLegacy>,
+  RS extends RouteSpecLegacy
 > = (
   req: (SP["authMiddlewareMap"] &
-    typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
+    typeof defaultMiddlewareMap)[RS["auth"]] extends MiddlewareLegacy<
     infer AuthMWOut,
     any
   >
     ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
-        MiddlewareChainOutput<
-          RS["middlewares"] extends readonly Middleware<any, any>[]
+        MiddlewareChainOutputLegacy<
+          RS["middlewares"] extends readonly MiddlewareLegacy<any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
@@ -148,10 +145,12 @@ export type RouteFunction<
     ErrorNextApiResponseMethods
 ) => Promise<void>
 
-export type CreateWithRouteSpecFunction = <
-  const SP extends SetupParams<AuthMiddlewares, any>
+export type CreateWithRouteSpecFunctionLegacy = <
+  SP extends SetupParamsLegacy<AuthMiddlewaresLegacy, any>
 >(
   setupParams: SP
-) => <const RS extends RouteSpec<string, any, any, any, any, any, z.ZodTypeAny, any>>(
+) => <
+  RS extends RouteSpecLegacy<string, any, any, any, any, any, z.ZodTypeAny, any>
+>(
   route_spec: RS
-) => (next: RouteFunction<SP, RS>) => any
+) => (next: RouteFunctionLegacy<SP, RS>) => any

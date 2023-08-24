@@ -1,18 +1,17 @@
-import { NextloveResponse } from "../edge-helpers"
-import { HttpException } from "./http-exceptions"
-import { NextRequest } from "next/server"
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
+import { HttpException } from "../http-exceptions"
 
-export type WithExceptionHandlingOptions  = {
+export type WithExceptionHandlingOptions = {
   getErrorContext?: (
-    req: NextRequest,
+    req: NextloveRequest,
     error: Error
   ) => Record<string, unknown>
 }
 
-const withExceptionHandling =
+export const withExceptionHandling =
   (options: WithExceptionHandlingOptions = {}) =>
-  (next: (req: NextRequest, res: NextloveResponse) => Promise<void>) =>
-  async (req: NextRequest, res: NextloveResponse) => {
+  (next: (req: NextloveRequest, res: NextloveResponse) => Promise<void>) =>
+  async (req: NextloveRequest, res: NextloveResponse) => {
     try {
       return await next(req, res)
     } catch (error: unknown) {
@@ -35,7 +34,7 @@ const withExceptionHandling =
             },
           })
         } else {
-          // REVIEW: we don't have the .end() method in 
+          // REVIEW: we don't have the .end() method in
           return res
             .status(error.status)
             .json({ error: { message: error.metadata.message } })
@@ -55,5 +54,3 @@ const withExceptionHandling =
       }
     }
   }
-
-export default withExceptionHandling

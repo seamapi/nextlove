@@ -1,20 +1,16 @@
+import type { NextApiRequest, NextApiResponse } from "next"
 import { z } from "zod"
-import { isEmpty } from "lodash"
-import { NextloveRequest, NextloveResponse } from "../../edge-helpers"
-import { parseQueryParams, zodIssueToString } from "../../zod-helpers"
-import { QueryArrayFormats } from "../../types"
+import _ from "lodash"
+
+import { QueryArrayFormats } from "../../../types"
+import { DEFAULT_ARRAY_FORMATS } from "../../../with-route-spec/middlewares/with-validation"
 import {
   BadRequestException,
   InternalServerErrorException,
-} from "../../http-exceptions"
+} from "../../../http-exceptions"
+import { parseQueryParams, validateQueryParams } from "../../../zod-helpers"
 
-export const DEFAULT_ARRAY_FORMATS: QueryArrayFormats = [
-  "brackets",
-  "comma",
-  "repeat",
-]
-
-export interface RequestInput<
+export interface RequestInputLegacy<
   JsonBody extends z.ZodTypeAny,
   QueryParams extends z.ZodTypeAny,
   CommonParams extends z.ZodTypeAny,
@@ -31,24 +27,29 @@ export interface RequestInput<
   supportedArrayFormats?: QueryArrayFormats
 }
 
-// NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
+const zodIssueToString = (issue: z.ZodIssue) => {
+  if (issue.path.join(".") === "") {
+    return issue.message
+  }
+  if (issue.message === "Required") {
+    return `${issue.path.join(".")} is required`
+  }
+  return `${issue.message} for "${issue.path.join(".")}"`
+}
+
 function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
-  req: NextloveRequest
+  res: NextApiResponse
 ) {
-  const original_res_json = req.NextResponse.json
-  const override_res_json: NextloveRequest["NextResponse"]["json"] = (
-    body,
-    params
-  ) => {
-    const is_success =
-      req.NextResponse.statusCode >= 200 && req.NextResponse.statusCode < 300
+  const original_res_json = res.json
+  const override_res_json = (json: any) => {
+    const is_success = res.statusCode >= 200 && res.statusCode < 300
     if (!is_success) {
-      return original_res_json(body, params)
+      return original_res_json(json)
     }
 
     try {
-      jsonResponse?.parse(body)
+      jsonResponse?.parse(json)
     } catch (err) {
       throw new InternalServerErrorException({
         type: "invalid_response",
@@ -57,13 +58,12 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
       })
     }
 
-    return original_res_json(body, params)
+    return original_res_json(json)
   }
-
-  req.NextResponse.json = override_res_json
+  res.json = override_res_json
 }
 
-export const withValidation =
+export const withValidationLegacy =
   <
     JsonBody extends z.ZodTypeAny,
     QueryParams extends z.ZodTypeAny,
@@ -71,7 +71,7 @@ export const withValidation =
     FormData extends z.ZodTypeAny,
     JsonResponse extends z.ZodTypeAny
   >(
-    input: RequestInput<
+    input: RequestInputLegacy<
       JsonBody,
       QueryParams,
       CommonParams,
@@ -80,7 +80,7 @@ export const withValidation =
     >
   ) =>
   (next) =>
-  async (req: NextloveRequest, res: NextloveResponse) => {
+  async (req: NextApiRequest, res: NextApiResponse) => {
     const { supportedArrayFormats = DEFAULT_ARRAY_FORMATS } = input
 
     if (
@@ -89,29 +89,12 @@ export const withValidation =
     ) {
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
-    const { searchParams } = new URL(req.url)
-    const paramsArray = Array.from(searchParams.entries())
-    let queryParams = Object.fromEntries(paramsArray)
-
-    const isBodyPresent = !!req.body
-
-    let jsonBody: any
-    if (isBodyPresent) {
-      jsonBody = await req.json()
-    }
-
-    const contentType = req.headers.get("content-type")
-
-    const isContentTypeJson = contentType?.includes("application/json")
-    const isContentTypeFormUrlEncoded = contentType?.includes(
-      "application/x-www-form-urlencoded"
-    )
 
     if (
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
-      !isContentTypeJson &&
-      !isEmpty(jsonBody)
+      !req.headers["content-type"]?.includes("application/json") &&
+      !_.isEmpty(req.body)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",
@@ -122,7 +105,9 @@ export const withValidation =
     if (
       input.formData &&
       req.method !== "GET" &&
-      !isContentTypeFormUrlEncoded
+      !req.headers["content-type"]?.includes(
+        "application/x-www-form-urlencoded"
+      )
       // TODO eventually we should support multipart/form-data
     ) {
       throw new BadRequestException({
@@ -132,7 +117,7 @@ export const withValidation =
     }
 
     try {
-      const original_combined_params = { ...queryParams, ...jsonBody }
+      const original_combined_params = { ...req.query, ...req.body }
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
@@ -141,17 +126,23 @@ export const withValidation =
       const isFormData = Boolean(input.formData)
 
       if (isFormData && willValidateRequestBody) {
-        ;(req as any).jsonBody = input.formData?.parse(jsonBody)
+        req.body = input.formData?.parse(req.body)
       }
 
       if (!isFormData && willValidateRequestBody) {
-        ;(req as any).jsonBody = input.jsonBody?.parse(jsonBody)
+        req.body = input.jsonBody?.parse(req.body)
       }
 
       if (input.queryParams) {
-        ;(req as any).queryParams = parseQueryParams(
+        if (!req.url) {
+          throw new Error("req.url is undefined")
+        }
+
+        validateQueryParams(req.url, input.queryParams, supportedArrayFormats)
+
+        req.query = parseQueryParams(
           input.queryParams,
-          queryParams,
+          req.query,
           supportedArrayFormats
         )
       }
@@ -167,6 +158,10 @@ export const withValidation =
         )
       }
     } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
       if (error.name === "ZodError") {
         let message
         if (error.issues.length === 1) {
@@ -199,7 +194,7 @@ export const withValidation =
      * this will override the res.json method to validate the response
      */
     if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, req)
+      validateJsonResponse(input.jsonResponse, res)
     }
 
     return next(req, res)

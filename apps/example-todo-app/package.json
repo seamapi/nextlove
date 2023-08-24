@@ -21,7 +21,7 @@
     "glob-promise": "4.2.2",
     "micro": "9.3.4",
     "mkdirp": "1.0.4",
-    "next": "12.2.0",
+    "next": "13.4.19",
     "nextlove": "*",
     "path-to-regexp": "6.2.1",
     "raw-body": "2.3.2",
@@ -31,19 +31,19 @@
     "zod": "^3.17.3"
   },
   "devDependencies": {
-    "@types/node": "18.0.1",
+    "@types/node": "20.5.3",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.7",
     "@types/qs": "^6.9.7",
-    "@types/react": "18.0.14",
-    "@types/react-dom": "18.0.6",
     "ava": "^5.0.1",
     "esbuild-register": "^3.3.3",
-    "eslint": "8.19.0",
-    "eslint-config-next": "12.2.0",
+    "eslint": "8.47.0",
+    "eslint-config-next": "13.4.19",
     "get-port": "5",
     "prettier": "^2.7.1",
     "qs": "^6.11.2",
     "rimraf": "^4.1.2",
     "tsup": "^5.6.3",
-    "typescript": "^5.0.2"
+    "typescript": "5.1.6"
   }
 }

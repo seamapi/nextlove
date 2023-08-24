@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next"
 
-export interface WithLegacyOkStatusOptions {
+export interface WithOkStatusOptionsLegacy {
   addIf?: (req: NextApiRequest) => boolean
 }
 
-export const withLegacyOkStatus =
-  (options: WithLegacyOkStatusOptions = {}) =>
+export const withOkStatusLegacy =
+  (options: WithOkStatusOptionsLegacy = {}) =>
   (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
     // Patch .json()
@@ -27,4 +27,3 @@ export const withLegacyOkStatus =
 
     await next(req, res)
   }
-

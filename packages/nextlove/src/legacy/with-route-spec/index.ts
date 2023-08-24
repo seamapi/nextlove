@@ -1,35 +1,30 @@
-import { withExceptionHandling } from "../nextjs-exception-middleware"
-import { Middleware, wrappers } from "../wrappers"
-import {
-  CreateWithRouteSpecFunction,
-  QueryArrayFormats,
-  RouteSpec,
-} from "../types"
-import {withValidation} from "./middlewares/with-validation"
+import { NextApiResponse, NextApiRequest } from "next"
+
+import { MiddlewareLegacy, wrappersLegacy } from "../../wrappers"
+import { withValidationLegacy } from "./middlewares/with-validation"
 import { z } from "zod"
-import { NextloveRequest, getNextloveResponse } from "../edge-helpers"
+import {
+  HTTPMethodsLegacy,
+  withMethodsLegacy,
+} from "./middlewares/with-methods"
+import { CreateWithRouteSpecFunctionLegacy, RouteSpecLegacy } from "../types"
+import { withExceptionHandlingLegacy } from "../nextjs-exception-middleware"
+import { QueryArrayFormats } from "../../types"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
-export type HTTPMethods =
-  | "GET"
-  | "POST"
-  | "DELETE"
-  | "PUT"
-  | "PATCH"
-
-export const checkRouteSpec = <
+export const checkRouteSpecLegacy = <
   AuthType extends string = string,
-  Methods extends HTTPMethods[] = HTTPMethods[],
+  Methods extends HTTPMethodsLegacy[] = HTTPMethodsLegacy[],
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
   CommonParams extends ParamDef = z.ZodTypeAny,
-  Middlewares extends readonly Middleware<any, any>[] = readonly Middleware<
+  Middlewares extends readonly MiddlewareLegacy<
     any,
     any
-  >[],
+  >[] = readonly MiddlewareLegacy<any, any>[],
   FormData extends ParamDef = z.ZodTypeAny,
-  Spec extends RouteSpec<
+  Spec extends RouteSpecLegacy<
     AuthType,
     Methods,
     JsonBody,
@@ -37,7 +32,7 @@ export const checkRouteSpec = <
     CommonParams,
     Middlewares,
     FormData
-  > = RouteSpec<
+  > = RouteSpecLegacy<
     AuthType,
     Methods,
     JsonBody,
@@ -52,13 +47,9 @@ export const checkRouteSpec = <
   ? `your route spec is underspecified, add "as const"`
   : Spec => spec as any
 
-export const DEFAULT_ARRAY_FORMATS: QueryArrayFormats = [
-  "brackets",
-  "comma",
-  "repeat",
-]
+const DEFAULT_ARRAY_FORMATS: QueryArrayFormats = ["brackets", "comma", "repeat"]
 
-export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
+export const createWithRouteSpecLegacy: CreateWithRouteSpecFunctionLegacy = ((
   setupParams
 ) => {
   const {
@@ -66,13 +57,16 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     globalMiddlewares = [],
     shouldValidateResponses,
     shouldValidateGetRequestBody = true,
-    exceptionHandlingMiddleware = withExceptionHandling({
-      getErrorContext: (_, error: Error) => {
-        if (process.env.NODE_ENV === "production") {
-          return {}
-        }
+    exceptionHandlingMiddleware = withExceptionHandlingLegacy({
+      addOkStatus: setupParams.addOkStatus,
+      exceptionHandlingOptions: {
+        getErrorContext: (req, error) => {
+          if (process.env.NODE_ENV === "production") {
+            return {}
+          }
 
-        return error
+          return error
+        },
       },
     }) as any,
     globalSchemas = setupParams.addOkStatus
@@ -83,31 +77,26 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
   } = setupParams
 
-  function withRouteSpec<const T extends RouteSpec>(spec: T) {
+  const withRouteSpec = (spec: RouteSpecLegacy) => {
     const createRouteExport = (userDefinedRouteFn) => {
       const rootRequestHandler = async (
-        req: NextloveRequest,
+        req: NextApiRequest,
+        res: NextApiResponse
       ) => {
         authMiddlewareMap["none"] = (next) => next
-
-        const res = getNextloveResponse(req, {
-          addOkStatus: setupParams.addOkStatus,
-          addIf: setupParams.addIf,
-        })
-
-        req.NextResponse = res
 
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        return wrappers(
+        return wrappersLegacy(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
           ...((globalMiddlewares || []) as []),
           auth_middleware,
           ...((spec.middlewares || []) as []),
-          withValidation({
+          withMethodsLegacy(spec.methods),
+          withValidationLegacy({
             jsonBody: spec.jsonBody,
             queryParams: spec.queryParams,
             commonParams: spec.commonParams,
