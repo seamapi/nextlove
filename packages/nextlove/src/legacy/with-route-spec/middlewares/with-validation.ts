@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { z } from "zod"
-import _ from "lodash"
 
 import { QueryArrayFormats } from "../../../types"
 import { DEFAULT_ARRAY_FORMATS } from "../../../with-route-spec/middlewares/with-validation"
@@ -9,6 +8,7 @@ import {
   InternalServerErrorException,
 } from "../../../http-exceptions"
 import { parseQueryParams, validateQueryParams } from "../../../zod-helpers"
+import { isEmpty } from "../../../edge-helpers"
 
 export interface RequestInputLegacy<
   JsonBody extends z.ZodTypeAny,
@@ -94,7 +94,7 @@ export const withValidationLegacy =
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
       !req.headers["content-type"]?.includes("application/json") &&
-      !_.isEmpty(req.body)
+      !isEmpty(req.body)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",

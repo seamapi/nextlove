@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { NextRequest } from "next/server"
-import { NextloveResponse } from "../edge-helpers"
+// import { NextloveRequest } from "next/server"
+import { NextloveRequest, NextloveResponse } from "../edge-helpers"
 /*
 
 Wraps a function in layers of other functions, while preserving the input/output
@@ -50,8 +50,8 @@ const withLoggedArguments =
 */
 
 export type MiddlewareBase<ReqT, ResT, T, Dep = {}> = (
-  next: (req: ReqT & Dep & T, res: ResT) => any
-) => (req: ReqT & Dep & T, res: ResT) => any
+  next: (req: ReqT & Dep & T, res: ResT) => ResT | Promise<ResT>
+) => (req: ReqT & Dep & T, res: ResT) => ResT | Promise<ResT>
 
 export type MiddlewareLegacy<T, Dep = {}> = MiddlewareBase<
   NextApiRequest,
@@ -60,7 +60,7 @@ export type MiddlewareLegacy<T, Dep = {}> = MiddlewareBase<
   Dep
 >
 export type Middleware<T, Dep = {}> = MiddlewareBase<
-  NextRequest,
+  NextloveRequest,
   NextloveResponse,
   T,
   Dep
@@ -79,7 +79,7 @@ export type SaferMiddlewareLegacy<T, Dep = {}> = SaferMiddlewareBase<
   Dep
 >
 export type SaferMiddleware<T, Dep = {}> = SaferMiddlewareBase<
-  NextRequest,
+  NextloveRequest,
   NextloveResponse,
   T,
   Dep
@@ -95,7 +95,7 @@ export const extendRequestFactory =
   }
 
 export const extendRequestLegacy = extendRequestFactory<NextApiRequest>()
-export const extendRequest = extendRequestFactory<NextRequest>()
+export const extendRequest = extendRequestFactory<NextloveRequest>()
 
 type Wrappers1Base<ReqT, ResT> = <Mw1RequestContext, Mw1Dep>(
   mw1: Middleware<Mw1RequestContext, Mw1Dep>,
@@ -103,7 +103,7 @@ type Wrappers1Base<ReqT, ResT> = <Mw1RequestContext, Mw1Dep>(
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers1Legacy = Wrappers1Base<NextApiRequest, NextApiResponse>
-type Wrappers1 = Wrappers1Base<NextRequest, NextloveResponse>
+type Wrappers1 = Wrappers1Base<NextloveRequest, NextloveResponse>
 
 type Wrappers2Base<ReqT, ResT> = <
   Mw1RequestContext extends Mw2Dep,
@@ -120,7 +120,7 @@ type Wrappers2Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers2Legacy = Wrappers2Base<NextApiRequest, NextApiResponse>
-type Wrappers2 = Wrappers2Base<NextRequest, NextloveResponse>
+type Wrappers2 = Wrappers2Base<NextloveRequest, NextloveResponse>
 
 // TODO figure out how to do a recursive definition, or one that simplifies these redundant wrappers
 
@@ -147,7 +147,7 @@ type Wrappers3Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers3Legacy = Wrappers3Base<NextApiRequest, NextApiResponse>
-type Wrappers3 = Wrappers3Base<NextRequest, NextloveResponse>
+type Wrappers3 = Wrappers3Base<NextloveRequest, NextloveResponse>
 
 type Wrappers4Base<ReqT, ResT> = <
   Mw1RequestContext extends Mw2Dep,
@@ -174,7 +174,7 @@ type Wrappers4Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers4Legacy = Wrappers4Base<NextApiRequest, NextApiResponse>
-type Wrappers4 = Wrappers4Base<NextRequest, NextloveResponse>
+type Wrappers4 = Wrappers4Base<NextloveRequest, NextloveResponse>
 type Wrappers5Base<ReqT, ResT> = <
   Mw1RequestContext extends Mw2Dep,
   Mw1Dep,
@@ -204,7 +204,7 @@ type Wrappers5Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers5Legacy = Wrappers5Base<NextApiRequest, NextApiResponse>
-type Wrappers5 = Wrappers5Base<NextRequest, NextloveResponse>
+type Wrappers5 = Wrappers5Base<NextloveRequest, NextloveResponse>
 
 type Wrappers6Base<ReqT, ResT> = <
   Mw1RequestContext extends Mw2Dep,
@@ -239,7 +239,7 @@ type Wrappers6Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers6Legacy = Wrappers6Base<NextApiRequest, NextApiResponse>
-type Wrappers6 = Wrappers6Base<NextRequest, NextloveResponse>
+type Wrappers6 = Wrappers6Base<NextloveRequest, NextloveResponse>
 
 type Wrappers7Base<ReqT, ResT> = <
   Mw1RequestContext extends Mw2Dep,
@@ -278,7 +278,7 @@ type Wrappers7Base<ReqT, ResT> = <
 ) => (req: ReqT, res: ResT) => any
 
 type Wrappers7Legacy = Wrappers7Base<NextApiRequest, NextApiResponse>
-type Wrappers7 = Wrappers7Base<NextRequest, NextloveResponse>
+type Wrappers7 = Wrappers7Base<NextloveRequest, NextloveResponse>
 
 type WrappersLegacy = Wrappers1Legacy &
   Wrappers2Legacy &

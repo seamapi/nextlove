@@ -5,18 +5,18 @@ import {
   QueryArrayFormats,
   RouteSpec,
 } from "../types"
-import {withValidation} from "./middlewares/with-validation"
+import { withValidation } from "./middlewares/with-validation"
 import { z } from "zod"
-import { NextloveRequest, getNextloveResponse } from "../edge-helpers"
+import {
+  NextloveRequest,
+  NextloveResponse,
+  getNextloveResponse,
+} from "../edge-helpers"
+import { createWithRouteSpecLegacy } from "../legacy"
+import { HTTPMethods, withMethods } from "../with-methods"
+import { NextRequest } from "next/server"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
-
-export type HTTPMethods =
-  | "GET"
-  | "POST"
-  | "DELETE"
-  | "PUT"
-  | "PATCH"
 
 export const checkRouteSpec = <
   AuthType extends string = string,
@@ -85,9 +85,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
   function withRouteSpec<const T extends RouteSpec>(spec: T) {
     const createRouteExport = (userDefinedRouteFn) => {
-      const rootRequestHandler = async (
-        req: NextloveRequest,
-      ) => {
+      const rootRequestHandler = async (req: NextloveRequest) => {
         authMiddlewareMap["none"] = (next) => next
 
         const res = getNextloveResponse(req, {
@@ -100,13 +98,11 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        return wrappers(
+        const ret = wrappers(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
-          ...((globalMiddlewares || []) as []),
-          auth_middleware,
-          ...((spec.middlewares || []) as []),
+          withMethods(spec.methods),
           withValidation({
             jsonBody: spec.jsonBody,
             queryParams: spec.queryParams,
@@ -119,12 +115,18 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           }),
           userDefinedRouteFn
         )(req as any, res)
+
+        return ret
       }
 
-      rootRequestHandler._setupParams = setupParams
-      rootRequestHandler._routeSpec = spec
+      const x = rootRequestHandler
 
-      return rootRequestHandler
+      spec.methods.forEach((method) => {
+        x[method] = rootRequestHandler
+        return x
+      }, {})
+
+      return x
     }
 
     createRouteExport._setupParams = setupParams
@@ -135,5 +137,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
   withRouteSpec._setupParams = setupParams
 
-  return withRouteSpec
+  return {
+    withRouteSpec,
+    withRouteSpecLegacy: createWithRouteSpecLegacy(setupParams),
+  }
 }) as any

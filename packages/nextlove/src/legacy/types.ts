@@ -1,7 +1,7 @@
 import { NextApiResponse, NextApiRequest } from "next"
 import { MiddlewareLegacy as WrapperMiddlewareLegacy } from "../wrappers"
 import { z } from "zod"
-import { HTTPMethodsLegacy } from "./with-route-spec/middlewares/with-methods"
+import { HTTPMethods } from "../with-methods"
 import {
   SecuritySchemeObject,
   SecurityRequirementObject,
@@ -20,7 +20,7 @@ type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
 export interface RouteSpecLegacy<
   Auth extends string = string,
-  Methods extends HTTPMethodsLegacy[] = any,
+  Methods extends HTTPMethods[] = any,
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
   CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,

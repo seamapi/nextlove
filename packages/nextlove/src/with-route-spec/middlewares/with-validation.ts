@@ -1,6 +1,5 @@
 import { z } from "zod"
-import { isEmpty } from "lodash"
-import { NextloveRequest, NextloveResponse } from "../../edge-helpers"
+import { NextloveRequest, NextloveResponse, isEmpty } from "../../edge-helpers"
 import { parseQueryParams, zodIssueToString } from "../../zod-helpers"
 import { QueryArrayFormats } from "../../types"
 import {
@@ -34,15 +33,15 @@ export interface RequestInput<
 // NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
 function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
   jsonResponse: JsonResponse | undefined,
-  req: NextloveRequest
+  req: NextloveRequest,
+  res: NextloveResponse
 ) {
-  const original_res_json = req.NextResponse.json
+  const original_res_json = res.json
   const override_res_json: NextloveRequest["NextResponse"]["json"] = (
     body,
     params
   ) => {
-    const is_success =
-      req.NextResponse.statusCode >= 200 && req.NextResponse.statusCode < 300
+    const is_success = res.statusCode >= 200 && res.statusCode < 300
     if (!is_success) {
       return original_res_json(body, params)
     }
@@ -60,7 +59,7 @@ function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
     return original_res_json(body, params)
   }
 
-  req.NextResponse.json = override_res_json
+  res.json = override_res_json
 }
 
 export const withValidation =
@@ -89,7 +88,8 @@ export const withValidation =
     ) {
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
-    const { searchParams } = new URL(req.url)
+
+    const searchParams = new URLSearchParams(req.url)
     const paramsArray = Array.from(searchParams.entries())
     let queryParams = Object.fromEntries(paramsArray)
 
@@ -199,7 +199,7 @@ export const withValidation =
      * this will override the res.json method to validate the response
      */
     if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, req)
+      validateJsonResponse(input.jsonResponse, req, res)
     }
 
     return next(req, res)

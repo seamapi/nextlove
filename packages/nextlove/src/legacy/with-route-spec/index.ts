@@ -3,10 +3,7 @@ import { NextApiResponse, NextApiRequest } from "next"
 import { MiddlewareLegacy, wrappersLegacy } from "../../wrappers"
 import { withValidationLegacy } from "./middlewares/with-validation"
 import { z } from "zod"
-import {
-  HTTPMethodsLegacy,
-  withMethodsLegacy,
-} from "./middlewares/with-methods"
+import { HTTPMethods, withMethods } from "../../with-methods"
 import { CreateWithRouteSpecFunctionLegacy, RouteSpecLegacy } from "../types"
 import { withExceptionHandlingLegacy } from "../nextjs-exception-middleware"
 import { QueryArrayFormats } from "../../types"
@@ -15,7 +12,7 @@ type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
 export const checkRouteSpecLegacy = <
   AuthType extends string = string,
-  Methods extends HTTPMethodsLegacy[] = HTTPMethodsLegacy[],
+  Methods extends HTTPMethods[] = HTTPMethods[],
   JsonBody extends ParamDef = z.ZodTypeAny,
   QueryParams extends ParamDef = z.ZodTypeAny,
   CommonParams extends ParamDef = z.ZodTypeAny,
@@ -95,7 +92,7 @@ export const createWithRouteSpecLegacy: CreateWithRouteSpecFunctionLegacy = ((
           ...((globalMiddlewares || []) as []),
           auth_middleware,
           ...((spec.middlewares || []) as []),
-          withMethodsLegacy(spec.methods),
+          withMethods(spec.methods),
           withValidationLegacy({
             jsonBody: spec.jsonBody,
             queryParams: spec.queryParams,
