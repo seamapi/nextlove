@@ -1,181 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from "next"
-import { z, ZodFirstPartyTypeKind } from "zod"
-import _ from "lodash"
-
+import { z } from "zod"
+import { NextloveRequest, NextloveResponse, isEmpty } from "../../edge-helpers"
+import {
+  parseQueryParams,
+  validateQueryParams,
+  zodIssueToString,
+} from "../../zod-helpers"
+import { QueryArrayFormats } from "../../types"
 import {
   BadRequestException,
   InternalServerErrorException,
-} from "../../nextjs-exception-middleware"
-import { QueryArrayFormats } from "../../types"
-import { DEFAULT_ARRAY_FORMATS } from ".."
+} from "../../http-exceptions"
 
-const getZodObjectSchemaFromZodEffectSchema = (
-  isZodEffect: boolean,
-  schema: z.ZodTypeAny
-): z.ZodTypeAny | z.ZodObject<any> => {
-  if (!isZodEffect) {
-    return schema as z.ZodObject<any>
-  }
-
-  let currentSchema = schema
-
-  while (currentSchema instanceof z.ZodEffects) {
-    currentSchema = currentSchema._def.schema
-  }
-
-  return currentSchema as z.ZodObject<any>
-}
-
-/**
- * This function is used to get the correct schema from a ZodEffect | ZodDefault | ZodOptional schema.
- * TODO: this function should handle all special cases of ZodSchema and not just ZodEffect | ZodDefault | ZodOptional
- */
-const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
-  const special_zod_types = [
-    ZodFirstPartyTypeKind.ZodOptional,
-    ZodFirstPartyTypeKind.ZodDefault,
-    ZodFirstPartyTypeKind.ZodEffects,
-  ]
-
-  while (special_zod_types.includes(schema._def.typeName)) {
-    if (
-      schema._def.typeName === ZodFirstPartyTypeKind.ZodOptional ||
-      schema._def.typeName === ZodFirstPartyTypeKind.ZodDefault
-    ) {
-      schema = schema._def.innerType
-      continue
-    }
-
-    if (schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects) {
-      schema = schema._def.schema
-      continue
-    }
-  }
-  return schema._def
-}
-
-const tryGetZodSchemaAsObject = (
-  schema: z.ZodTypeAny
-): z.ZodObject<any> | undefined => {
-  const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
-  const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
-  const isZodObject =
-    safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
-
-  if (!isZodObject) {
-    return undefined
-  }
-
-  return safe_schema as z.ZodObject<any>
-}
-
-const isZodSchemaArray = (schema: z.ZodTypeAny) => {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodArray
-}
-
-const isZodSchemaBoolean = (schema: z.ZodTypeAny) => {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodBoolean
-}
-
-const parseQueryParams = (
-  schema: z.ZodTypeAny,
-  input: Record<string, unknown>,
-  supportedArrayFormats: QueryArrayFormats
-) => {
-  const parsed_input = Object.assign({}, input)
-  const obj_schema = tryGetZodSchemaAsObject(schema)
-
-  if (obj_schema) {
-    for (const [key, value] of Object.entries(obj_schema.shape)) {
-      if (isZodSchemaArray(value as z.ZodTypeAny)) {
-        const array_input = input[key]
-
-        if (
-          typeof array_input === "string" &&
-          supportedArrayFormats.includes("comma")
-        ) {
-          parsed_input[key] = array_input.split(",")
-        }
-
-        const bracket_syntax_array_input = input[`${key}[]`]
-        if (
-          typeof bracket_syntax_array_input === "string" &&
-          supportedArrayFormats.includes("brackets")
-        ) {
-          const pre_split_array = bracket_syntax_array_input
-          parsed_input[key] = pre_split_array.split(",")
-        }
-
-        if (
-          Array.isArray(bracket_syntax_array_input) &&
-          supportedArrayFormats.includes("brackets")
-        ) {
-          parsed_input[key] = bracket_syntax_array_input
-        }
-
-        continue
-      }
-
-      if (isZodSchemaBoolean(value as z.ZodTypeAny)) {
-        const boolean_input = input[key]
-
-        if (typeof boolean_input === "string") {
-          parsed_input[key] = boolean_input === "true"
-        }
-      }
-    }
-  }
-
-  return schema.parse(parsed_input)
-}
-
-const validateQueryParams = (
-  inputUrl: string,
-  schema: z.ZodTypeAny,
-  supportedArrayFormats: QueryArrayFormats
-) => {
-  const url = new URL(inputUrl, "http://dummy.com")
-
-  const seenKeys = new Set<string>()
-
-  const obj_schema = tryGetZodSchemaAsObject(schema)
-  if (!obj_schema) {
-    return
-  }
-
-  for (const key of url.searchParams.keys()) {
-    for (const [schemaKey, value] of Object.entries(obj_schema.shape)) {
-      if (isZodSchemaArray(value as z.ZodTypeAny)) {
-        if (
-          key === `${schemaKey}[]` &&
-          !supportedArrayFormats.includes("brackets")
-        ) {
-          throw new BadRequestException({
-            type: "invalid_query_params",
-            message: `Bracket syntax not supported for query param "${schemaKey}"`,
-          })
-        }
-      }
-    }
-
-    const key_schema = obj_schema.shape[key]
-
-    if (key_schema) {
-      if (isZodSchemaArray(key_schema)) {
-        if (seenKeys.has(key) && !supportedArrayFormats.includes("repeat")) {
-          throw new BadRequestException({
-            type: "invalid_query_params",
-            message: `Repeated parameters not supported for duplicate query param "${key}"`,
-          })
-        }
-      }
-    }
-
-    seenKeys.add(key)
-  }
-}
+export const DEFAULT_ARRAY_FORMATS: QueryArrayFormats = [
+  "brackets",
+  "comma",
+  "repeat",
+]
 
 export interface RequestInput<
   JsonBody extends z.ZodTypeAny,
@@ -194,40 +34,19 @@ export interface RequestInput<
   supportedArrayFormats?: QueryArrayFormats
 }
 
-const zodIssueToString = (issue: z.ZodIssue) => {
-  if (issue.path.join(".") === "") {
-    return issue.message
-  }
-  if (issue.message === "Required") {
-    return `${issue.path.join(".")} is required`
-  }
-  return `${issue.message} for "${issue.path.join(".")}"`
-}
-
-function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
-  jsonResponse: JsonResponse | undefined,
-  res: NextApiResponse
-) {
-  const original_res_json = res.json
-  const override_res_json = (json: any) => {
-    const is_success = res.statusCode >= 200 && res.statusCode < 300
-    if (!is_success) {
-      return original_res_json(json)
+function URLSearchParamsToJSON(searchParams: URLSearchParams) {
+  return Array.from(searchParams.entries()).reduce((acc, cv) => {
+    if (acc[cv[0]]) {
+      if (Array.isArray(acc[cv[0]])) {
+        acc[cv[0]].push(cv[1])
+      } else {
+        acc[cv[0]] = [acc[cv[0]], cv[1]]
+      }
+    } else {
+      acc[cv[0]] = cv[1]
     }
-
-    try {
-      jsonResponse?.parse(json)
-    } catch (err) {
-      throw new InternalServerErrorException({
-        type: "invalid_response",
-        message: "the response does not match with jsonResponse",
-        zodError: err,
-      })
-    }
-
-    return original_res_json(json)
-  }
-  res.json = override_res_json
+    return acc
+  }, {})
 }
 
 export const withValidation =
@@ -247,7 +66,7 @@ export const withValidation =
     >
   ) =>
   (next) =>
-  async (req: NextApiRequest, res: NextApiResponse) => {
+  async (req: NextloveRequest, res: NextloveResponse) => {
     const { supportedArrayFormats = DEFAULT_ARRAY_FORMATS } = input
 
     if (
@@ -257,11 +76,29 @@ export const withValidation =
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
 
+    const searchParams = new URLSearchParams(req.url.split("?")[1] || "")
+    const queryParams = URLSearchParamsToJSON(searchParams)
+    const contentType = req.headers.get("content-type")
+
+    const isContentTypeJson = contentType?.includes("application/json")
+    const isContentTypeFormUrlEncoded = contentType?.includes(
+      "application/x-www-form-urlencoded"
+    )
+
+    let jsonBody: any
+    const bodyAsText = await req.text()
+
+    if (bodyAsText.length > 0 && isContentTypeJson) {
+      jsonBody = JSON.parse(bodyAsText)
+    } else if (bodyAsText.length > 0 && isContentTypeFormUrlEncoded) {
+      jsonBody = URLSearchParamsToJSON(new URLSearchParams(bodyAsText))
+    }
+
     if (
       (req.method === "POST" || req.method === "PATCH") &&
       (input.jsonBody || input.commonParams) &&
-      !req.headers["content-type"]?.includes("application/json") &&
-      !_.isEmpty(req.body)
+      !isContentTypeJson &&
+      !isEmpty(jsonBody)
     ) {
       throw new BadRequestException({
         type: "invalid_content_type",
@@ -272,9 +109,7 @@ export const withValidation =
     if (
       input.formData &&
       req.method !== "GET" &&
-      !req.headers["content-type"]?.includes(
-        "application/x-www-form-urlencoded"
-      )
+      !isContentTypeFormUrlEncoded
       // TODO eventually we should support multipart/form-data
     ) {
       throw new BadRequestException({
@@ -284,7 +119,7 @@ export const withValidation =
     }
 
     try {
-      const original_combined_params = { ...req.query, ...req.body }
+      const original_combined_params = { ...queryParams, ...jsonBody }
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
@@ -293,23 +128,23 @@ export const withValidation =
       const isFormData = Boolean(input.formData)
 
       if (isFormData && willValidateRequestBody) {
-        req.body = input.formData?.parse(req.body)
+        ;(req as any).jsonBody = input.formData?.parse(jsonBody)
       }
 
       if (!isFormData && willValidateRequestBody) {
-        req.body = input.jsonBody?.parse(req.body)
+        ;(req as any).jsonBody = input.jsonBody?.parse(jsonBody)
       }
 
       if (input.queryParams) {
-        if (!req.url) {
-          throw new Error("req.url is undefined")
-        }
-
-        validateQueryParams(req.url, input.queryParams, supportedArrayFormats)
-
-        req.query = parseQueryParams(
+        validateQueryParams(
+          queryParams,
           input.queryParams,
-          req.query,
+          supportedArrayFormats
+        )
+
+        ;(req as any).queryParams = parseQueryParams(
+          input.queryParams,
+          queryParams,
           supportedArrayFormats
         )
       }
@@ -357,14 +192,5 @@ export const withValidation =
       })
     }
 
-    /**
-     * this will override the res.json method to validate the response
-     */
-    if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, res)
-    }
-
     return next(req, res)
   }
-
-export default withValidation

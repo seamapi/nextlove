@@ -1,4 +1,4 @@
-import { MethodNotAllowedException } from "../../nextjs-exception-middleware"
+import { MethodNotAllowedException } from "./http-exceptions"
 
 export type HTTPMethods =
   | "GET"
@@ -18,5 +18,3 @@ export const withMethods = (methods: HTTPMethods[]) => (next) => (req, res) => {
   }
   return next(req, res)
 }
-
-export default withMethods

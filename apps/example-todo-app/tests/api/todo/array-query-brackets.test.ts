@@ -1,15 +1,15 @@
 import qs from "qs"
-import test from "ava"
+import test, { ExecutionContext } from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
 
-test("GET /todo/array-query-brackets (comma-separated array values)", async (t) => {
+const routeTestCommaSeparated = (path: string) => async (t: ExecutionContext) => {
   const { axios } = await getTestServer(t)
 
   const {
     response: { error },
     status,
   } = await axios
-    .get("/todo/array-query-brackets", {
+    .get(path, {
       params: {
         ids: ["1", "2", "3"],
       },
@@ -21,15 +21,16 @@ test("GET /todo/array-query-brackets (comma-separated array values)", async (t) 
 
   t.is(status, 400)
   t.is(error.message, `Expected array, received string for "ids"`)
-})
+}
 
-test("GET /todo/array-query-brackets (bracket array values)", async (t) => {
+const routeTestBracket = (path: string) => async (t: ExecutionContext) => {
+// test("GET /todo/array-query-brackets (bracket array values)", async (t) => {
   const { axios } = await getTestServer(t)
 
   const {
     data: { ids },
     status,
-  } = await axios.get("/todo/array-query-brackets", {
+  } = await axios.get(path, {
     params: {
       ids: ["1", "2", "3"],
     },
@@ -40,16 +41,17 @@ test("GET /todo/array-query-brackets (bracket array values)", async (t) => {
 
   t.is(status, 200)
   t.deepEqual(ids, ["1", "2", "3"])
-})
+}
 
-test("GET /todo/array-query-brackets (repeated array values)", async (t) => {
+const routeTestRepeated = (path: string) => async (t: ExecutionContext) => {
+// test("GET /todo/array-query-brackets (repeated array values)", async (t) => {
   const { axios } = await getTestServer(t)
 
   const {
-    response: { error },
+    data: { ids },
     status,
   } = await axios
-    .get("/todo/array-query-brackets", {
+    .get(path, {
       params: {
         ids: ["1", "2", "3"],
       },
@@ -60,8 +62,33 @@ test("GET /todo/array-query-brackets (repeated array values)", async (t) => {
     .catch((r) => r)
 
   t.is(status, 400)
-  t.is(
-    error.message,
-    `Repeated parameters not supported for duplicate query param "ids"`
-  )
-})
+  t.deepEqual(ids, ["1", "2", "3"])
+}
+
+
+test.serial(
+  "GET /todo/array-query-brackets (comma-separated array values)",
+  routeTestCommaSeparated("/todo/array-query-brackets")
+)
+test.serial(
+  "GET /todo/array-query-brackets/edge (comma-separated array values)",
+  routeTestCommaSeparated("/todo/array-query-brackets/edge")
+)
+
+test.serial(
+  "GET /todo/array-query-brackets (bracket array values)",
+  routeTestBracket("/todo/array-query-brackets")
+)
+test.serial(
+  "GET /todo/array-query-brackets/edge (bracket array values)",
+  routeTestBracket("/todo/array-query-brackets/edge")
+)
+
+test.serial(
+  "GET /todo/array-query-brackets (repeated array values)",
+  routeTestRepeated("/todo/array-query-brackets")
+)
+test.serial(
+  "GET /todo/array-query-brackets/edge (repeated array values)",
+  routeTestRepeated("/todo/array-query-brackets/edge")
+)

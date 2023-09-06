@@ -1,11 +1,12 @@
-import { NextApiResponse, NextApiRequest } from "next"
 import { Middleware as WrapperMiddleware } from "../wrappers"
 import { z } from "zod"
-import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
 import {
   SecuritySchemeObject,
   SecurityRequirementObject,
 } from "openapi3-ts/oas31"
+import { CreateWithRouteSpecFunctionLegacy } from "../legacy"
+import { NextRequest, NextResponse } from "next/server"
+import { HTTPMethods } from "../with-methods"
 
 export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
   /**
@@ -88,23 +89,21 @@ const defaultMiddlewareMap = {
   none: (next) => next,
 } as const
 
-type Send<T> = (body: T) => void
-type NextApiResponseWithoutJsonAndStatusMethods = Omit<
-  NextApiResponse,
+type Send<T> = (body: T) => Promise<NextResponse>
+type NextResponseWithoutJsonAndStatusMethods = Omit<
+  NextResponse,
   "json" | "status"
 >
 
-type SuccessfulNextApiResponseMethods<T> = {
-  status: (
-    statusCode: 200 | 201
-  ) => NextApiResponseWithoutJsonAndStatusMethods & {
+type SuccessfulNextResponseMethods<T> = {
+  status: (statusCode: 200 | 201) => NextResponseWithoutJsonAndStatusMethods & {
     json: Send<T>
   }
   json: Send<T>
 }
 
-type ErrorNextApiResponseMethods = {
-  status: (statusCode: number) => NextApiResponseWithoutJsonAndStatusMethods & {
+type ErrorNextResponseMethods = {
+  status: (statusCode: number) => NextResponseWithoutJsonAndStatusMethods & {
     json: Send<any>
   }
   json: Send<any>
@@ -119,19 +118,19 @@ export type RouteFunction<
     infer AuthMWOut,
     any
   >
-    ? Omit<NextApiRequest, "query" | "body"> &
+    ? Omit<NextRequest, "query" | "body"> &
         AuthMWOut &
         MiddlewareChainOutput<
           RS["middlewares"] extends readonly Middleware<any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
             : SP["globalMiddlewares"]
         > & {
-          body: RS["formData"] extends z.ZodTypeAny
+          jsonBody: RS["formData"] extends z.ZodTypeAny
             ? z.infer<RS["formData"]>
             : RS["jsonBody"] extends z.ZodTypeAny
             ? z.infer<RS["jsonBody"]>
             : {}
-          query: RS["queryParams"] extends z.ZodTypeAny
+          queryParams: RS["queryParams"] extends z.ZodTypeAny
             ? z.infer<RS["queryParams"]>
             : {}
           commonParams: RS["commonParams"] extends z.ZodTypeAny
@@ -139,19 +138,37 @@ export type RouteFunction<
             : {}
         }
     : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
-  res: NextApiResponseWithoutJsonAndStatusMethods &
-    SuccessfulNextApiResponseMethods<
+  res: NextResponseWithoutJsonAndStatusMethods &
+    SuccessfulNextResponseMethods<
       RS["jsonResponse"] extends z.ZodTypeAny
         ? z.infer<RS["jsonResponse"]>
         : any
     > &
-    ErrorNextApiResponseMethods
-) => Promise<void>
+    ErrorNextResponseMethods
+) => Promise<NextResponse>
 
 export type CreateWithRouteSpecFunction = <
-  SP extends SetupParams<AuthMiddlewares, any>
+  const SP extends SetupParams<AuthMiddlewares, any>
 >(
   setupParams: SP
-) => <RS extends RouteSpec<string, any, any, any, any, any, z.ZodTypeAny, any>>(
-  route_spec: RS
-) => (next: RouteFunction<SP, RS>) => any
+) => {
+  withRouteSpec: <
+    const RS extends RouteSpec<
+      string,
+      any,
+      any,
+      any,
+      any,
+      any,
+      z.ZodTypeAny,
+      any
+    >
+  >(
+    route_spec: RS
+  ) => (next: RouteFunction<SP, RS>) => {
+    [key in RS["methods"][number]]: RouteFunction<SP, RS>
+  } & {
+    (): RouteFunction<SP, RS>
+  }
+  withRouteSpecLegacy: ReturnType<CreateWithRouteSpecFunctionLegacy>
+}

@@ -15,7 +15,10 @@ const defaultRouteSpec = {
   },
 } as const
 
-export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
+export const {
+  withRouteSpecLegacy: withRouteSpec,
+  withRouteSpec: withRouteSpecEdge,
+} = createWithRouteSpec(defaultRouteSpec)
 
 export const withRouteSpecSupportedArrayFormats = (
   supportedArrayFormats: QueryArrayFormats
@@ -23,9 +26,20 @@ export const withRouteSpecSupportedArrayFormats = (
   createWithRouteSpec({
     ...defaultRouteSpec,
     supportedArrayFormats,
-  })
+  }).withRouteSpecLegacy
 
-export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
+export const withRouteSpecEdgeSupportedArrayFormats = (
+  supportedArrayFormats: QueryArrayFormats
+) =>
+  createWithRouteSpec({
+    ...defaultRouteSpec,
+    supportedArrayFormats,
+  }).withRouteSpec
+
+export const {
+  withRouteSpecLegacy: withRouteSpecWithoutValidateGetRequestBody,
+  withRouteSpec: withRouteSpecEdgeWithoutValidateGetRequestBody,
+} = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },
   globalMiddlewares: [],
   apiName: "TODO API",
@@ -37,7 +51,10 @@ export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
   },
 } as const)
 
-export const withRouteSpecWithoutValidateResponse = createWithRouteSpec({
+export const {
+  withRouteSpecLegacy: withRouteSpecWithoutValidateResponse,
+  withRouteSpec: withRouteSpecEdgeWithoutValidateResponse,
+} = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },
   globalMiddlewares: [],
   apiName: "TODO API",

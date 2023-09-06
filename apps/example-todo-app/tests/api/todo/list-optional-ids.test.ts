@@ -2,14 +2,14 @@ import test from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
-test("GET /todo/list-optional-ids", async (t) => {
+const routeTest = (path: string) => async (t) => {
   const { axios } = await getTestServer(t)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 
   const ids = [uuidv4(), uuidv4()]
 
-  const responseWithArray = await axios.get("/todo/list-optional-ids", {
+  const responseWithArray = await axios.get(path, {
     params: {
       ids,
     },
@@ -22,7 +22,7 @@ test("GET /todo/list-optional-ids", async (t) => {
     })),
   })
 
-  const responseWithCommas = await axios.get("/todo/list-optional-ids", {
+  const responseWithCommas = await axios.get(path, {
     params: {
       ids: ids.join(","),
     },
@@ -35,10 +35,16 @@ test("GET /todo/list-optional-ids", async (t) => {
     })),
   })
 
-  const responseWithOptionalIds = await axios.get("/todo/list-optional-ids")
+  const responseWithOptionalIds = await axios.get(path)
 
   t.deepEqual(responseWithOptionalIds.data, {
     ok: true,
     todos: [],
   })
-})
+}
+
+test("GET /todo/list-optional-ids", routeTest("/todo/list-optional-ids"))
+test(
+  "GET /todo/list-optional-ids/edge",
+  routeTest("/todo/list-optional-ids/edge")
+)

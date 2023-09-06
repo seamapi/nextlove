@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { HttpException } from "./http-exceptions"
+import { HttpException } from "../../http-exceptions"
 
-export interface WithExceptionHandlingOptions {
+export interface WithExceptionHandlingOptionsLegacy {
   getErrorContext?: (
     req: NextApiRequest,
     error: Error
   ) => Record<string, unknown>
 }
 
-const withExceptionHandling =
-  (options: WithExceptionHandlingOptions = {}) =>
+export const withExceptionHandlingLegacy =
+  (options: WithExceptionHandlingOptionsLegacy = {}) =>
   (next: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -54,5 +54,3 @@ const withExceptionHandling =
       }
     }
   }
-
-export default withExceptionHandling

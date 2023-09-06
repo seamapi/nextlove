@@ -1,14 +1,23 @@
-import test from "ava"
+import test, { ExecutionContext } from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
 
-test("POST /todo/add-invalid-json-response", async (t) => {
+const routeTest = (path: string) => async (t: ExecutionContext) => {
   const { axios } = await getTestServer(t)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 
   const successfulRes = await axios
-    .post("/todo/add-invalid-json-response", { title: "Todo Title" })
+    .post(path, { title: "Todo Title" })
     .catch((err) => err)
 
   t.is(successfulRes.status, 500)
-})
+}
+
+test(
+  "POST /todo/add-invalid-json-response",
+  routeTest("/todo/add-invalid-json-response")
+)
+test(
+  "POST /todo/add-invalid-json-response/edge",
+  routeTest("/todo/add-invalid-json-response/edge")
+)

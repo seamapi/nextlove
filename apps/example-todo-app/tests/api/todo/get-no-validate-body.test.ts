@@ -1,11 +1,15 @@
 import test from "ava"
-import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
-import { v4 as uuidv4 } from "uuid"
 
-test("GET /todo/get", async (t) => {
+const routeTest = (path: string) => async (t) => {
   const { axios } = await getTestServer(t)
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
-  const successfulRes = await axios.get(`/todo/get-no-validate-body`)
+  const successfulRes = await axios.get(path)
   t.is(successfulRes.status, 200)
-})
+}
+
+test("GET /todo/get-no-validate-body", routeTest("/todo/get-no-validate-body"))
+test(
+  "GET /todo/get-no-validate-body/edge",
+  routeTest("/todo/get-no-validate-body/edge")
+)

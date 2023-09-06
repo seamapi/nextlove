@@ -1,14 +1,20 @@
-import { NextApiResponse, NextApiRequest } from "next"
 import { withExceptionHandling } from "../nextjs-exception-middleware"
-import wrappers, { Middleware } from "../wrappers"
+import { Middleware, wrappers } from "../wrappers"
 import {
   CreateWithRouteSpecFunction,
   QueryArrayFormats,
   RouteSpec,
 } from "../types"
-import withMethods, { HTTPMethods } from "./middlewares/with-methods"
-import withValidation from "./middlewares/with-validation"
+import { withValidation } from "./middlewares/with-validation"
 import { z } from "zod"
+import {
+  NextloveRequest,
+  NextloveResponse,
+  getNextloveResponse,
+} from "../edge-helpers"
+import { createWithRouteSpecLegacy } from "../legacy"
+import { HTTPMethods, withMethods } from "../with-methods"
+import { NextRequest } from "next/server"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -61,15 +67,12 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     shouldValidateResponses,
     shouldValidateGetRequestBody = true,
     exceptionHandlingMiddleware = withExceptionHandling({
-      addOkStatus: setupParams.addOkStatus,
-      exceptionHandlingOptions: {
-        getErrorContext: (req, error) => {
-          if (process.env.NODE_ENV === "production") {
-            return {}
-          }
+      getErrorContext: (_, error: Error) => {
+        if (process.env.NODE_ENV === "production") {
+          return {}
+        }
 
-          return error
-        },
+        return error
       },
     }) as any,
     globalSchemas = setupParams.addOkStatus
@@ -80,18 +83,24 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
   } = setupParams
 
-  const withRouteSpec = (spec: RouteSpec) => {
+  function withRouteSpec<const T extends RouteSpec>(spec: T) {
     const createRouteExport = (userDefinedRouteFn) => {
-      const rootRequestHandler = async (
-        req: NextApiRequest,
-        res: NextApiResponse
-      ) => {
+      const rootRequestHandler = async (req: NextloveRequest) => {
         authMiddlewareMap["none"] = (next) => next
+
+        const res = getNextloveResponse(req, {
+          addOkStatus: setupParams.addOkStatus,
+          addIf: setupParams.addIf,
+          jsonResponse: spec.jsonResponse,
+          shouldValidateResponses,
+        })
+
+        req.NextResponse = res
 
         const auth_middleware = authMiddlewareMap[spec.auth]
         if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
 
-        return wrappers(
+        const ret = wrappers(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
@@ -111,12 +120,18 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           }),
           userDefinedRouteFn
         )(req as any, res)
+
+        return ret
       }
 
-      rootRequestHandler._setupParams = setupParams
-      rootRequestHandler._routeSpec = spec
+      const x = rootRequestHandler
 
-      return rootRequestHandler
+      spec.methods.forEach((method) => {
+        x[method] = rootRequestHandler
+        return x
+      }, {})
+
+      return x
     }
 
     createRouteExport._setupParams = setupParams
@@ -127,5 +142,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
   withRouteSpec._setupParams = setupParams
 
-  return withRouteSpec
+  return {
+    withRouteSpec,
+    withRouteSpecLegacy: createWithRouteSpecLegacy(setupParams),
+  }
 }) as any
