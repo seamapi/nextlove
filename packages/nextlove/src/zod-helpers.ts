@@ -125,12 +125,10 @@ export const tryGetZodSchemaAsObject = (
 }
 
 export const validateQueryParams = (
-  inputUrl: string,
+  queryParams: Record<string, any>,
   schema: z.ZodTypeAny,
   supportedArrayFormats: QueryArrayFormats
 ) => {
-  const url = new URL(inputUrl, "http://dummy.com")
-
   const seenKeys = new Set<string>()
 
   const obj_schema = tryGetZodSchemaAsObject(schema)
@@ -138,7 +136,7 @@ export const validateQueryParams = (
     return
   }
 
-  for (const key of url.searchParams.keys()) {
+  for (const key of Object.keys(queryParams)) {
     for (const [schemaKey, value] of Object.entries(obj_schema.shape)) {
       if (isZodSchemaArray(value as z.ZodTypeAny)) {
         if (

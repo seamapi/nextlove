@@ -138,7 +138,7 @@ export const withValidationLegacy =
           throw new Error("req.url is undefined")
         }
 
-        validateQueryParams(req.url, input.queryParams, supportedArrayFormats)
+        validateQueryParams(req.query, input.queryParams, supportedArrayFormats)
 
         req.query = parseQueryParams(
           input.queryParams,

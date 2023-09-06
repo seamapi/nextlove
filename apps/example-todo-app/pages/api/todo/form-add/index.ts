@@ -15,6 +15,7 @@ export const route_spec = checkRouteSpec({
   formData,
   jsonResponse: z.object({
     ok: z.boolean(),
+    formData: formData,
   }),
 })
 
@@ -25,5 +26,5 @@ export default withRouteSpec(route_spec)(async (req, res) => {
       type: "title_required",
     })
   }
-  return res.status(200).json({ ok: true })
+  return res.status(200).json({ ok: true, formData: req.body })
 })

@@ -1,6 +1,10 @@
 import { z } from "zod"
 import { NextloveRequest, NextloveResponse, isEmpty } from "../../edge-helpers"
-import { parseQueryParams, zodIssueToString } from "../../zod-helpers"
+import {
+  parseQueryParams,
+  validateQueryParams,
+  zodIssueToString,
+} from "../../zod-helpers"
 import { QueryArrayFormats } from "../../types"
 import {
   BadRequestException,
@@ -30,36 +34,19 @@ export interface RequestInput<
   supportedArrayFormats?: QueryArrayFormats
 }
 
-// NOTE: we should be able to use the same validation logic for both the nodejs and edge runtime
-function validateJsonResponse<JsonResponse extends z.ZodTypeAny>(
-  jsonResponse: JsonResponse | undefined,
-  req: NextloveRequest,
-  res: NextloveResponse
-) {
-  const original_res_json = res.json
-  const override_res_json: NextloveRequest["NextResponse"]["json"] = (
-    body,
-    params
-  ) => {
-    const is_success = res.statusCode >= 200 && res.statusCode < 300
-    if (!is_success) {
-      return original_res_json(body, params)
+function URLSearchParamsToJSON(searchParams: URLSearchParams) {
+  return Array.from(searchParams.entries()).reduce((acc, cv) => {
+    if (acc[cv[0]]) {
+      if (Array.isArray(acc[cv[0]])) {
+        acc[cv[0]].push(cv[1])
+      } else {
+        acc[cv[0]] = [acc[cv[0]], cv[1]]
+      }
+    } else {
+      acc[cv[0]] = cv[1]
     }
-
-    try {
-      jsonResponse?.parse(body)
-    } catch (err) {
-      throw new InternalServerErrorException({
-        type: "invalid_response",
-        message: "the response does not match with jsonResponse",
-        zodError: err,
-      })
-    }
-
-    return original_res_json(body, params)
-  }
-
-  res.json = override_res_json
+    return acc
+  }, {})
 }
 
 export const withValidation =
@@ -89,23 +76,23 @@ export const withValidation =
       throw new Error("Cannot use formData with jsonBody or commonParams")
     }
 
-    const searchParams = new URLSearchParams(req.url)
-    const paramsArray = Array.from(searchParams.entries())
-    let queryParams = Object.fromEntries(paramsArray)
-
-    const isBodyPresent = !!req.body
-
-    let jsonBody: any
-    if (isBodyPresent) {
-      jsonBody = await req.json()
-    }
-
+    const searchParams = new URLSearchParams(req.url.split("?")[1] || "")
+    const queryParams = URLSearchParamsToJSON(searchParams)
     const contentType = req.headers.get("content-type")
 
     const isContentTypeJson = contentType?.includes("application/json")
     const isContentTypeFormUrlEncoded = contentType?.includes(
       "application/x-www-form-urlencoded"
     )
+
+    let jsonBody: any
+    const bodyAsText = await req.text()
+
+    if (bodyAsText.length > 0 && isContentTypeJson) {
+      jsonBody = JSON.parse(bodyAsText)
+    } else if (bodyAsText.length > 0 && isContentTypeFormUrlEncoded) {
+      jsonBody = URLSearchParamsToJSON(new URLSearchParams(bodyAsText))
+    }
 
     if (
       (req.method === "POST" || req.method === "PATCH") &&
@@ -149,6 +136,12 @@ export const withValidation =
       }
 
       if (input.queryParams) {
+        validateQueryParams(
+          queryParams,
+          input.queryParams,
+          supportedArrayFormats
+        )
+
         ;(req as any).queryParams = parseQueryParams(
           input.queryParams,
           queryParams,
@@ -167,6 +160,10 @@ export const withValidation =
         )
       }
     } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
       if (error.name === "ZodError") {
         let message
         if (error.issues.length === 1) {
@@ -193,13 +190,6 @@ export const withValidation =
         type: "invalid_input",
         message: "Error while parsing input",
       })
-    }
-
-    /**
-     * this will override the res.json method to validate the response
-     */
-    if (input.shouldValidateResponses) {
-      validateJsonResponse(input.jsonResponse, req, res)
     }
 
     return next(req, res)

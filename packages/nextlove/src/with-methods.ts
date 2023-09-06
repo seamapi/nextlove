@@ -11,7 +11,6 @@ export type HTTPMethods =
 
 export const withMethods = (methods: HTTPMethods[]) => (next) => (req, res) => {
   if (!methods.includes(req.method)) {
-    // console.log({res})
     throw new MethodNotAllowedException({
       type: "method_not_allowed",
       message: `only ${methods.join(",")} accepted`,

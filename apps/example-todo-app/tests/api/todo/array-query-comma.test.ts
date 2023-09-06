@@ -1,34 +1,35 @@
 import qs from "qs"
-import test from "ava"
+import test, { ExecutionContext } from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
 
-test("GET /todo/array-query-comma (comma-separated array values)", async (t) => {
-  const { axios } = await getTestServer(t)
+const routeTestCommaSeparated =
+  (path: string) => async (t: ExecutionContext) => {
+    const { axios } = await getTestServer(t)
 
-  const {
-    data: { ids },
-    status,
-  } = await axios.get("/todo/array-query-comma", {
-    params: {
-      ids: ["1", "2", "3"],
-    },
-    paramsSerializer: (params) => {
-      return qs.stringify(params, { arrayFormat: "comma" })
-    },
-  })
+    const {
+      data: { ids },
+      status,
+    } = await axios.get(path, {
+      params: {
+        ids: ["1", "2", "3"],
+      },
+      paramsSerializer: (params) => {
+        return qs.stringify(params, { arrayFormat: "comma" })
+      },
+    })
 
-  t.is(status, 200)
-  t.deepEqual(ids, ["1", "2", "3"])
-})
+    t.is(status, 200)
+    t.deepEqual(ids, ["1", "2", "3"])
+  }
 
-test("GET /todo/array-query-comma (bracket array values)", async (t) => {
+const routeTestBracket = (path: string) => async (t: ExecutionContext) => {
   const { axios } = await getTestServer(t)
 
   const {
     response: { error },
     status,
   } = await axios
-    .get("/todo/array-query-comma", {
+    .get(path, {
       params: {
         ids: ["1", "2", "3"],
       },
@@ -40,16 +41,16 @@ test("GET /todo/array-query-comma (bracket array values)", async (t) => {
 
   t.is(status, 400)
   t.is(error.message, `Bracket syntax not supported for query param "ids"`)
-})
+}
 
-test("GET /todo/array-query-comma (repeated array values)", async (t) => {
+const routeTestRepeated = (path: string) => async (t: ExecutionContext) => {
   const { axios } = await getTestServer(t)
 
   const {
-    response: { error },
+    data: { ids },
     status,
   } = await axios
-    .get("/todo/array-query-comma", {
+    .get(path, {
       params: {
         ids: ["1", "2", "3"],
       },
@@ -59,9 +60,33 @@ test("GET /todo/array-query-comma (repeated array values)", async (t) => {
     })
     .catch((r) => r)
 
-  t.is(status, 400)
-  t.is(
-    error.message,
-    `Repeated parameters not supported for duplicate query param "ids"`
-  )
-})
+  t.is(status, 200)
+  t.deepEqual(ids, ["1", "2", "3"])
+}
+
+test.serial(
+  "GET /todo/array-query-comma (comma-separated array values)",
+  routeTestCommaSeparated("/todo/array-query-comma")
+)
+test.serial(
+  "GET /todo/array-query-comma/edge (comma-separated array values)",
+  routeTestCommaSeparated("/todo/array-query-comma/edge")
+)
+
+test.serial(
+  "GET /todo/array-query-comma (bracket syntax)",
+  routeTestBracket("/todo/array-query-comma")
+)
+test.serial(
+  "GET /todo/array-query-comma/edge (bracket syntax)",
+  routeTestBracket("/todo/array-query-comma/edge")
+)
+
+test.serial(
+  "GET /todo/array-query-comma (repeated syntax)",
+  routeTestRepeated("/todo/array-query-comma")
+)
+test.serial(
+  "GET /todo/array-query-comma/edge (repeated syntax)",
+  routeTestRepeated("/todo/array-query-comma/edge")
+)

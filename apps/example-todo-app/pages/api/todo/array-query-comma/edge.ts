@@ -15,6 +15,10 @@ export const route_spec = {
   queryParams,
 } as const
 
+export const config = {
+  runtime: "edge",
+}
+
 export default withRouteSpecEdgeSupportedArrayFormats(["comma"])(route_spec)(
   async (req, res) => {
     return res.status(200).json({ ok: true, ids: req.queryParams.ids })

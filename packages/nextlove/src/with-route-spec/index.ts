@@ -91,6 +91,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         const res = getNextloveResponse(req, {
           addOkStatus: setupParams.addOkStatus,
           addIf: setupParams.addIf,
+          jsonResponse: spec.jsonResponse,
+          shouldValidateResponses,
         })
 
         req.NextResponse = res
@@ -102,6 +104,9 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
+          ...((globalMiddlewares || []) as []),
+          auth_middleware,
+          ...((spec.middlewares || []) as []),
           withMethods(spec.methods),
           withValidation({
             jsonBody: spec.jsonBody,

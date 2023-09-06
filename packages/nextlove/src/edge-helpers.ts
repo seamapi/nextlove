@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
+import { InternalServerErrorException } from "./http-exceptions"
 
 export type NextloveResponse = ReturnType<typeof getNextloveResponse>
 export type NextloveRequest = NextRequest & {
@@ -17,13 +19,16 @@ export const getNextloveResponse = (
   {
     addIf,
     addOkStatus,
+    jsonResponse,
+    shouldValidateResponses,
   }: {
     addIf?: (req: NextloveRequest) => boolean
     addOkStatus?: boolean
+    jsonResponse?: z.ZodTypeAny
+    shouldValidateResponses?: boolean
   }
 ) => {
   const json = (body, params?: ResponseInit) => {
-    console.log({ body, params })
     const statusCode = params?.status ?? DEFAULT_STATUS
     const ok = statusCode >= 200 && statusCode < 300
 
@@ -31,7 +36,17 @@ export const getNextloveResponse = (
 
     const bodyWithPossibleOk = shouldIncludeStatus ? { ...body, ok } : body
 
-    // console.log({NextResponse})
+    if (shouldValidateResponses && jsonResponse && ok) {
+      try {
+        jsonResponse.parse(body)
+      } catch (err) {
+        throw new InternalServerErrorException({
+          type: "invalid_response",
+          message: "the response does not match with jsonResponse",
+          zodError: err,
+        })
+      }
+    }
 
     return NextResponse.json(bodyWithPossibleOk, params)
   }
@@ -72,7 +87,6 @@ export function getLegacyCompatibleReqRes(
   const headerMap = new Map<string, string | string[]>()
   if (req instanceof NextRequest) {
     req.headers.forEach((value, key) => {
-      console.log(`${key}: ${value}`)
       headerMap.set(key, value as string | string[])
     })
 

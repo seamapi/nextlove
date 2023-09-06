@@ -3,14 +3,14 @@ import test from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
-test("GET /todo/list-with-refine", async (t) => {
+const routeTest = (path: string) => async (t) => {
   const { axios } = await getTestServer(t)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 
   const ids = [uuidv4(), uuidv4()]
 
-  const responseWithArray = await axios.get("/todo/list-with-refine", {
+  const responseWithArray = await axios.get(path, {
     params: {
       ids,
     },
@@ -23,7 +23,7 @@ test("GET /todo/list-with-refine", async (t) => {
     })),
   })
 
-  const responseWithCommas = await axios.get("/todo/list-with-refine", {
+  const responseWithCommas = await axios.get(path, {
     params: {
       ids: ids.join(","),
     },
@@ -37,7 +37,7 @@ test("GET /todo/list-with-refine", async (t) => {
   })
 
   const title = uuidv4()
-  const responseWithTitle = await axios.get("/todo/list-with-refine", {
+  const responseWithTitle = await axios.get(path, {
     params: {
       title,
     },
@@ -52,7 +52,7 @@ test("GET /todo/list-with-refine", async (t) => {
     ],
   })
 
-  await axiosAssert.throws(t, async () => axios.get("/todo/list-with-refine"), {
+  await axiosAssert.throws(t, async () => axios.get(path), {
     status: 400,
     error: {
       type: "invalid_input",
@@ -63,7 +63,7 @@ test("GET /todo/list-with-refine", async (t) => {
   await axiosAssert.throws(
     t,
     async () =>
-      axios.get("/todo/list-with-refine", {
+      axios.get(path, {
         params: {
           title: "title",
           ids: ids.join(","),
@@ -81,7 +81,7 @@ test("GET /todo/list-with-refine", async (t) => {
   await axiosAssert.throws(
     t,
     async () =>
-      axios.get("/todo/list-with-refine", {
+      axios.get(path, {
         params: {
           title:
             "A title big enough to test if nextlove is handling correct with nested .refine (from zod) with at least 101 characters long",
@@ -95,4 +95,10 @@ test("GET /todo/list-with-refine", async (t) => {
       },
     }
   )
-})
+}
+
+test("GET /todo/list-with-refine", routeTest("/todo/list-with-refine"))
+test(
+  "GET /todo/list-with-refine/edge",
+  routeTest("/todo/list-with-refine/edge")
+)

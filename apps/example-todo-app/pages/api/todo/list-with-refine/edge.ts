@@ -34,6 +34,10 @@ export const route_spec = {
   }),
 } as const
 
+export const config = {
+  runtime: "edge",
+}
+
 export default withRouteSpecEdge(route_spec)(async (req, res) => {
   const { ids, title } = req.commonParams
 

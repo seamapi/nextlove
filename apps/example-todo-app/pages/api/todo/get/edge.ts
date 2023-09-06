@@ -1,8 +1,9 @@
 import { withRouteSpecEdge } from "lib/middlewares"
 import { NotFoundException } from "nextlove"
-import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
 import * as ZT from "lib/zod"
+
+const TODO_ID = "7e100fdd-04a5-47f8-82da-ce93266b4cac"
 
 export const queryParams = z.object({
   id: z.string().uuid(),
