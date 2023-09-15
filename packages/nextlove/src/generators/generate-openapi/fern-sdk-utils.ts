@@ -63,13 +63,6 @@ export async function mapMethodsToFernSdkMetadata({
   }
 
   const mappedMethods = {}
-  const atLeastOneMethodIsPost = methods.includes("POST")
-
-  if (!atLeastOneMethodIsPost) {
-    throw new Error(
-      "A route that accepts multiple methods should include at least the POST method."
-    )
-  }
 
   methods.forEach((method) => {
     if (method === "POST") {
