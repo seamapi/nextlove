@@ -288,7 +288,7 @@ export const withValidation =
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
-        : req.method !== "GET"
+        : req.method !== "GET" && req.method !== "DELETE"
 
       const isFormData = Boolean(input.formData)
 
