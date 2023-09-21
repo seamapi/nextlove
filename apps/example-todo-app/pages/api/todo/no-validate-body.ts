@@ -2,12 +2,10 @@ import {
   checkRouteSpec,
   withRouteSpecWithoutValidateGetRequestBody,
 } from "lib/middlewares"
-import { NotFoundException } from "nextlove"
-import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"
 
 export const route_spec = checkRouteSpec({
-  methods: ["GET", "POST"],
+  methods: ["GET", "DELETE", "POST"],
   auth: "auth_token",
   jsonBody: z.object({ name: z.string() }),
   jsonResponse: z.object({
@@ -16,7 +14,7 @@ export const route_spec = checkRouteSpec({
 })
 
 export default withRouteSpecWithoutValidateGetRequestBody(route_spec)(
-  async (req, res) => {
+  async (_, res) => {
     return res.status(200).json({ ok: true })
   }
 )
