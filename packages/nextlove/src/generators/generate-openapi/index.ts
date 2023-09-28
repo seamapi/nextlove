@@ -139,9 +139,13 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     file_path,
     { setupParams, routeSpec, route: routePath },
   ] of filepathToRouteFn) {
-    const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].some((method) =>
-      routeSpec.methods.includes(method)
-    )
+    const isGet = routeSpec.methods.includes("GET")
+
+    const isPostOrPutOrPatch =
+      !isGet &&
+      ["POST", "PUT", "PATCH"].some((method) =>
+        routeSpec.methods.includes(method)
+      )
     // TODO: support multipart/form-data
 
     // handle body
