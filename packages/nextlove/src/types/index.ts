@@ -69,7 +69,7 @@ export interface SetupParams<
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
-  globalAfterAuthMiddlewares: GlobalAfterAuthMW
+  globalAfterAuthMiddlewares?: GlobalAfterAuthMW
   exceptionHandlingMiddleware?: ((next: Function) => Function) | null
 
   // These improve OpenAPI generation
@@ -120,7 +120,11 @@ export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
   >
     ? Omit<NextApiRequest, "query" | "body"> &
           AuthMWOut &
-          MiddlewareChainOutput<SP["globalAfterAuthMiddlewares"]> &
+          MiddlewareChainOutput<
+            SP["globalAfterAuthMiddlewares"] extends readonly Middleware<any, any>[]
+              ? SP["globalAfterAuthMiddlewares"]
+              : []
+              > &
           MiddlewareChainOutput<
             RS["middlewares"] extends readonly Middleware<any, any>[]
               ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
