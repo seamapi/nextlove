@@ -227,3 +227,20 @@ export const myRoute9 = withRouteSpec(myRoute9Spec)(async (req, res) => {
   const errorApiResponse400 = res.status(400)
   expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
 })
+
+export const myRoute10 = createWithRouteSpec({
+  authMiddlewareMap: {},
+  globalAfterAuthMiddlewares: [
+    null as any as Middleware<{
+      good: true
+    }>,
+  ],
+  apiName: "",
+  globalMiddlewares: [],
+  productionServerUrl: "",
+} as const)({
+  auth: "none",
+  methods: ["GET"],
+} as const)(async (req, res) => {
+  expectTypeOf(req.good).toMatchTypeOf<true>()
+})
