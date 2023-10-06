@@ -225,7 +225,7 @@ export const myRoute9 = withRouteSpec(myRoute9Spec)(async (req, res) => {
 
 export const myRoute10 = createWithRouteSpec({
   authMiddlewareMap: {},
-  globalAfterAuthMiddlewares: [
+  globalMiddlewaresAfterAuth: [
     null as any as Middleware<{
       good: true
     }>,

@@ -65,11 +65,11 @@ export type QueryArrayFormats = readonly QueryArrayFormat[]
 export interface SetupParams<
   AuthMW extends AuthMiddlewares = AuthMiddlewares,
   GlobalMW extends Middleware<any, any>[] = any[],
-  GlobalAfterAuthMW extends Middleware<any, any>[] = any[]
+  GlobalMWAfterAuth extends Middleware<any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
-  globalAfterAuthMiddlewares?: GlobalAfterAuthMW
+  globalMiddlewaresAfterAuth?: GlobalMWAfterAuth
   exceptionHandlingMiddleware?: ((next: Function) => Function) | null
 
   // These improve OpenAPI generation
@@ -121,11 +121,11 @@ export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
     ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
         MiddlewareChainOutput<
-          SP["globalAfterAuthMiddlewares"] extends readonly Middleware<
+          SP["globalMiddlewaresAfterAuth"] extends readonly Middleware<
             any,
             any
           >[]
-            ? SP["globalAfterAuthMiddlewares"]
+            ? SP["globalMiddlewaresAfterAuth"]
             : []
         > &
         MiddlewareChainOutput<

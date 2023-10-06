@@ -19,7 +19,7 @@ const defaultRouteSpec = {
 export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
 
 export const withRouteSpecWithGlobalMiddlewareAfterAuth = createWithRouteSpec({
-  globalAfterAuthMiddlewares: [withGlobalMiddlewareAfterAuth],
+  globalMiddlewaresAfterAuth: [withGlobalMiddlewareAfterAuth],
   ...defaultRouteSpec,
 })
 
