@@ -1,4 +1,4 @@
-import { createWithRouteSpec, QueryArrayFormats } from "nextlove"
+import { createWithRouteSpec, Middleware, QueryArrayFormats } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 export { checkRouteSpec } from "nextlove"
 import * as ZT from "lib/zod"
@@ -21,7 +21,7 @@ export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
 export const withRouteSpecWithGlobalMiddlewareAfterAuth = createWithRouteSpec({
   globalMiddlewaresAfterAuth: [withGlobalMiddlewareAfterAuth],
   ...defaultRouteSpec,
-})
+} as const)
 
 export const withRouteSpecSupportedArrayFormats = (
   supportedArrayFormats: QueryArrayFormats

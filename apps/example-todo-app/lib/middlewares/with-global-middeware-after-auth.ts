@@ -6,11 +6,6 @@ export const withGlobalMiddlewareAfterAuth: Middleware<
       authorized_by: "auth_token"
       seam: "withGlobalMiddlewareAfterAuth"
     }
-  },
-  {
-    auth: {
-      authorized_by: "auth_token"
-    }
   }
 > = (next) => async (req, res) => {
   req.auth = {

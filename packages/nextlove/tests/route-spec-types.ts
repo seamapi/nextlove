@@ -239,3 +239,31 @@ export const myRoute10 = createWithRouteSpec({
 } as const)(async (req, res) => {
   expectTypeOf(req.good).toMatchTypeOf<true>()
 })
+
+export const myRoute11 = createWithRouteSpec({
+  authMiddlewareMap: {
+    // seam: (next) => (req, res) => {},
+  },
+  globalMiddlewaresAfterAuth: [
+    null as any as Middleware<{
+      auth: {
+          authorized_by: "auth_token";
+          seam: "withGlobalMiddlewareAfterAuth";
+      };
+    }>
+  ],
+  apiName: "",
+  globalMiddlewares: [
+    ((next) => async (req, res) => {
+      next(req, res)
+    }) as any as Middleware<{
+      gmw: true
+    }>
+  ],
+  productionServerUrl: "",
+} as const)({
+  auth: "none",
+  methods: ["GET"],
+} as const)(async (req, res) => {
+  expectTypeOf(req.auth.seam).toMatchTypeOf<"withGlobalMiddlewareAfterAuth">()
+})
