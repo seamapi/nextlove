@@ -119,32 +119,33 @@ export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
     any
   >
     ? Omit<NextApiRequest, "query" | "body"> &
-          AuthMWOut &
-          MiddlewareChainOutput<
-            SP["globalAfterAuthMiddlewares"] extends readonly Middleware<any, any>[]
-              ? SP["globalAfterAuthMiddlewares"]
-              : []
-              > &
-          MiddlewareChainOutput<
-            RS["middlewares"] extends readonly Middleware<any, any>[]
-              ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
-              : SP["globalMiddlewares"]
-          > & {
-            body: RS["formData"] extends z.ZodTypeAny
-              ? z.infer<RS["formData"]>
-              : RS["jsonBody"] extends z.ZodTypeAny
-              ? z.infer<RS["jsonBody"]>
-              : {}
-            query: RS["queryParams"] extends z.ZodTypeAny
-              ? z.infer<RS["queryParams"]>
-              : {}
-            commonParams: RS["commonParams"] extends z.ZodTypeAny
-              ? z.infer<RS["commonParams"]>
-              : {}
-          }
-    :
-
-      `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
+        AuthMWOut &
+        MiddlewareChainOutput<
+          SP["globalAfterAuthMiddlewares"] extends readonly Middleware<
+            any,
+            any
+          >[]
+            ? SP["globalAfterAuthMiddlewares"]
+            : []
+        > &
+        MiddlewareChainOutput<
+          RS["middlewares"] extends readonly Middleware<any, any>[]
+            ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
+            : SP["globalMiddlewares"]
+        > & {
+          body: RS["formData"] extends z.ZodTypeAny
+            ? z.infer<RS["formData"]>
+            : RS["jsonBody"] extends z.ZodTypeAny
+            ? z.infer<RS["jsonBody"]>
+            : {}
+          query: RS["queryParams"] extends z.ZodTypeAny
+            ? z.infer<RS["queryParams"]>
+            : {}
+          commonParams: RS["commonParams"] extends z.ZodTypeAny
+            ? z.infer<RS["commonParams"]>
+            : {}
+        }
+    : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
   res: NextApiResponseWithoutJsonAndStatusMethods &
     SuccessfulNextApiResponseMethods<
       RS["jsonResponse"] extends z.ZodTypeAny
