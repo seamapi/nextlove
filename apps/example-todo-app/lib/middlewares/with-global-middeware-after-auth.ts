@@ -1,13 +1,11 @@
 import { Middleware } from "nextlove"
 
-export const withGlobalMiddlewareAfterAuth: Middleware<
-  {
-    auth: {
-      authorized_by: "auth_token"
-      seam: "withGlobalMiddlewareAfterAuth"
-    }
+export const withGlobalMiddlewareAfterAuth: Middleware<{
+  auth: {
+    authorized_by: "auth_token"
+    seam: "withGlobalMiddlewareAfterAuth"
   }
-> = (next) => async (req, res) => {
+}> = (next) => async (req, res) => {
   req.auth = {
     ...req.auth,
     seam: "withGlobalMiddlewareAfterAuth",

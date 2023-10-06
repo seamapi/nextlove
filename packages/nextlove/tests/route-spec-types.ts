@@ -247,10 +247,10 @@ export const myRoute11 = createWithRouteSpec({
   globalMiddlewaresAfterAuth: [
     null as any as Middleware<{
       auth: {
-          authorized_by: "auth_token";
-          seam: "withGlobalMiddlewareAfterAuth";
-      };
-    }>
+        authorized_by: "auth_token"
+        seam: "withGlobalMiddlewareAfterAuth"
+      }
+    }>,
   ],
   apiName: "",
   globalMiddlewares: [
@@ -258,7 +258,7 @@ export const myRoute11 = createWithRouteSpec({
       next(req, res)
     }) as any as Middleware<{
       gmw: true
-    }>
+    }>,
   ],
   productionServerUrl: "",
 } as const)({
