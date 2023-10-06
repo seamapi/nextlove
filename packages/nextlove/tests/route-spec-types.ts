@@ -1,10 +1,5 @@
 import { MiddlewareChainOutput } from "../src/types"
-import {
-  checkRouteSpec,
-  createWithRouteSpec,
-  Middleware,
-  RouteSpec,
-} from "../src"
+import { checkRouteSpec, createWithRouteSpec, Middleware } from "../src"
 import { expectTypeOf } from "expect-type"
 import { z } from "zod"
 

@@ -21,7 +21,6 @@ export const withRouteSpec = createWithRouteSpec(defaultRouteSpec)
 export const withRouteSpecWithGlobalMiddlewareAfterAuth = createWithRouteSpec({
   globalAfterAuthMiddlewares: [withGlobalMiddlewareAfterAuth],
   ...defaultRouteSpec,
-
 })
 
 export const withRouteSpecSupportedArrayFormats = (

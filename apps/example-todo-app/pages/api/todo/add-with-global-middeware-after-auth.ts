@@ -17,12 +17,15 @@ export const route_spec = checkRouteSpec({
   jsonBody,
   jsonResponse: z.object({
     ok: z.boolean(),
+    auth: z.object({
+      authorized_by: z.literal("auth_token"),
+      seam: z.literal("withGlobalMiddlewareAfterAuth"),
+    }),
   }),
 })
 
 export default withRouteSpecWithGlobalMiddlewareAfterAuth(route_spec)(
   async (req, res) => {
-    console.log({ auth: req.auth })
-    return res.status(200).json({ ok: true })
+    return res.status(200).json({ ok: true, auth: req.auth })
   }
 )
