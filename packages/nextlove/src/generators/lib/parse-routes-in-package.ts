@@ -36,9 +36,9 @@ export const parseRoutesInPackage = async (opts: {
     filepaths.map(async (p) => {
       const { default: routeFn } = await require(path.resolve(p))
 
-        if (routeFn._routeSpec.metaData.ignoreEndpoint) {
-          return;
-        }
+      if (routeFn._routeSpec.metaData.ignoreEndpoint) {
+        return
+      }
 
       if (routeFn) {
         if (!routeFn._setupParams) {
