@@ -1,10 +1,5 @@
 import { MiddlewareChainOutput } from "../src/types"
-import {
-  checkRouteSpec,
-  createWithRouteSpec,
-  Middleware,
-  RouteSpec,
-} from "../src"
+import { checkRouteSpec, createWithRouteSpec, Middleware } from "../src"
 import { expectTypeOf } from "expect-type"
 import { z } from "zod"
 
@@ -226,4 +221,49 @@ export const myRoute9 = withRouteSpec(myRoute9Spec)(async (req, res) => {
   >()
   const errorApiResponse400 = res.status(400)
   expectTypeOf(errorApiResponse400.json).toMatchTypeOf<(body: any) => void>()
+})
+
+export const myRoute10 = createWithRouteSpec({
+  authMiddlewareMap: {},
+  globalMiddlewaresAfterAuth: [
+    null as any as Middleware<{
+      good: true
+    }>,
+  ],
+  apiName: "",
+  globalMiddlewares: [],
+  productionServerUrl: "",
+} as const)({
+  auth: "none",
+  methods: ["GET"],
+} as const)(async (req, res) => {
+  expectTypeOf(req.good).toMatchTypeOf<true>()
+})
+
+export const myRoute11 = createWithRouteSpec({
+  authMiddlewareMap: {
+    // seam: (next) => (req, res) => {},
+  },
+  globalMiddlewaresAfterAuth: [
+    null as any as Middleware<{
+      auth: {
+        authorized_by: "auth_token"
+        seam: "withGlobalMiddlewareAfterAuth"
+      }
+    }>,
+  ],
+  apiName: "",
+  globalMiddlewares: [
+    ((next) => async (req, res) => {
+      next(req, res)
+    }) as any as Middleware<{
+      gmw: true
+    }>,
+  ],
+  productionServerUrl: "",
+} as const)({
+  auth: "none",
+  methods: ["GET"],
+} as const)(async (req, res) => {
+  expectTypeOf(req.auth.seam).toMatchTypeOf<"withGlobalMiddlewareAfterAuth">()
 })

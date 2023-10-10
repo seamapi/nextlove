@@ -64,10 +64,12 @@ export type QueryArrayFormats = readonly QueryArrayFormat[]
 
 export interface SetupParams<
   AuthMW extends AuthMiddlewares = AuthMiddlewares,
-  GlobalMW extends Middleware<any, any>[] = any[]
+  GlobalMW extends Middleware<any, any>[] = any[],
+  GlobalMWAfterAuth extends Middleware<any, any>[] = any[]
 > {
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
+  globalMiddlewaresAfterAuth?: GlobalMWAfterAuth
   exceptionHandlingMiddleware?: ((next: Function) => Function) | null
 
   // These improve OpenAPI generation
@@ -110,10 +112,7 @@ type ErrorNextApiResponseMethods = {
   json: Send<any>
 }
 
-export type RouteFunction<
-  SP extends SetupParams<AuthMiddlewares>,
-  RS extends RouteSpec
-> = (
+export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
   req: (SP["authMiddlewareMap"] &
     typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
     infer AuthMWOut,
@@ -121,6 +120,14 @@ export type RouteFunction<
   >
     ? Omit<NextApiRequest, "query" | "body"> &
         AuthMWOut &
+        MiddlewareChainOutput<
+          SP["globalMiddlewaresAfterAuth"] extends readonly Middleware<
+            any,
+            any
+          >[]
+            ? SP["globalMiddlewaresAfterAuth"]
+            : []
+        > &
         MiddlewareChainOutput<
           RS["middlewares"] extends readonly Middleware<any, any>[]
             ? [...SP["globalMiddlewares"], ...RS["middlewares"]]
@@ -149,7 +156,7 @@ export type RouteFunction<
 ) => Promise<void>
 
 export type CreateWithRouteSpecFunction = <
-  SP extends SetupParams<AuthMiddlewares, any>
+  SP extends SetupParams<AuthMiddlewares, any, any>
 >(
   setupParams: SP
 ) => <RS extends RouteSpec<string, any, any, any, any, any, z.ZodTypeAny, any>>(
