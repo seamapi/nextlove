@@ -7,6 +7,7 @@ const MetaDataSchema = z.object({
 export type MetaData = z.infer<typeof MetaDataSchema>
 
 export const withMetadata = (metaData: MetaData) => (next) => (req, res) => {
+  // do something with metaData
   return next(req, res)
 }
 

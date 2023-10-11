@@ -113,9 +113,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             shouldValidateGetRequestBody,
             supportedArrayFormats,
           }),
-          withMetadata({
-            legacySdkTakesDeviceIdStringParameter: true,
-          }),
+          withMetadata(spec.metaData),
           userDefinedRouteFn
         )(req as any, res)
       }
