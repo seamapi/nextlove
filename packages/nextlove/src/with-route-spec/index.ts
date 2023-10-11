@@ -9,7 +9,6 @@ import {
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 import { z } from "zod"
-import withMetadata, { MetaData } from "./middlewares/with-metadata"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -24,7 +23,6 @@ export const checkRouteSpec = <
     any
   >[],
   FormData extends ParamDef = z.ZodTypeAny,
-  MetaData extends ParamDef = z.ZodTypeAny,
   Spec extends RouteSpec<
     AuthType,
     Methods,
@@ -32,8 +30,7 @@ export const checkRouteSpec = <
     QueryParams,
     CommonParams,
     Middlewares,
-    FormData,
-    MetaData
+    FormData
   > = RouteSpec<
     AuthType,
     Methods,
@@ -41,8 +38,7 @@ export const checkRouteSpec = <
     QueryParams,
     CommonParams,
     Middlewares,
-    FormData,
-    MetaData
+    FormData
   >
 >(
   spec: Spec
@@ -113,7 +109,6 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             shouldValidateGetRequestBody,
             supportedArrayFormats,
           }),
-          withMetadata(spec.metaData),
           userDefinedRouteFn
         )(req as any, res)
       }
