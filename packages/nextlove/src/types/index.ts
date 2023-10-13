@@ -27,7 +27,7 @@ export interface RouteSpec<
   JsonResponse extends ParamDef = z.ZodTypeAny,
   FormData extends ParamDef = z.ZodTypeAny
 > {
-  openApiMetada?: any
+  openApiMetadata?: any
   methods: Methods
   auth: Auth
   jsonBody?: JsonBody

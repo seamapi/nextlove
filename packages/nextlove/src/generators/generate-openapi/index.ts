@@ -144,10 +144,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     )
     // TODO: support multipart/form-data
 
-    if (routeSpec.openApiMetada) {
-      // handle openApiMetadata
-    }
-
     // handle body
     let body_to_generate_schema
     if (isPostOrPutOrPatch) {
@@ -195,6 +191,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     const route: OperationObject = {
+      ...routeSpec.openApiMetadata,
       summary: routePath,
       responses: {
         200: {
