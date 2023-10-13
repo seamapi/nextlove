@@ -26,6 +26,7 @@
     "@semantic-release/git": "10.0.1",
     "cpy-cli": "^4.2.0",
     "eslint-config-custom": "*",
+    "mock-fs": "^5.2.0",
     "prettier": "^2.7.1",
     "semantic-release": "19.0.5",
     "turbo": "latest"
@@ -34,7 +35,6 @@
     "npm": ">=7.0.0",
     "node": ">=14.0.0"
   },
-  "dependencies": {},
   "packageManager": "yarn@1.22.17",
   "repository": "https://github.com/seamapi/nextlove"
 }
