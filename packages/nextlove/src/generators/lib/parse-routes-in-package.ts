@@ -37,7 +37,7 @@ export const parseRoutesInPackage = async (opts: {
       const { default: routeFn } = await require(path.resolve(p))
 
       if (routeFn) {
-        if (routeFn._routeSpec?.excludeOpenApi) {
+        if (routeFn._routeSpec?.excludeFromOpenApi) {
           return
         }
       }
