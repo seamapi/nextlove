@@ -191,6 +191,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     const route: OperationObject = {
+      ...routeSpec.openApiMetadata,
       summary: routePath,
       responses: {
         200: {
