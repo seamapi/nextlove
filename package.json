@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@semantic-release/git": "10.0.1",
+    "@types/node": "^20.8.6",
     "cpy-cli": "^4.2.0",
     "eslint-config-custom": "*",
     "mock-fs": "^5.2.0",
