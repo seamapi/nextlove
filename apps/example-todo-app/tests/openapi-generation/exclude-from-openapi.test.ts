@@ -8,7 +8,9 @@ test("paths which were excluded from openAPI generation should not be generated"
     })
   ).paths
 
-  const excludedPath = Object.keys(generatedOpenApiPaths).includes("/api/todo/exclude-from-openapi")
+  const excludedPath = Object.keys(generatedOpenApiPaths).includes(
+    "/api/todo/exclude-from-openapi"
+  )
 
   // excluded path should not be rendered by generateOpenAPI
   t.false(excludedPath, "/api/todo/exclude-from-openapi")

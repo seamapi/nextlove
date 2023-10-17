@@ -8,5 +8,5 @@ test("should generate openapi with expected properties", async (t) => {
     })
   )
   console.log(openapiJson)
-  t.deepEqual(typeof openapiJson, 'object')
+  t.deepEqual(typeof openapiJson, "object")
 })
