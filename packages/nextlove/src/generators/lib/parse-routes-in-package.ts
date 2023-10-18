@@ -45,9 +45,6 @@ export const parseRoutesInPackage = async (opts: {
           )
           return
         }
-      }
-
-      if (routeFn) {
         if (!routeFn._setupParams) {
           console.warn(
             chalk.yellow(
