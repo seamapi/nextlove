@@ -58,6 +58,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
   const {
     authMiddlewareMap = {},
     globalMiddlewares = [],
+    globalMiddlewaresAfterAuth = [],
     shouldValidateResponses,
     shouldValidateGetRequestBody = true,
     exceptionHandlingMiddleware = withExceptionHandling({
@@ -97,6 +98,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             : []) as [any]),
           ...((globalMiddlewares || []) as []),
           auth_middleware,
+          ...((globalMiddlewaresAfterAuth || []) as []),
           ...((spec.middlewares || []) as []),
           withMethods(spec.methods),
           withValidation({
