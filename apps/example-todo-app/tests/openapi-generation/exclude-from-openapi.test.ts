@@ -1,5 +1,5 @@
 import test from "ava"
-import { generateOpenAPI } from "nextlove"
+import { generateOpenAPI } from "nextlove/generators"
 
 test("paths which were excluded from openAPI generation should not be generated", async (t) => {
   const generatedOpenApiPaths = JSON.parse(
