@@ -6,7 +6,6 @@ import {
   ParameterObject,
 } from "openapi3-ts/oas31"
 import { SetupParams } from "../../types"
-import chalk from "chalk"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { embedSchemaReferences } from "./embed-schema-references"
@@ -79,6 +78,7 @@ interface GenerateOpenAPIOpts {
  * "build:openapi" package.json script.
  */
 export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
+  const chalk = (await import("chalk")).default
   const { outputFile, tags = [] } = opts
 
   const filepathToRouteFn = await parseRoutesInPackage(opts)

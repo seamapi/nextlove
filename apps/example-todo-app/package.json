@@ -20,7 +20,7 @@
     "eslint-plugin-nextlove": "*",
     "glob-promise": "4.2.2",
     "micro": "9.3.4",
-    "mkdirp": "1.0.4",
+    "mkdirp": "^3.0.1",
     "next": "12.2.0",
     "nextlove": "*",
     "path-to-regexp": "6.2.1",

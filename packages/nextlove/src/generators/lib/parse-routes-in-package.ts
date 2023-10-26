@@ -1,6 +1,4 @@
-import chalk from "chalk"
 import path from "node:path"
-import { globby } from "globby"
 import { RouteSpec, SetupParams } from "../../types"
 import { defaultMapFilePathToHTTPRoute } from "./default-map-file-path-to-http-route"
 
@@ -17,6 +15,8 @@ export const parseRoutesInPackage = async (opts: {
   apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
 }): Promise<Map<string, RouteInfo>> => {
+  const chalk = (await import("chalk")).default
+  const globby = (await import("globby")).globby
   const {
     packageDir,
     pathGlob = "/pages/api/**/*.ts",
@@ -37,6 +37,14 @@ export const parseRoutesInPackage = async (opts: {
       const { default: routeFn } = await require(path.resolve(p))
 
       if (routeFn) {
+        if (routeFn._routeSpec?.excludeFromOpenApi) {
+          console.log(
+            chalk.gray(
+              `Ignoring "${p} because it was excluded from OpenAPI generation"`
+            )
+          )
+          return
+        }
         if (!routeFn._setupParams) {
           console.warn(
             chalk.yellow(
