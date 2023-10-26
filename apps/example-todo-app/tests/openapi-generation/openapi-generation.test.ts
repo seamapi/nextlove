@@ -7,6 +7,5 @@ test("should generate openapi with expected properties", async (t) => {
       packageDir: ".",
     })
   )
-  console.log(openapiJson)
   t.deepEqual(typeof openapiJson, "object")
 })

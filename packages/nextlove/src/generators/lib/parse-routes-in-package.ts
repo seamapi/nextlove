@@ -38,9 +38,9 @@ export const parseRoutesInPackage = async (opts: {
 
       if (routeFn) {
         if (routeFn._routeSpec?.excludeFromOpenApi) {
-          console.warn(
-            chalk.yellow(
-              `Ignoring "${p} because it was excluded from openAPI generation"`
+          console.log(
+            chalk.gray(
+              `Ignoring "${p} because it was excluded from OpenAPI generation"`
             )
           )
           return
