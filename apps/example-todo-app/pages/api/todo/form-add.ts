@@ -7,7 +7,7 @@ export const formData = z.object({
   id: z.string().uuid().optional().default(uuidv4()),
   title: z.string(),
   completed: z.boolean().optional().default(false),
-})
+}).optional()
 
 export const route_spec = checkRouteSpec({
   methods: ["POST"],
