@@ -99,16 +99,22 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
         const firstAuthMiddlewareThatSucceeds = (next) => async (req, res) => {
           let errors: unknown[] = []
+          let didAuthMiddlewareThrow = true
+
           for (const middleware of authMiddlewares) {
             try {
-              return await middleware(next)(req, res)
+              return await middleware((...args) => {
+                // Otherwise errors unrelated to auth thrown by built-in middleware (withMethods, withValidation) will be caught here
+                didAuthMiddlewareThrow = false
+                return next(...args)
+              })(req, res)
             } catch (error) {
               errors.push(error)
               continue
             }
           }
 
-          if (onMultipleAuthMiddlewareFailures) {
+          if (onMultipleAuthMiddlewareFailures && didAuthMiddlewareThrow) {
             onMultipleAuthMiddlewareFailures(errors)
           }
 
