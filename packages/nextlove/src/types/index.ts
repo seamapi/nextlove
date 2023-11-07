@@ -85,6 +85,12 @@ export interface SetupParams<
   globalSchemas?: Record<string, z.ZodTypeAny>
 
   supportedArrayFormats?: QueryArrayFormats
+
+  /**
+   * If an endpoint accepts multiple auth methods and they all fail, this hook will be called with the errors thrown by the middlewares.
+   * You can inspect the errors and throw a more generic error in this hook if you want.
+   */
+  onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
 }
 
 const defaultMiddlewareMap = {

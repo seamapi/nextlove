@@ -1,4 +1,8 @@
-import { createWithRouteSpec, Middleware, QueryArrayFormats } from "nextlove"
+import {
+  createWithRouteSpec,
+  QueryArrayFormats,
+  UnauthorizedException,
+} from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 import { withUserSession } from "./with-user-session"
 export { checkRouteSpec } from "nextlove"
@@ -17,6 +21,14 @@ const defaultRouteSpec = {
   globalSchemas: {
     todo: ZT.todo,
     ok: ZT.ok,
+  },
+  onMultipleAuthMiddlewareFailures: (errors: unknown[]) => {
+    throw new UnauthorizedException({
+      type: "unauthorized",
+      message: `Multiple auth middleware failures: ${errors.map(
+        (e) => (e as Error).message
+      )}`,
+    })
   },
 } as const
 

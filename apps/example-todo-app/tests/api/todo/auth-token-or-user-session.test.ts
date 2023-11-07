@@ -23,4 +23,16 @@ test("GET /todo/auth-token-or-user-session", async (t) => {
     }
   )
   t.is(userSessionResponse.data.auth_type, "user_session")
+
+  // Generic error if neither is provided
+  const noAuthResponse = await axios.get("/todo/auth-token-or-user-session", {
+    validateStatus: () => true,
+  })
+  t.is(noAuthResponse.status, 401)
+  // Message set by custom onMultipleAuthMiddlewareFailures() hook
+  t.true(
+    noAuthResponse.data.error.message.includes(
+      "Multiple auth middleware failures"
+    )
+  )
 })

@@ -79,6 +79,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         }
       : {},
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
+    onMultipleAuthMiddlewareFailures,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
@@ -97,17 +98,21 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           throw new Error(`Unknown auth type: ${undefinedAuthType}`)
 
         const firstAuthMiddlewareThatSucceeds = (next) => async (req, res) => {
-          let lastError
+          let errors: unknown[] = []
           for (const middleware of authMiddlewares) {
             try {
               return await middleware(next)(req, res)
-            } catch (e) {
-              lastError = e
+            } catch (error) {
+              errors.push(error)
               continue
             }
           }
 
-          throw lastError
+          if (onMultipleAuthMiddlewareFailures) {
+            onMultipleAuthMiddlewareFailures(errors)
+          }
+
+          throw errors[errors.length - 1]
         }
 
         return wrappers(
