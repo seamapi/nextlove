@@ -96,11 +96,11 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         if (undefinedAuthType)
           throw new Error(`Unknown auth type: ${undefinedAuthType}`)
 
-        const firstAuthMiddlewareThatSucceeds = (next) => (req, res) => {
+        const firstAuthMiddlewareThatSucceeds = (next) => async (req, res) => {
           let lastError
           for (const middleware of authMiddlewares) {
             try {
-              return middleware(next)(req, res)
+              return await middleware(next)(req, res)
             } catch (e) {
               lastError = e
               continue

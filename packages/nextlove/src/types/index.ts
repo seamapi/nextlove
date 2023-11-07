@@ -113,19 +113,25 @@ type ErrorNextApiResponseMethods = {
   json: Send<any>
 }
 
-type AuthMapper<
+type GetApplicableAuthMiddleware<
   SP extends SetupParams,
   RS extends RouteSpec
 > = RS["auth"] extends string
   ? (SP["authMiddlewareMap"] & typeof defaultMiddlewareMap)[RS["auth"]]
-  : RS["auth"] extends string[]
+  : RS["auth"] extends readonly string[]
   ? (SP["authMiddlewareMap"] & typeof defaultMiddlewareMap)[RS["auth"][number]]
   : never
 
+type MiddlewareUnionToOneOfOutput<M extends Middleware<any, any>> =
+  M extends Middleware<infer T, any> ? T : never
+
 export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
-  req: AuthMapper<SP, RS> extends Middleware<infer AuthMWOut, any>
+  req: GetApplicableAuthMiddleware<SP, RS> extends Middleware<
+    any,
+    any
+  >
     ? Omit<NextApiRequest, "query" | "body"> &
-        AuthMWOut &
+        MiddlewareUnionToOneOfOutput<GetApplicableAuthMiddleware<SP, RS>> &
         MiddlewareChainOutput<
           SP["globalMiddlewaresAfterAuth"] extends readonly Middleware<
             any,
