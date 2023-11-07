@@ -126,10 +126,7 @@ type MiddlewareUnionToOneOfOutput<M extends Middleware<any, any>> =
   M extends Middleware<infer T, any> ? T : never
 
 export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
-  req: GetApplicableAuthMiddleware<SP, RS> extends Middleware<
-    any,
-    any
-  >
+  req: GetApplicableAuthMiddleware<SP, RS> extends Middleware<any, any>
     ? Omit<NextApiRequest, "query" | "body"> &
         MiddlewareUnionToOneOfOutput<GetApplicableAuthMiddleware<SP, RS>> &
         MiddlewareChainOutput<
