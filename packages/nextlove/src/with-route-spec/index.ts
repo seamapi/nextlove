@@ -89,15 +89,33 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
       ) => {
         authMiddlewareMap["none"] = (next) => next
 
-        const auth_middleware = authMiddlewareMap[spec.auth]
-        if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
+        const authMiddlewares = (
+          Array.isArray(spec.auth) ? spec.auth : [spec.auth]
+        ).map((authType) => authMiddlewareMap[authType])
+        const undefinedAuthType = authMiddlewares.find((mw) => !mw)
+        if (undefinedAuthType)
+          throw new Error(`Unknown auth type: ${undefinedAuthType}`)
+
+        const firstAuthMiddlewareThatSucceeds = (next) => (req, res) => {
+          let lastError
+          for (const middleware of authMiddlewares) {
+            try {
+              return middleware(next)(req, res)
+            } catch (e) {
+              lastError = e
+              continue
+            }
+          }
+
+          throw lastError
+        }
 
         return wrappers(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
           ...((globalMiddlewares || []) as []),
-          auth_middleware,
+          firstAuthMiddlewareThatSucceeds,
           ...((globalMiddlewaresAfterAuth || []) as []),
           ...((spec.middlewares || []) as []),
           withMethods(spec.methods),
