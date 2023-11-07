@@ -79,6 +79,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         }
       : {},
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
+    onMultipleAuthMiddlewareFailures,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
@@ -89,15 +90,43 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
       ) => {
         authMiddlewareMap["none"] = (next) => next
 
-        const auth_middleware = authMiddlewareMap[spec.auth]
-        if (!auth_middleware) throw new Error(`Unknown auth type: ${spec.auth}`)
+        const authMiddlewares = (
+          Array.isArray(spec.auth) ? spec.auth : [spec.auth]
+        ).map((authType) => authMiddlewareMap[authType])
+        const undefinedAuthType = authMiddlewares.find((mw) => !mw)
+        if (undefinedAuthType)
+          throw new Error(`Unknown auth type: ${undefinedAuthType}`)
+
+        const firstAuthMiddlewareThatSucceeds = (next) => async (req, res) => {
+          let errors: unknown[] = []
+          let didAuthMiddlewareThrow = true
+
+          for (const middleware of authMiddlewares) {
+            try {
+              return await middleware((...args) => {
+                // Otherwise errors unrelated to auth thrown by built-in middleware (withMethods, withValidation) will be caught here
+                didAuthMiddlewareThrow = false
+                return next(...args)
+              })(req, res)
+            } catch (error) {
+              errors.push(error)
+              continue
+            }
+          }
+
+          if (onMultipleAuthMiddlewareFailures && didAuthMiddlewareThrow) {
+            onMultipleAuthMiddlewareFailures(errors)
+          }
+
+          throw errors[errors.length - 1]
+        }
 
         return wrappers(
           ...((exceptionHandlingMiddleware
             ? [exceptionHandlingMiddleware]
             : []) as [any]),
           ...((globalMiddlewares || []) as []),
-          auth_middleware,
+          firstAuthMiddlewareThatSucceeds,
           ...((globalMiddlewaresAfterAuth || []) as []),
           ...((spec.middlewares || []) as []),
           withMethods(spec.methods),

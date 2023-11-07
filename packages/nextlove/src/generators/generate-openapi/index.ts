@@ -204,7 +204,11 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           description: "Unauthorized",
         },
       },
-      security: securityObjectsForAuthType[routeSpec.auth],
+      security: Array.isArray(routeSpec.auth)
+        ? routeSpec.auth
+            .map((authType) => securityObjectsForAuthType[authType])
+            .flat()
+        : securityObjectsForAuthType[routeSpec.auth],
     }
 
     if (body_to_generate_schema) {

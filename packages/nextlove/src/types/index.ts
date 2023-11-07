@@ -18,7 +18,7 @@ export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
 export interface RouteSpec<
-  Auth extends string = string,
+  Auth extends string | string[] = string[],
   Methods extends HTTPMethods[] = any,
   JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
   QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
@@ -85,6 +85,12 @@ export interface SetupParams<
   globalSchemas?: Record<string, z.ZodTypeAny>
 
   supportedArrayFormats?: QueryArrayFormats
+
+  /**
+   * If an endpoint accepts multiple auth methods and they all fail, this hook will be called with the errors thrown by the middlewares.
+   * You can inspect the errors and throw a more generic error in this hook if you want.
+   */
+  onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
 }
 
 const defaultMiddlewareMap = {
@@ -113,14 +119,22 @@ type ErrorNextApiResponseMethods = {
   json: Send<any>
 }
 
+type GetApplicableAuthMiddleware<
+  SP extends SetupParams,
+  RS extends RouteSpec
+> = RS["auth"] extends string
+  ? (SP["authMiddlewareMap"] & typeof defaultMiddlewareMap)[RS["auth"]]
+  : RS["auth"] extends readonly string[]
+  ? (SP["authMiddlewareMap"] & typeof defaultMiddlewareMap)[RS["auth"][number]]
+  : never
+
+type MiddlewareUnionToOneOfOutput<M extends Middleware<any, any>> =
+  M extends Middleware<infer T, any> ? T : never
+
 export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
-  req: (SP["authMiddlewareMap"] &
-    typeof defaultMiddlewareMap)[RS["auth"]] extends Middleware<
-    infer AuthMWOut,
-    any
-  >
+  req: GetApplicableAuthMiddleware<SP, RS> extends Middleware<any, any>
     ? Omit<NextApiRequest, "query" | "body"> &
-        AuthMWOut &
+        MiddlewareUnionToOneOfOutput<GetApplicableAuthMiddleware<SP, RS>> &
         MiddlewareChainOutput<
           SP["globalMiddlewaresAfterAuth"] extends readonly Middleware<
             any,
@@ -146,7 +160,9 @@ export type RouteFunction<SP extends SetupParams, RS extends RouteSpec> = (
             ? z.infer<RS["commonParams"]>
             : {}
         }
-    : `unknown auth type: ${RS["auth"]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
+    : `unknown auth type: ${RS["auth"] extends string
+        ? RS["auth"]
+        : RS["auth"][number]}. You should configure this auth type in your auth_middlewares w/ createWithRouteSpec, or maybe you need to add "as const" to your route spec definition.`,
   res: NextApiResponseWithoutJsonAndStatusMethods &
     SuccessfulNextApiResponseMethods<
       RS["jsonResponse"] extends z.ZodTypeAny
@@ -160,6 +176,6 @@ export type CreateWithRouteSpecFunction = <
   SP extends SetupParams<AuthMiddlewares, any, any>
 >(
   setupParams: SP
-) => <RS extends RouteSpec<string, any, any, any, any, any, z.ZodTypeAny, any>>(
+) => <RS extends RouteSpec<any, any, any, any, any, any, z.ZodTypeAny, any>>(
   route_spec: RS
 ) => (next: RouteFunction<SP, RS>) => any
