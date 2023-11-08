@@ -14,6 +14,7 @@ export const parseRoutesInPackage = async (opts: {
   pathGlob?: string
   apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
+  includeOpenApiExcludedRoutes?: boolean
 }): Promise<Map<string, RouteInfo>> => {
   const chalk = (await import("chalk")).default
   const globby = (await import("globby")).globby
@@ -37,7 +38,10 @@ export const parseRoutesInPackage = async (opts: {
       const { default: routeFn } = await require(path.resolve(p))
 
       if (routeFn) {
-        if (routeFn._routeSpec?.excludeFromOpenApi) {
+        if (
+          routeFn._routeSpec?.excludeFromOpenApi &&
+          !opts.includeOpenApiExcludedRoutes
+        ) {
           console.log(
             chalk.gray(
               `Ignoring "${p} because it was excluded from OpenAPI generation"`
