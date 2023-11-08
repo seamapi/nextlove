@@ -109,8 +109,12 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
                 return next(...args)
               })(req, res)
             } catch (error) {
-              errors.push(error)
-              continue
+              if (didAuthMiddlewareThrow) {
+                errors.push(error)
+                continue
+              } else {
+                throw error
+              }
             }
           }
 

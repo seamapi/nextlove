@@ -4,6 +4,9 @@ import { z } from "zod"
 export default withRouteSpec({
   methods: ["GET"],
   auth: ["auth_token", "user_session"],
+  queryParams: z.object({
+    id: z.coerce.number(),
+  }),
   jsonResponse: z.object({
     ok: z.boolean(),
     auth_type: z.enum(["auth_token", "user_session"]),
