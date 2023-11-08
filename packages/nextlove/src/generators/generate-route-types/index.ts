@@ -14,6 +14,11 @@ interface GenerateRouteTypesOpts {
    * If provided, only routes that return true will be included in the generated types.
    */
   filterRoutes?: (route: string) => boolean
+  /**
+   * By default, routes that have `excludeFromOpenApi` set to true will be excluded from the generated types.
+   * Set this to true to include them.
+   */
+  includeOpenApiExcludedRoutes?: boolean
 }
 
 export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
