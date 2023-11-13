@@ -2,7 +2,6 @@ import test from "ava"
 import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
-import { withRouteSpec } from "lib/middlewares"
 import { z } from "zod"
 
 test("POST /todo/form-add", async (t) => {
@@ -25,21 +24,26 @@ test("POST /todo/form-add", async (t) => {
   t.is(successfulRes.status, 200)
 })
 
-test("Valid formData object passes validation", (t) => {
+test("Valid formData object passes validation and returns successful response", async (t) => {
+  const { axios } = await getTestServer(t)
+
+  axios.defaults.headers.common.Authorization = `Bearer auth_token`
+
+  const bodyFormData = new URLSearchParams()
+  bodyFormData.append("title", "clear_sandbox_state")
+
+  const successfulRes = await axios({
+    method: "POST",
+    url: "/todo/form-add",
+    data: bodyFormData,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  }).catch((err) => err)
+
   const validFormData = {
     clear_sandbox_state: "clear_sandbox_state",
   }
-
-  withRouteSpec({
-    auth: "support",
-    methods: ["GET", "POST"],
-    queryParams: z.object({
-      workspace_id: z.string(),
-    }),
-    formData: z.object({
-      clear_sandbox_state: z.literal("clear_sandbox_state"),
-    }),
-  } as const)
 
   const validationResult = z
     .object({
@@ -48,4 +52,5 @@ test("Valid formData object passes validation", (t) => {
     .safeParse(validFormData)
 
   t.true(validationResult.success)
+  t.is(successfulRes.status, 200)
 })
