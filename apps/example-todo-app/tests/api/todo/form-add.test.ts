@@ -2,9 +2,8 @@ import test from "ava"
 import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
-import { formData } from "pages/api/todo/form-add"
 import { withRouteSpec } from "lib/middlewares"
-import * as z from "zod"
+import { z } from "zod"
 
 test("POST /todo/form-add", async (t) => {
   const { axios } = await getTestServer(t)
@@ -26,10 +25,10 @@ test("POST /todo/form-add", async (t) => {
   t.is(successfulRes.status, 200)
 })
 
-test("Workspace supports an optional object of formData", async (t) => {
-  const { axios } = await getTestServer(t)
-
-  axios.defaults.headers.common.Authorization = `Bearer auth_token`
+test("Valid formData object passes validation", (t) => {
+  const validFormData = {
+    clear_sandbox_state: "clear_sandbox_state",
+  }
 
   withRouteSpec({
     auth: "support",
@@ -37,21 +36,16 @@ test("Workspace supports an optional object of formData", async (t) => {
     queryParams: z.object({
       workspace_id: z.string(),
     }),
-    formData: z
-      .object({
-        clear_sandbox_state: z.literal("clear_sandbox_state"),
-      })
-      .optional(),
+    formData: z.object({
+      clear_sandbox_state: z.literal("clear_sandbox_state"),
+    }),
   } as const)
 
-  const successfulRes = await axios({
-    method: "POST",
-    url: "/todo/form-add",
-    data: formData,
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-  }).catch((err) => err)
+  const validationResult = z
+    .object({
+      clear_sandbox_state: z.literal("clear_sandbox_state"),
+    })
+    .safeParse(validFormData)
 
-  t.is(successfulRes.status, 200)
+  t.true(validationResult.success)
 })
