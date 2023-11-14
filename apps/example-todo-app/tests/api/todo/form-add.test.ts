@@ -3,7 +3,7 @@ import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 import { z } from "zod"
-import QueryString from "qs"
+import qs from "qs"
 
 test("POST /todo/form-add", async (t) => {
   const { axios } = await getTestServer(t)
@@ -35,7 +35,7 @@ test("Valid formData object passes validation and returns successful response", 
     clear_sandbox_state: "clear_sandbox_state",
   }
 
-  const formDataString = QueryString.stringify(validFormData)
+  const formDataString = qs.stringify(validFormData)
 
   const successfulRes = await axios({
     method: "POST",
