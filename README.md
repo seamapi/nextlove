@@ -128,6 +128,7 @@ export default withRouteSpec(routeSpec)(async (req, res) => {
 | `auth`         | `none` or a key from your `authMiddlewareMap`, this authentication middleware will be applied                              |
 | `queryParams`  | Any GET query parameters on the request as a zod object                                                                    |
 | `jsonBody`     | The JSON body this endpoint accepts as a zod object                                                                        |
+| `formData`     | The `multipart/form-data` or `application/x-www-form-urlencoded` encoded body                                              |
 | `commonParams` | Parameters common to both the query and json body as a zod object, this is sometimes used if a GET route also accepts POST |
 | `jsonResponse` | A zod object representing the json resposne                                                                                |
 
