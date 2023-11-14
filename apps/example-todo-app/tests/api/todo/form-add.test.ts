@@ -3,6 +3,7 @@ import { TODO_ID } from "tests/fixtures"
 import getTestServer from "tests/fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 import { z } from "zod"
+import QueryString from "qs"
 
 test("POST /todo/form-add", async (t) => {
   const { axios } = await getTestServer(t)
@@ -29,28 +30,29 @@ test("Valid formData object passes validation and returns successful response", 
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 
-  const bodyFormData = new URLSearchParams()
-  bodyFormData.append("title", "clear_sandbox_state")
+  const validFormData = {
+    title: "test title",
+    clear_sandbox_state: "clear_sandbox_state",
+  }
+
+  const formDataString = QueryString.stringify(validFormData)
 
   const successfulRes = await axios({
     method: "POST",
     url: "/todo/form-add",
-    data: bodyFormData,
+    data: formDataString,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   }).catch((err) => err)
 
-  const validFormData = {
-    clear_sandbox_state: "clear_sandbox_state",
-  }
-
-  const validationResult = z
+  const formDataSchema = z
     .object({
+      title: z.string(),
       clear_sandbox_state: z.literal("clear_sandbox_state"),
     })
     .safeParse(validFormData)
 
-  t.true(validationResult.success)
+  t.true(formDataSchema.success)
   t.is(successfulRes.status, 200)
 })
