@@ -50,20 +50,18 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
       }
     }
 
-    const queryParamsSchemaWithoutPathParameters = queryParams?.omit(
-      Object.fromEntries(pathParameters.map((param) => [param, true]))
-    )
+    if (queryParams && "omit" in queryParams) {
+      queryParams = queryParams.omit(
+        Object.fromEntries(pathParameters.map((param) => [param, true]))
+      )
+    }
 
     routeDefs.push(
       `
 "${route}": {
   route: "${route}",
   method: ${routeSpec.methods.map((m) => `"${m}"`).join(" | ")},
-  queryParams: ${
-    queryParamsSchemaWithoutPathParameters
-      ? printNode(zodToTs(queryParamsSchemaWithoutPathParameters).node)
-      : "{}"
-  },
+  queryParams: ${queryParams ? printNode(zodToTs(queryParams).node) : "{}"},
   jsonBody: ${
     routeSpec.jsonBody ? printNode(zodToTs(routeSpec.jsonBody).node) : "{}"
   },
