@@ -40,6 +40,8 @@ export interface RouteSpec<
    * add x-fern-sdk-return-value to the openapi spec, useful when you want to return only a subset of the response
    */
   sdkReturnValue?: string | string[]
+
+  onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
 }
 
 export type MiddlewareChainOutput<
