@@ -34,6 +34,6 @@ test("route-level onMultipleAuthMiddlewareFailures spec takes precedent", async 
     )
   )
 
-  t.is(globalWasCalled, false)
-  t.is(routeWasCalled, true)
+  t.false(globalWasCalled)
+  t.true(routeWasCalled)
 })
