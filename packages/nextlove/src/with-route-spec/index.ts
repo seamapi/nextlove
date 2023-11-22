@@ -101,6 +101,10 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           let errors: unknown[] = []
           let didAuthMiddlewareThrow = true
 
+          const handleMultipleAuthMiddlewareFailures =
+            spec.onMultipleAuthMiddlewareFailures ??
+            onMultipleAuthMiddlewareFailures
+
           for (const middleware of authMiddlewares) {
             try {
               return await middleware((...args) => {
@@ -118,8 +122,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             }
           }
 
-          if (onMultipleAuthMiddlewareFailures && didAuthMiddlewareThrow) {
-            onMultipleAuthMiddlewareFailures(errors)
+          if (handleMultipleAuthMiddlewareFailures && didAuthMiddlewareThrow) {
+            handleMultipleAuthMiddlewareFailures(errors)
           }
 
           throw errors[errors.length - 1]
