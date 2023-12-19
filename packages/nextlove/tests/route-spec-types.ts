@@ -152,12 +152,15 @@ export const myRoute5 = withRouteSpec(myRoute5Spec)(async (req, res) => {
 export const myRoute6Spec = checkRouteSpec({
   auth: "none",
   methods: ["POST"],
-  formData: z.object({
-    id: z.string(),
-  }),
+  formData: z
+    .object({
+      id: z.string(),
+    })
+    .optional(),
 })
 
 export const myRoute6 = withRouteSpec(myRoute6Spec)(async (req, res) => {
+  // @ts-expect-error - should be a string
   expectTypeOf(req.body).toMatchTypeOf<{ id: string }>()
 })
 
