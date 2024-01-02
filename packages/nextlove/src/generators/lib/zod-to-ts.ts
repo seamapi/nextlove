@@ -27,7 +27,7 @@
  */
 
 import ts from "typescript"
-import { ZodTypeAny } from "zod"
+import { ZodType, ZodTypeAny } from "zod"
 import { parseFrontMatter, testFrontMatter } from "./front-matter"
 import dedent from "dedent"
 
@@ -182,6 +182,12 @@ export const zodToTs = (
   identifier?: string,
   options?: ZodToTsOptions
 ): ZodToTsReturn => {
+  if (!(zod instanceof ZodType)) {
+    return {
+      node: createUnknownKeywordNode(),
+      store: { nativeEnums: [] },
+    }
+  }
   const resolvedIdentifier = identifier ?? "Identifier"
 
   const resolvedOptions = resolveOptions(options)
