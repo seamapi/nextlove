@@ -81,7 +81,7 @@ const addJsDocComment = (node: ts.Node, text: string) => {
   if (deprecated) {
     comment += `\n * @deprecated ${
       typeof deprecated === "string" ? deprecated : ""
-    }}`
+    }`
   } else {
     comment += ` `
   }
