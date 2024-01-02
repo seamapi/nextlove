@@ -1,5 +1,4 @@
 import fs from "node:fs/promises"
-import { generateSchema } from "@anatine/zod-openapi"
 import {
   OpenApiBuilder,
   OperationObject,
@@ -8,6 +7,7 @@ import {
 import { SetupParams } from "../../types"
 import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
+import { generateSchema } from "../lib/zod-openapi"
 import { embedSchemaReferences } from "./embed-schema-references"
 import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
 
@@ -305,8 +305,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   }
 
   if (outputFile) {
-    await fs.writeFile(outputFile, builder.getSpecAsJson())
+    await fs.writeFile(outputFile, builder.getSpecAsJson(undefined, 2))
   }
 
-  return builder.getSpecAsJson()
+  return builder.getSpecAsJson(undefined, 2)
 }

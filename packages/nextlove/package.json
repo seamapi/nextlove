@@ -53,9 +53,12 @@
     "zod": "^3.0.0"
   },
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "dedent": "^1.5.1",
     "lodash": "^4.17.21",
     "openapi3-ts": "^4.1.2",
-    "zod-to-ts": "^1.1.4"
+    "js-yaml": "^4.1.0",
+    "ts-deepmerge": "^6.0.3"
   },
   "devDependencies": {
     "@anatine/zod-openapi": "^2.0.1",

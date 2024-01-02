@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
-import { zodToTs, printNode } from "zod-to-ts"
+import { zodToTs, printNode } from "../lib/zod-to-ts"
 import prettier from "prettier"
 import { z, ZodEffects, ZodOptional } from "zod"
 
