@@ -52,7 +52,7 @@ const createUnknownKeywordNode = () =>
 export const printNode = (
   node: ts.Node,
   printerOptions?: ts.PrinterOptions
-) => {
+): string => {
   const sourceFile = ts.createSourceFile(
     "print.ts",
     "",
