@@ -22,7 +22,7 @@
     "eslint-plugin-eslint-plugin": "^3.2.0",
     "eslint-plugin-node": "^11.1.0",
     "requireindex": "^1.1.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "jest": "^29.5.0"

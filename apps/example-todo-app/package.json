@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "rimraf dist && nsm build && tsup ./index.ts --dts --sourcemap && cpy .next dist/.next",
-    "build:openapi": "nextlove generate-openapi --packageDir . --apiName 'Example TODO API'",
+    "build:openapi": "nextlove generate-openapi --packageDir . --apiName 'Example TODO API' --outputFile ./openapi.json",
     "build:type": "nextlove generate-route-types --packageDir .",
     "start": "next start",
     "lint": "next lint",
