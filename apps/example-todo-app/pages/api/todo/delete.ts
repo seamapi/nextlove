@@ -1,4 +1,5 @@
-import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
+import { withRouteSpec } from "lib/middlewares"
 import { NotFoundException } from "nextlove"
 import { TODO_ID } from "tests/fixtures"
 import { z } from "zod"

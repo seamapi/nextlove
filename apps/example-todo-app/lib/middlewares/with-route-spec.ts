@@ -5,7 +5,6 @@ import {
 } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 import { withUserSession } from "./with-user-session"
-export { checkRouteSpec } from "nextlove"
 import * as ZT from "lib/zod"
 import withGlobalMiddlewareAfterAuth from "./with-global-middeware-after-auth"
 
