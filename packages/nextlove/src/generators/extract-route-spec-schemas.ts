@@ -28,7 +28,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
   const { packageDir, pathGlob = "/pages/api/**/*.ts" } = opts
   const fullPathGlob = path.posix.join(packageDir, pathGlob)
 
-  const project = new Project()
+  const project = new Project({ compilerOptions: { declaration: true } })
 
   const paths: string[] = []
   for (const sourceFile of project.addSourceFilesAtPaths(fullPathGlob)) {
@@ -106,6 +106,25 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
   }
   `
 
+  // Generate types (.d.ts)
+  const entryPoint = project.createSourceFile(
+    "extracted-route-specs.ts",
+    entryPointContent
+  )
+  const emitResult = entryPoint.getEmitOutput({ emitOnlyDtsFiles: true })
+  if (opts.outputFile) {
+    const declarationFilePath = path.join(
+      path.dirname(opts.outputFile),
+      path.basename(opts.outputFile).replace(".mjs", "").replace(".js", "") +
+        ".d.ts"
+    )
+    await fs.writeFile(
+      declarationFilePath,
+      emitResult.getOutputFiles()[0].getText()
+    )
+  }
+
+  // Generate values (.js)
   const pkgRaw = await fs.readFile(
     path.join(packageDir, "package.json"),
     "utf-8"
