@@ -10,7 +10,7 @@ const { unregister } = register({
 if (argv.help || argv.h) {
   console.log(
     `
-nextlove (generate-openapi | generate-route-types) [options]
+nextlove (generate-openapi | generate-route-types | extract-route-specs) [options]
 
   --packageDir <path>  Path to the package directory containing the Next.js app
   --outputFile <path>  Path to the output file
@@ -49,6 +49,26 @@ if (argv._[0] === "generate-openapi") {
 
   require("./dist/generators")
     .generateRouteTypes(argv)
+    .then((result) => {
+      if (!argv.outputFile) {
+        console.log(result)
+      }
+    })
+} else if (argv._[0] === "extract-route-specs") {
+  if (argv._.length === 2) {
+    argv.packageDir = argv._[1]
+  }
+  if (argv["package-dir"]) {
+    argv.packageDir = argv["package-dir"]
+  }
+  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
+
+  if (argv["allowed-import-patterns"]) {
+    argv.allowedImportPatterns = Array.isArray(argv["allowed-import-patterns"]) ? argv["allowed-import-patterns"] : [argv["allowed-import-patterns"]]
+  }
+
+  require("./dist/generators")
+    .extractRouteSpecs(argv)
     .then((result) => {
       if (!argv.outputFile) {
         console.log(result)

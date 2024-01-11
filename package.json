@@ -17,6 +17,7 @@
     "example:start": "cd apps/example-todo-app && yarn start",
     "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
     "example:build:type": "cd apps/example-todo-app && yarn build:type",
+    "example:build:routespecs": "cd apps/example-todo-app && yarn build:routespecs",
     "publish-packages": "cd packages/nextlove && yarn build && npm publish",
     "example:test": "npm run build && cd apps/example-todo-app && yarn run ava",
     "example:test-only:fast": "cd apps/example-todo-app && yarn run ava",
