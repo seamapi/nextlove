@@ -62,9 +62,15 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
     )
 
     defaultExport.remove()
-    for (let i = 0; i++; i < 3) {
+
+    // Remove all unused imports so file can be tree shaken
+    // (Assumes all imports are free of side-effects)
+    let lastWidth: number
+    do {
+      lastWidth = sourceFile.getFullWidth()
+      // May need to call this multiple times
       sourceFile.fixUnusedIdentifiers()
-    }
+    } while (lastWidth !== sourceFile.getFullWidth())
 
     const absolutePackageDir = path.resolve(packageDir)
     const relativePath = path.relative(
@@ -83,10 +89,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
 
   const entryPointContent = `
   ${paths
-    .map(
-      (p) =>
-        `import {extractedRouteSpec as ${pathToId[p]}} from "./virtual-fs/${p}"`
-    )
+    .map((p) => `import {extractedRouteSpec as ${pathToId[p]}} from "./${p}"`)
     .join("\n")}
 
   export const routeSpecs = {
@@ -127,17 +130,14 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       {
         name: "resolve-virtual-fs",
         setup(build) {
-          build.onResolve({ filter: /virtual-fs/ }, (args) => {
-            const path = args.path.replace("virtual-fs/", "")
-            return {
-              path,
-              namespace: "virtual",
+          build.onLoad({ filter: /.*/ }, (args) => {
+            const contents = project.getSourceFile(args.path)?.getFullText()
+            if (!contents) {
+              return null
             }
-          })
 
-          build.onLoad({ filter: /.*/, namespace: "virtual" }, (args) => {
             return {
-              contents: project.getSourceFile(args.path)?.getFullText() ?? "",
+              contents: contents ?? "",
               loader: "ts",
               resolveDir: path.dirname(args.path),
             }
