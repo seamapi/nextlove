@@ -1,10 +1,10 @@
 import * as fs from "node:fs/promises"
-import { defaultMapFilePathToHTTPRoute } from "./lib/default-map-file-path-to-http-route"
+import crypto from "node:crypto"
 import path from "node:path"
 import { Project, SyntaxKind } from "ts-morph"
 import * as esbuild from "esbuild"
-import crypto from "node:crypto"
 import micromatch from "micromatch"
+import { defaultMapFilePathToHTTPRoute } from "./lib/default-map-file-path-to-http-route"
 
 interface GenerateRouteTypesOpts {
   packageDir: string
@@ -27,13 +27,6 @@ interface GenerateRouteTypesOpts {
 export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
   const { packageDir, pathGlob = "/pages/api/**/*.ts" } = opts
   const fullPathGlob = path.posix.join(packageDir, pathGlob)
-
-  const tempDir = path.resolve(
-    `./.nextlove/extract-route-specs-temp-${crypto
-      .randomBytes(4)
-      .toString("hex")}`
-  )
-  await fs.mkdir(tempDir, { recursive: true })
 
   const project = new Project()
 
@@ -78,13 +71,6 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       absolutePackageDir,
       sourceFile.getFilePath()
     )
-    await fs.mkdir(path.join(tempDir, path.dirname(relativePath)), {
-      recursive: true,
-    })
-    await fs.writeFile(
-      path.join(tempDir, relativePath),
-      sourceFile.getFullText()
-    )
     paths.push(relativePath)
   }
 
@@ -95,11 +81,12 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       "hash" + crypto.createHash("sha256").update(path).digest("hex")
   }
 
-  await fs.writeFile(
-    path.join(tempDir, "index.ts"),
-    `
+  const entryPointContent = `
   ${paths
-    .map((p) => `import {extractedRouteSpec as ${pathToId[p]}} from "./${p}"`)
+    .map(
+      (p) =>
+        `import {extractedRouteSpec as ${pathToId[p]}} from "./virtual-fs/${p}"`
+    )
     .join("\n")}
 
   export const routeSpecs = {
@@ -115,7 +102,6 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       .join(",\n")}
   }
   `
-  )
 
   const pkgRaw = await fs.readFile(
     path.join(packageDir, "package.json"),
@@ -124,7 +110,10 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
   const pkg = JSON.parse(pkgRaw)
 
   await esbuild.build({
-    entryPoints: [path.join(tempDir, "index.ts")],
+    stdin: {
+      contents: entryPointContent,
+      resolveDir: path.resolve(packageDir),
+    },
     outfile: opts.outputFile,
     bundle: true,
     platform: "node",
@@ -136,6 +125,26 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
     ],
     plugins: [
       {
+        name: "resolve-virtual-fs",
+        setup(build) {
+          build.onResolve({ filter: /virtual-fs/ }, (args) => {
+            const path = args.path.replace("virtual-fs/", "")
+            return {
+              path,
+              namespace: "virtual",
+            }
+          })
+
+          build.onLoad({ filter: /.*/, namespace: "virtual" }, (args) => {
+            return {
+              contents: project.getSourceFile(args.path)?.getFullText() ?? "",
+              loader: "ts",
+              resolveDir: path.dirname(args.path),
+            }
+          })
+        },
+      },
+      {
         name: "allowed-imports",
         setup(build) {
           build.onLoad({ filter: /.*/ }, (args) => {
@@ -144,10 +153,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
               opts.allowedImportPatterns ?? []
             )
 
-            if (
-              args.path.includes(".nextlove/extract-route-specs-temp") ||
-              isImportAllowed
-            ) {
+            if (isImportAllowed) {
               return
             }
 
@@ -157,6 +163,4 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       },
     ],
   })
-
-  await fs.rm(tempDir, { recursive: true })
 }
