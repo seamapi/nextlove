@@ -92,7 +92,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
     .map((p) => `import {extractedRouteSpec as ${pathToId[p]}} from "./${p}"`)
     .join("\n")}
 
-  export const routeSpecs = {
+  export const routes = {
     ${paths
       .map((p) => {
         const httpRoute = (
@@ -105,6 +105,11 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       .join(",\n")}
   }
   `
+
+  // Copy allowed import globs into project
+  if (opts.allowedImportPatterns) {
+    project.addSourceFilesAtPaths(opts.allowedImportPatterns)
+  }
 
   // Generate types (.d.ts)
   const entryPoint = project.createSourceFile(
@@ -146,37 +151,24 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       ...Object.keys(pkg.devDependencies),
     ],
     plugins: [
+      // With this plugin, esbuild will never touch the actual filesystem and thus cannot interact with imports that don't match allowedImportPatterns[].
       {
         name: "resolve-virtual-fs",
         setup(build) {
           build.onLoad({ filter: /.*/ }, (args) => {
             const contents = project.getSourceFile(args.path)?.getFullText()
             if (!contents) {
-              return null
+              return {
+                contents: "export default {}",
+                loader: "ts",
+              }
             }
 
             return {
-              contents: contents ?? "",
+              contents,
               loader: "ts",
               resolveDir: path.dirname(args.path),
             }
-          })
-        },
-      },
-      {
-        name: "allowed-imports",
-        setup(build) {
-          build.onLoad({ filter: /.*/ }, (args) => {
-            const isImportAllowed = micromatch.isMatch(
-              args.path,
-              opts.allowedImportPatterns ?? []
-            )
-
-            if (isImportAllowed) {
-              return
-            }
-
-            return { contents: `export default {}` }
           })
         },
       },
