@@ -125,7 +125,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
 
   await esbuild.build({
     entryPoints: [path.join(tempDir, "index.ts")],
-    outfile: "./built.js",
+    outfile: opts.outputFile,
     bundle: true,
     platform: "node",
     format: "esm",
