@@ -181,6 +181,17 @@ generateOpenAPI({
 })
 ```
 
+### Extracting route specs (Command Line)
+
+Just run `nextlove extract-route-specs` in your project root! It will output a ESM file bundled by esbuild.
+
+Caveats:
+
+- All dependencies and dev dependencies in your `package.json` are automatically marked as external when bundling. This means that you may want to re-bundle the output file if you plan on publishing it as part of a library.
+- By default, API route files aren't allowed to import anything besides dependencies declared in `package.json`. This is to avoid accidentally polluting the bundle. To allow specific imports, use the `--allowed-import-patterns` flag: `--allowed-import-patterns '**/lib/**' --allowed-import-patterns '**/models/**'`
+
+
+
 ### Wrap middlewares together using `wrappers`!
 
 ```ts
