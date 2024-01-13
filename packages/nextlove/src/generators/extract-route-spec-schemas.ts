@@ -22,6 +22,7 @@ interface GenerateRouteTypesOpts {
    * Set this to true to include them.
    */
   includeOpenApiExcludedRoutes?: boolean
+  esbuildOptions?: esbuild.BuildOptions
 }
 
 export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
@@ -137,6 +138,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
   const pkg = JSON.parse(pkgRaw)
 
   await esbuild.build({
+    ...opts.esbuildOptions,
     stdin: {
       contents: entryPointContent,
       resolveDir: path.resolve(packageDir),
@@ -149,6 +151,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
     external: [
       ...Object.keys(pkg.dependencies),
       ...Object.keys(pkg.devDependencies),
+      ...(opts.esbuildOptions?.external ?? []),
     ],
     plugins: [
       // With this plugin, esbuild will never touch the actual filesystem and thus cannot interact with imports that don't match allowedImportPatterns[].
@@ -172,6 +175,7 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
           })
         },
       },
+      ...(opts.esbuildOptions?.plugins ?? []),
     ],
   })
 }
