@@ -1,7 +1,5 @@
-import {
-  withRouteSpecWithoutValidateResponse,
-  checkRouteSpec,
-} from "lib/middlewares"
+import { withRouteSpecWithoutValidateResponse } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
 import { z } from "zod"
 import { v4 as uuidv4 } from "uuid"
 

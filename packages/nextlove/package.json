@@ -2,6 +2,7 @@
   "name": "nextlove",
   "version": "2.10.1",
   "private": false,
+  "sideEffects": false,
   "repository": "https://github.com/seamapi/nextlove",
   "files": [
     "dist",
@@ -44,6 +45,7 @@
     "yalc": "npm run build && yalc push"
   },
   "peerDependencies": {
+    "esbuild": "^0.14.7",
     "esbuild-register": ">=3",
     "next": ">=12",
     "nextjs-server-modules": ">=1",
@@ -56,10 +58,11 @@
   "dependencies": {
     "@types/js-yaml": "^4.0.9",
     "dedent": "^1.5.1",
+    "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "openapi3-ts": "^4.1.2",
-    "js-yaml": "^4.1.0",
-    "ts-deepmerge": "^6.0.3"
+    "ts-deepmerge": "^6.0.3",
+    "ts-morph": "^21.0.1"
   },
   "devDependencies": {
     "@anatine/zod-openapi": "^2.0.1",

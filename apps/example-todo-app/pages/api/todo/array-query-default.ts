@@ -1,4 +1,5 @@
-import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
 import { z } from "zod"
 
 export const queryParams = z.object({

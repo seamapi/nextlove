@@ -1,4 +1,5 @@
-import { checkRouteSpec, withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
+import { withRouteSpec } from "lib/middlewares"
 import { z } from "zod"
 import * as ZT from "lib/zod"
 

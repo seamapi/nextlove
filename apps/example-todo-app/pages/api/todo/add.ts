@@ -1,4 +1,5 @@
-import { withRouteSpec, checkRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
 import { z } from "zod"
 import { v4 as uuidv4 } from "uuid"
 

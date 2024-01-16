@@ -1,7 +1,5 @@
-import {
-  checkRouteSpec,
-  withRouteSpecWithoutValidateGetRequestBody,
-} from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
+import { withRouteSpecWithoutValidateGetRequestBody } from "lib/middlewares"
 import { z } from "zod"
 
 export const route_spec = checkRouteSpec({

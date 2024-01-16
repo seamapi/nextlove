@@ -1,4 +1,5 @@
-import { withRouteSpec, checkRouteSpec } from "lib/middlewares"
+import { checkRouteSpec } from "nextlove"
+import { withRouteSpec } from "lib/middlewares"
 import { z } from "zod"
 
 export const jsonBody = z.object({})
