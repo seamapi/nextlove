@@ -45,7 +45,7 @@
     "yalc": "npm run build && yalc push"
   },
   "peerDependencies": {
-    "esbuild": "^0.14.7",
+    "esbuild": ">=0.14.7",
     "esbuild-register": ">=3",
     "next": ">=12",
     "nextjs-server-modules": ">=1",
