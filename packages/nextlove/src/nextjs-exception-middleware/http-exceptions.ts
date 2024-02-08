@@ -86,6 +86,15 @@ export class NotFoundException extends HttpException {
   }
 }
 
+export class NotImplementedException extends HttpException {
+  constructor(
+    public metadata: HttpExceptionMetadata,
+    options?: ThrowingOptions
+  ) {
+    super(501, metadata, options)
+  }
+}
+
 export class MethodNotAllowedException extends HttpException {
   constructor(
     public metadata: HttpExceptionMetadata,
