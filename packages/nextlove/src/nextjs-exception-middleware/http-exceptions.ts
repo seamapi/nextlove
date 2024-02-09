@@ -92,7 +92,7 @@ export class NotImplementedException extends HttpException {
       type: "not_implemented",
       message: "Not implemented",
     },
-    options?: ThrowingOptions,
+    options?: ThrowingOptions
   ) {
     super(501, metadata, options)
   }
