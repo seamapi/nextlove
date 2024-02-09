@@ -94,10 +94,9 @@ export class NotImplementedException extends HttpException {
     },
     options?: ThrowingOptions,
   ) {
-    super(501, metadata, options);
+    super(501, metadata, options)
   }
 }
-
 
 export class MethodNotAllowedException extends HttpException {
   constructor(
