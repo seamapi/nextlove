@@ -88,12 +88,16 @@ export class NotFoundException extends HttpException {
 
 export class NotImplementedException extends HttpException {
   constructor(
-    public metadata: HttpExceptionMetadata,
-    options?: ThrowingOptions
+    public metadata: HttpExceptionMetadata = {
+      type: "not_implemented",
+      message: "Not implemented",
+    },
+    options?: ThrowingOptions,
   ) {
-    super(501, metadata, options)
+    super(501, metadata, options);
   }
 }
+
 
 export class MethodNotAllowedException extends HttpException {
   constructor(
