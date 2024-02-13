@@ -191,6 +191,7 @@ function parseNumber({
 }: ParsingArgs<z.ZodNumber>): SchemaObject {
   const baseSchema: SchemaObject = {
     type: "number",
+    format: "float",
   }
   const { checks = [] } = zodRef._def
   checks.forEach((item) => {
@@ -206,6 +207,7 @@ function parseNumber({
         break
       case "int":
         baseSchema.type = "integer"
+        delete baseSchema.format
         break
       case "multipleOf":
         baseSchema.multipleOf = item.value
