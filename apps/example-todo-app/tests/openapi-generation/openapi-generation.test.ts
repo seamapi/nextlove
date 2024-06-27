@@ -27,7 +27,7 @@ test("generateOpenAPI correctly parses nullable params", async (t) => {
   t.true(descriptionParam.nullable)
 })
 
-test("generateOpenAPI excludes null type from union, marking the property as a whole as nullable instead", async (t) => {
+test("generateOpenAPI marks properties with null unions as nullable", async (t) => {
   const openapiJson = JSON.parse(
     await generateOpenAPI({
       packageDir: ".",
