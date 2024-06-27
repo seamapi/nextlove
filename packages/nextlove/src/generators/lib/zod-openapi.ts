@@ -495,9 +495,17 @@ function parseUnion({
     }
   }
 
+  const isNullable = contents.some(
+    (content) => content._def.typeName === "ZodNull"
+  )
+  const nonNullContents = contents.filter(
+    (content) => content._def.typeName !== "ZodNull"
+  )
+
   return merge(
     {
-      oneOf: contents.map((schema) => generateSchema(schema, useOutput)),
+      oneOf: nonNullContents.map((schema) => generateSchema(schema, useOutput)),
+      ...(isNullable ? { nullable: true } : {}),
     },
     parseDescription(zodRef),
     ...schemas
