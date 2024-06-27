@@ -21,6 +21,10 @@ export const jsonBody = z.object({
     This is an unused, deprecated field.
   `),
   description: z.string().nullable().optional(),
+  metadata: z.record(
+    z.string().max(40),
+    z.union([z.string().max(500), z.boolean(), z.null()])
+  ),
 })
 
 export const route_spec = checkRouteSpec({
