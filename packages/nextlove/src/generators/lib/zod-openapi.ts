@@ -368,7 +368,7 @@ function parseNullable({
 }: ParsingArgs<z.ZodNullable<OpenApiZodAny>>): SchemaObject {
   const schema = generateSchema(zodRef.unwrap(), useOutput)
   return merge(
-    { ...schema, type: [schema.type, "null"] as SchemaObjectType[] },
+    { ...schema, type: schema.type, nullable: true },
     parseDescription(zodRef),
     ...schemas
   )
