@@ -27,6 +27,7 @@ export const jsonBody = z.object({
       z.union([z.string().max(500), z.boolean(), z.null()])
     )
     .optional(),
+  testNull: z.null().optional(),
 })
 
 export const route_spec = checkRouteSpec({

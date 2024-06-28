@@ -342,7 +342,7 @@ function parseDate({ zodRef, schemas }: ParsingArgs<z.ZodDate>): SchemaObject {
 function parseNull({ zodRef, schemas }: ParsingArgs<z.ZodNull>): SchemaObject {
   return merge(
     {
-      type: "null" as SchemaObjectType,
+      nullable: true,
     },
     parseDescription(zodRef),
     ...schemas

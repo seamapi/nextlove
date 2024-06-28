@@ -47,3 +47,19 @@ test("generateOpenAPI marks properties with null unions as nullable", async (t) 
     )
   )
 })
+
+test("generateOpenAPI marks null params with nullable flag", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const routeSpec = openapiJson.paths["/api/todo/add"].post
+  const testNullParam =
+    routeSpec.requestBody.content["application/json"].schema.properties.testNull
+
+  t.truthy(testNullParam)
+  t.falsy(testNullParam.type)
+  t.true(testNullParam.nullable)
+})
