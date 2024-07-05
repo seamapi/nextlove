@@ -10,6 +10,8 @@ import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { generateSchema } from "../lib/zod-openapi"
 import { embedSchemaReferences } from "./embed-schema-references"
 import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
+import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
+import dedent from "dedent"
 
 function replaceFirstCharToLowercase(str: string) {
   if (str.length === 0) {
@@ -190,9 +192,26 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       continue
     }
 
+    let description = routeSpec.description
+    let additionalMetadata = {}
+
+    if (description) {
+      const trimmedDescription = dedent(description).trim()
+
+      if (testFrontMatter(trimmedDescription)) {
+        const { attributes, body } = parseFrontMatter(trimmedDescription)
+        additionalMetadata = attributes
+        description = body.trim()
+      } else {
+        description = trimmedDescription
+      }
+    }
+
     const route: OperationObject = {
       ...routeSpec.openApiMetadata,
+      ...additionalMetadata,
       summary: routePath,
+      ...(description && { description }),
       responses: {
         200: {
           description: "OK",

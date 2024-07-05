@@ -33,6 +33,7 @@ export interface RouteSpec<
   jsonBody?: JsonBody
   queryParams?: QueryParams
   commonParams?: CommonParams
+  description?: string
   middlewares?: Middlewares
   jsonResponse?: JsonResponse
   formData?: FormData
