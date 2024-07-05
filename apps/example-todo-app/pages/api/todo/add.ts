@@ -37,6 +37,12 @@ export const route_spec = checkRouteSpec({
   jsonResponse: z.object({
     ok: z.boolean(),
   }),
+  description: `
+    ---
+    deprecated: true
+    ---
+    This endpoint allows you to add a new todo item to the list. Deprecated.
+  `,
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
