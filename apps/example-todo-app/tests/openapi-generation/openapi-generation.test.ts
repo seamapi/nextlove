@@ -63,3 +63,20 @@ test("generateOpenAPI marks null params with nullable flag", async (t) => {
   t.falsy(testNullParam.type)
   t.true(testNullParam.nullable)
 })
+
+test("generateOpenAPI correctly parses description with front matter", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const routeSpec = openapiJson.paths["/api/todo/add"].post
+
+  t.truthy(routeSpec.description)
+  t.is(
+    routeSpec.description.trim(),
+    "This endpoint allows you to add a new todo item to the list. Deprecated."
+  )
+  t.is(routeSpec.deprecated, "Use foobar instead.")
+})
