@@ -40,6 +40,7 @@ export const route_spec = checkRouteSpec({
   description: `
     ---
     deprecated: Use foobar instead.
+    response_key: foobar
     ---
     This endpoint allows you to add a new todo item to the list. Deprecated.
   `,
