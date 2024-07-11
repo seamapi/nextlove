@@ -44,6 +44,7 @@ export const route_spec = checkRouteSpec({
     ---
     This endpoint allows you to add a new todo item to the list. Deprecated.
   `,
+  sdkReturnValue: "foo",
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
