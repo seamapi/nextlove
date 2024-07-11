@@ -193,14 +193,17 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     let description = routeSpec.description
-    let additionalMetadata = {}
+    let descriptionMetadata: {
+      response_key?: string
+      [key: string]: any
+    } = {}
 
     if (description) {
       const trimmedDescription = dedent(description).trim()
 
       if (testFrontMatter(trimmedDescription)) {
         const { attributes, body } = parseFrontMatter(trimmedDescription)
-        additionalMetadata = attributes
+        descriptionMetadata = attributes
         description = body.trim()
       } else {
         description = trimmedDescription
@@ -209,7 +212,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
     const route: OperationObject = {
       ...routeSpec.openApiMetadata,
-      ...additionalMetadata,
+      ...descriptionMetadata,
       summary: routePath,
       ...(description && { description }),
       responses: {
@@ -304,7 +307,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
       methods,
       path: routePath,
-      sdkReturnValue: routeSpec.sdkReturnValue,
+      sdkReturnValue:
+        descriptionMetadata?.response_key ?? routeSpec.sdkReturnValue,
     })
 
     // Some routes accept multiple methods

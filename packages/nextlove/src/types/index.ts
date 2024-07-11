@@ -38,7 +38,7 @@ export interface RouteSpec<
   jsonResponse?: JsonResponse
   formData?: FormData
   /**
-   * add x-fern-sdk-return-value to the openapi spec, useful when you want to return only a subset of the response
+   * @deprecated Use `response_key` in the front matter of the `description` instead.
    */
   sdkReturnValue?: string | string[]
 
