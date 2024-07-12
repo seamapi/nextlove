@@ -78,7 +78,7 @@ test("generateOpenAPI correctly parses description with front matter", async (t)
     routeSpec.description.trim(),
     "This endpoint allows you to add a new todo item to the list. Deprecated."
   )
-  t.is(routeSpec['x-deprecated'], "Use foobar instead.")
+  t.is(routeSpec["x-deprecated"], "Use foobar instead.")
   t.is(routeSpec["x-fern-sdk-return-value"], "foobar")
   t.is(routeSpec["x-response-key"], "foobar")
 })
