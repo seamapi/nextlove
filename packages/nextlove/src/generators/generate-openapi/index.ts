@@ -13,6 +13,7 @@ import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
 import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
 import dedent from "dedent"
 import { prefixKeysWithX } from "../utils/prefix-keys-with-x"
+import { dashifyObjectKeys } from "../utils/dashify-object-keys"
 
 function replaceFirstCharToLowercase(str: string) {
   if (str.length === 0) {
@@ -211,10 +212,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const formattedDescriptionMetadata = Object.fromEntries(
-      Object.entries(prefixKeysWithX(descriptionMetadata)).map(
-        ([key, value]) => [key.replace(/_/g, "-"), value]
-      )
+    const formattedDescriptionMetadata = prefixKeysWithX(
+      dashifyObjectKeys(descriptionMetadata)
     )
 
     const route: OperationObject = {
