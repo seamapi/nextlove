@@ -31,7 +31,7 @@ import merge from "ts-deepmerge"
 import { AnyZodObject, z, ZodTypeAny } from "zod"
 import { parseFrontMatter, testFrontMatter } from "./front-matter"
 import dedent from "dedent"
-import { prefixKeysWithX } from "../utils/prefix-keys-with-x"
+import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
 import { dashifyObjectKeys } from "../utils/dashify-object-keys"
 
 type AnatineSchemaObject = SchemaObject & { hideDefinitions?: string[] }
@@ -90,11 +90,11 @@ function parseDescription(zodRef: OpenApiZodAny): SchemaObject {
       output.deprecated = true
     }
 
-    Object.entries(prefixKeysWithX(dashifyObjectKeys(attributes))).forEach(
-      ([key, value]) => {
-        output[key] = value
-      }
-    )
+    Object.entries(
+      prefixObjectKeysWithX(dashifyObjectKeys(attributes))
+    ).forEach(([key, value]) => {
+      output[key] = value
+    })
   }
 
   return output

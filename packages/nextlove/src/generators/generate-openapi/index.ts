@@ -12,7 +12,7 @@ import { embedSchemaReferences } from "./embed-schema-references"
 import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
 import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
 import dedent from "dedent"
-import { prefixKeysWithX } from "../utils/prefix-keys-with-x"
+import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
 import { dashifyObjectKeys } from "../utils/dashify-object-keys"
 
 function replaceFirstCharToLowercase(str: string) {
@@ -212,7 +212,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    const formattedDescriptionMetadata = prefixKeysWithX(
+    const formattedDescriptionMetadata = prefixObjectKeysWithX(
       dashifyObjectKeys(descriptionMetadata)
     )
 
