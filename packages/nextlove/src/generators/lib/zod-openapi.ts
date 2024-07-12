@@ -31,6 +31,7 @@ import merge from "ts-deepmerge"
 import { AnyZodObject, z, ZodTypeAny } from "zod"
 import { parseFrontMatter, testFrontMatter } from "./front-matter"
 import dedent from "dedent"
+import { prefixKeysWithX } from "../utils/prefix-keys-with-x"
 
 type AnatineSchemaObject = SchemaObject & { hideDefinitions?: string[] }
 
@@ -81,16 +82,16 @@ function parseDescription(zodRef: OpenApiZodAny): SchemaObject {
   if (!testFrontMatter(trimmedDescription))
     return { description: zodRef.description }
   const { attributes, body } = parseFrontMatter(trimmedDescription)
-  const output: SchemaObject = {}
+  let output: SchemaObject = {}
   if (body.trim()) output.description = body.trim()
   if (typeof attributes === "object" && attributes !== null) {
     if ("deprecated" in attributes && attributes.deprecated) {
       output.deprecated = true
     }
-    for (const [key, value] of Object.entries(attributes)) {
-      output[`x-${key}`] = value
-    }
+
+    output = prefixKeysWithX(output)
   }
+
   return output
 }
 
