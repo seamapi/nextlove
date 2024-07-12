@@ -82,14 +82,16 @@ function parseDescription(zodRef: OpenApiZodAny): SchemaObject {
   if (!testFrontMatter(trimmedDescription))
     return { description: zodRef.description }
   const { attributes, body } = parseFrontMatter(trimmedDescription)
-  let output: SchemaObject = {}
+  const output: SchemaObject = {}
   if (body.trim()) output.description = body.trim()
   if (typeof attributes === "object" && attributes !== null) {
     if ("deprecated" in attributes && attributes.deprecated) {
       output.deprecated = true
     }
 
-    output = prefixKeysWithX(output)
+    Object.entries(prefixKeysWithX(attributes)).forEach(([key, value]) => {
+      output[key] = value
+    })
   }
 
   return output
