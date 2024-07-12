@@ -64,7 +64,7 @@ test("generateOpenAPI marks null params with nullable flag", async (t) => {
   t.true(testNullParam.nullable)
 })
 
-test("generateOpenAPI correctly parses description with front matter", async (t) => {
+test("generateOpenAPI correctly parses endpoint description with front matter and prefixes custom properties with 'x-'", async (t) => {
   const openapiJson = JSON.parse(
     await generateOpenAPI({
       packageDir: ".",
@@ -75,10 +75,28 @@ test("generateOpenAPI correctly parses description with front matter", async (t)
 
   t.truthy(routeSpec.description)
   t.is(
-    routeSpec.description.trim(),
+    routeSpec.description,
     "This endpoint allows you to add a new todo item to the list. Deprecated."
   )
   t.is(routeSpec["x-deprecated"], "Use foobar instead.")
   t.is(routeSpec["x-fern-sdk-return-value"], "foobar")
   t.is(routeSpec["x-response-key"], "foobar")
+})
+
+test("generateOpenAPI correctly parses property description with front matter and prefixes custom properties with 'x-'", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const routeSpec = openapiJson.paths["/api/todo/add"].post
+  const testUnusedParam =
+    routeSpec.requestBody.content["application/json"].schema.properties.unused
+
+  t.true(testUnusedParam.deprecated)
+  t.is(testUnusedParam["x-title"], "Unused")
+  t.is(testUnusedParam["x-deprecated"], "yes, because it's deprecated.")
+  // snake case is correctly dashified
+  t.is(testUnusedParam["x-snake-case"], "Snake case property")
 })

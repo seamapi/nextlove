@@ -17,6 +17,7 @@ export const jsonBody = z.object({
     ---
     title: Unused
     deprecated: yes, because it's deprecated.
+    snake_case: Snake case property
     ---
     This is an unused, deprecated field.
   `),
