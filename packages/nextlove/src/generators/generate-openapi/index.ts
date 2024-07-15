@@ -12,6 +12,8 @@ import { embedSchemaReferences } from "./embed-schema-references"
 import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
 import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
 import dedent from "dedent"
+import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
+import { dashifyObjectKeys } from "../utils/dashify-object-keys"
 
 function replaceFirstCharToLowercase(str: string) {
   if (str.length === 0) {
@@ -193,23 +195,30 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     }
 
     let description = routeSpec.description
-    let additionalMetadata = {}
+    let descriptionMetadata: {
+      response_key?: string
+      [key: string]: any
+    } = {}
 
     if (description) {
       const trimmedDescription = dedent(description).trim()
 
       if (testFrontMatter(trimmedDescription)) {
         const { attributes, body } = parseFrontMatter(trimmedDescription)
-        additionalMetadata = attributes
+        descriptionMetadata = attributes
         description = body.trim()
       } else {
         description = trimmedDescription
       }
     }
 
+    const formattedDescriptionMetadata = prefixObjectKeysWithX(
+      dashifyObjectKeys(descriptionMetadata)
+    )
+
     const route: OperationObject = {
       ...routeSpec.openApiMetadata,
-      ...additionalMetadata,
+      ...formattedDescriptionMetadata,
       summary: routePath,
       ...(description && { description }),
       responses: {
@@ -304,7 +313,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
       methods,
       path: routePath,
-      sdkReturnValue: routeSpec.sdkReturnValue,
+      sdkReturnValue:
+        descriptionMetadata?.response_key ?? routeSpec.sdkReturnValue,
     })
 
     // Some routes accept multiple methods

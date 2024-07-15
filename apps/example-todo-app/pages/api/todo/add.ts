@@ -17,6 +17,7 @@ export const jsonBody = z.object({
     ---
     title: Unused
     deprecated: yes, because it's deprecated.
+    snake_case: Snake case property
     ---
     This is an unused, deprecated field.
   `),
@@ -40,9 +41,11 @@ export const route_spec = checkRouteSpec({
   description: `
     ---
     deprecated: Use foobar instead.
+    response_key: foobar
     ---
     This endpoint allows you to add a new todo item to the list. Deprecated.
   `,
+  sdkReturnValue: "foo",
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {
