@@ -29,6 +29,21 @@ export const jsonBody = z.object({
     )
     .optional(),
   testNull: z.null().optional(),
+  arrayDescription: z
+    .array(
+      z.object({}).describe(`
+        ---
+        title: Nested Object Description
+        ---
+        This is an object.
+      `)
+    )
+    .optional().describe(`
+    ---
+    title: Array Description
+    ---
+    This is an array of strings.
+  `),
 })
 
 export const route_spec = checkRouteSpec({

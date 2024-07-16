@@ -100,3 +100,22 @@ test("generateOpenAPI correctly parses property description with front matter an
   // snake case is correctly dashified
   t.is(testUnusedParam["x-snake-case"], "Snake case property")
 })
+
+test("generateOpenAPI correctly parses nested object description", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const routeSpec = openapiJson.paths["/api/todo/add"].post
+  const testArrayDescription =
+    routeSpec.requestBody.content["application/json"].schema.properties
+      .arrayDescription
+
+  t.is(testArrayDescription["x-title"], "Array Description")
+  t.is(testArrayDescription.description, "This is an array of strings.")
+  t.is(testArrayDescription.items.type, "object")
+  t.is(testArrayDescription.items.description, "This is an object.")
+  t.is(testArrayDescription.items["x-title"], "Nested Object Description")
+})
