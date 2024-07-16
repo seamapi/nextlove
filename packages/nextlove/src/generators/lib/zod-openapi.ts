@@ -290,9 +290,7 @@ function parseObject({
       ...additionalProperties,
       ...hideDefinitions,
     },
-    zodRef.description
-      ? { description: zodRef.description, hideDefinitions }
-      : {},
+    parseDescription(zodRef),
     ...schemas
   )
 }
@@ -630,6 +628,56 @@ const workerMap = {
   ZodReadonly: parseReadonly,
 }
 type WorkerKeys = keyof typeof workerMap
+
+/**
+ * Parsing a nested `.describe(...)` doesn't work correctly.
+ * Example of such zod schema:
+ * 
+ * arrayDesciption: z
+    .array(
+      z.object({}).describe(`
+        ---
+        title: Nested Object Description
+        ---
+        This is an object.
+      `)
+    )
+    .optional().describe(`
+    ---
+    title: Array Description
+    ---
+    This is an array of strings.
+  `),
+
+ * Such schema will be parsed as:
+
+  "arrayDesciption": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {},
+      "description": "\n        ---\n        title: Nested Object Description\n        ---\n        This is an object.\n      "
+    },
+    "description": "This is an array of strings.",
+    "x-title": "Array Description"
+  }.
+
+  We can see that description body and front matter doesn't get parsed in nested `z.object().describe(...)` inside `z.array()`.
+
+  Instead such nested description should look like this:
+
+    "arrayDesciption": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {},
+      "description": "This is an object."
+      "x-title": "Nested Object Description"
+    },
+    "description": "This is an array of strings.",
+    "x-title": "Array Description"
+    }.
+ */
 
 export function generateSchema(
   zodRef: OpenApiZodAny,
