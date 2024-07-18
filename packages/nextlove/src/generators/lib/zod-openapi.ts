@@ -290,9 +290,7 @@ function parseObject({
       ...additionalProperties,
       ...hideDefinitions,
     },
-    zodRef.description
-      ? { description: zodRef.description, hideDefinitions }
-      : {},
+    parseDescription(zodRef),
     ...schemas
   )
 }
