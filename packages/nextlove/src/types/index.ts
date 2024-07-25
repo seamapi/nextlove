@@ -74,7 +74,9 @@ export interface SetupParams<
   authMiddlewareMap: AuthMW
   globalMiddlewares: GlobalMW
   globalMiddlewaresAfterAuth?: GlobalMWAfterAuth
-  exceptionHandlingMiddleware?: ((next: Function) => Function) | null
+  exceptionHandlingMiddleware?: (
+    next: (req: NextApiRequest, res: NextApiResponse) => Promise<any>
+  ) => (req: NextApiRequest, res: NextApiResponse) => Promise<any>
 
   // These improve OpenAPI generation
   apiName: string
