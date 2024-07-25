@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { HttpException } from "./http-exceptions"
 
 export interface WithExceptionHandlingOptions {
-  errorLogger?: (error: Error, req: NextApiRequest) => void
+  onError?: (error: Error, req: NextApiRequest) => void
   getErrorContext?: (
     req: NextApiRequest,
     error: Error
@@ -18,8 +18,8 @@ const withExceptionHandling =
     } catch (error: unknown) {
       let errorContext: any = {}
 
-      if (options.errorLogger) {
-        options.errorLogger(error as Error, req)
+      if (options.onError) {
+        options.onError(error as Error, req)
       }
 
       if (error instanceof Error) {
