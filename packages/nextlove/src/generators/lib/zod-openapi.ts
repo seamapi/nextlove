@@ -204,11 +204,14 @@ function parseNumber({
     switch (item.kind) {
       case "max":
         baseSchema.maximum = item.value
-        // TODO: option to make this always explicit? (false instead of non-existent)
+        // @ts-expect-error UPSTREAM: The openapi3-ts types are wrong: exclusiveMaximum is a boolean in this version.
+        // https://swagger.io/docs/specification/v3_0/data-models/data-types/
         if (!item.inclusive) baseSchema.exclusiveMaximum = true
         break
       case "min":
         baseSchema.minimum = item.value
+        // @ts-expect-error UPSTREAM: The openapi3-ts types are wrong: exclusiveMinimum is a boolean in this version.
+        // https://swagger.io/docs/specification/v3_0/data-models/data-types/
         if (!item.inclusive) baseSchema.exclusiveMinimum = true
         break
       case "int":
