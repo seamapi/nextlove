@@ -296,10 +296,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       )
 
       // TODO: we should not hardcode 200 here
-      route.responses[200].content = {
-        "application/json": {
-          schema: schemaWithReferences,
-        },
+      if (route.responses != null) {
+        route.responses[200].content = {
+          "application/json": {
+            schema: schemaWithReferences,
+          },
+        }
       }
     }
 
