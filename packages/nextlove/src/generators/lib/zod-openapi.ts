@@ -205,11 +205,11 @@ function parseNumber({
       case "max":
         baseSchema.maximum = item.value
         // TODO: option to make this always explicit? (false instead of non-existent)
-        if (!item.inclusive) baseSchema.exclusiveMaximum = item.value
+        if (!item.inclusive) baseSchema.exclusiveMaximum = true
         break
       case "min":
         baseSchema.minimum = item.value
-        if (!item.inclusive) baseSchema.exclusiveMinimum = item.value
+        if (!item.inclusive) baseSchema.exclusiveMinimum = true
         break
       case "int":
         baseSchema.type = "integer"
