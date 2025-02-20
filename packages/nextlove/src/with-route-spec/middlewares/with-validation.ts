@@ -92,7 +92,7 @@ const parseQueryParams = (
       if (isZodSchemaArray(value as z.ZodTypeAny)) {
         const array_input = input[key]
 
-        if (typeof array_input === "string" && !array_input) {
+        if (typeof array_input === "string" && array_input.length ===0) {
           parsed_input[key] = []
         }
 
