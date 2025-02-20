@@ -98,7 +98,7 @@ const parseQueryParams = (
 
         if (
           typeof array_input === "string" &&
-          array_input &&
+          array_input.length > 0 &&
           supportedArrayFormats.includes("comma")
         ) {
           parsed_input[key] = array_input.split(",")
