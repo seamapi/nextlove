@@ -92,8 +92,13 @@ const parseQueryParams = (
       if (isZodSchemaArray(value as z.ZodTypeAny)) {
         const array_input = input[key]
 
+        if (typeof array_input === "string" && array_input.length === 0) {
+          parsed_input[key] = []
+        }
+
         if (
           typeof array_input === "string" &&
+          array_input.length > 0 &&
           supportedArrayFormats.includes("comma")
         ) {
           parsed_input[key] = array_input.split(",")
