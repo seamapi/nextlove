@@ -8,7 +8,7 @@ export const commonParams = z.object({
 })
 
 export const route_spec = checkRouteSpec({
-  methods: ["GET"],
+  methods: ["GET", "POST"],
   auth: "auth_token",
   commonParams,
   jsonResponse: z.object({

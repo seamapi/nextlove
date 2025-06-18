@@ -64,7 +64,9 @@ if (argv._[0] === "generate-openapi") {
   if (!argv["packageDir"]) throw new Error("Missing --packageDir")
 
   if (argv["allowed-import-patterns"]) {
-    argv.allowedImportPatterns = Array.isArray(argv["allowed-import-patterns"]) ? argv["allowed-import-patterns"] : [argv["allowed-import-patterns"]]
+    argv.allowedImportPatterns = Array.isArray(argv["allowed-import-patterns"])
+      ? argv["allowed-import-patterns"]
+      : [argv["allowed-import-patterns"]]
   }
 
   require("./dist/generators")

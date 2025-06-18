@@ -176,17 +176,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       }
     }
 
-    // DELETE and GET cannot have a body
-    let methods = routeSpec.methods
-
-    if (routeSpec.methods.includes("DELETE") && body_to_generate_schema) {
-      methods = methods.filter((m) => m !== "DELETE")
-    }
-
-    if (routeSpec.methods.includes("GET") && body_to_generate_schema) {
-      methods = methods.filter((m) => m !== "GET")
-    }
-
+    const methods = routeSpec.methods
     if (methods.length === 0) {
       console.warn(
         chalk.yellow(`Skipping route ${routePath} because it has no methods.`)
@@ -216,123 +206,161 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       dashifyObjectKeys(descriptionMetadata)
     )
 
-    const route: OperationObject = {
-      ...routeSpec.openApiMetadata,
-      ...formattedDescriptionMetadata,
-      summary: routePath,
-      ...(description && { description }),
-      responses: {
-        200: {
-          description: "OK",
-        },
-        400: {
-          description: "Bad Request",
-        },
-        401: {
-          description: "Unauthorized",
-        },
-      },
-      security: Array.isArray(routeSpec.auth)
-        ? routeSpec.auth
-            .map((authType) => securityObjectsForAuthType[authType])
-            .flat()
-        : securityObjectsForAuthType[routeSpec.auth],
-    }
+    // Create a map to store method-specific route objects
+    const methodRoutes: Record<string, OperationObject> = {}
 
-    if (body_to_generate_schema) {
-      route.requestBody = {
-        content: {
-          "application/json": {
-            schema: generateSchema(body_to_generate_schema as any),
+    // Loop through each method and create method-specific route objects
+    for (const method of methods) {
+      const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].includes(method)
+
+      // Calculate body schema for this specific method
+      let body_to_generate_schema
+      if (isPostOrPutOrPatch) {
+        body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
+
+        if (routeSpec.jsonBody && routeSpec.commonParams) {
+          body_to_generate_schema = routeSpec.jsonBody.merge(
+            routeSpec.commonParams
+          )
+        }
+      } else {
+        body_to_generate_schema = routeSpec.jsonBody
+      }
+
+      // Calculate query schema for this specific method
+      let query_to_generate_schema
+      if (isPostOrPutOrPatch) {
+        query_to_generate_schema = routeSpec.queryParams
+      } else {
+        query_to_generate_schema =
+          routeSpec.queryParams ?? routeSpec.commonParams
+
+        if (routeSpec.queryParams && routeSpec.commonParams) {
+          query_to_generate_schema = routeSpec.queryParams.merge(
+            routeSpec.commonParams
+          )
+        }
+      }
+
+      // Create base route object for this method
+      const route: OperationObject = {
+        ...routeSpec.openApiMetadata,
+        ...formattedDescriptionMetadata,
+        summary: routePath,
+        ...(description && { description }),
+        operationId: `${transformPathToOperationId(routePath)}${pascalCase(
+          method
+        )}`,
+        responses: {
+          200: {
+            description: "OK",
+          },
+          400: {
+            description: "Bad Request",
+          },
+          401: {
+            description: "Unauthorized",
           },
         },
-      }
-    }
-
-    if (query_to_generate_schema) {
-      const schema = generateSchema(query_to_generate_schema as any)
-      if (schema.properties) {
-        const parameters: ParameterObject[] = Object.keys(
-          schema.properties as any
-        ).map((name) => {
-          return {
-            name,
-            in: "query",
-            schema: schema.properties![name],
-            required: schema.required?.includes(name),
-          }
-        })
-
-        route.parameters = parameters
-      }
-    }
-
-    const { jsonResponse } = routeSpec
-    const { addOkStatus = true } = setupParams
-
-    if (jsonResponse) {
-      if (
-        !jsonResponse._def ||
-        !jsonResponse._def.typeName ||
-        jsonResponse._def.typeName !== "ZodObject"
-      ) {
-        console.warn(
-          chalk.yellow(
-            `Skipping route ${routePath} because the response is not a ZodObject.`
-          )
-        )
-        continue
+        security: Array.isArray(routeSpec.auth)
+          ? routeSpec.auth
+              .map((authType) => securityObjectsForAuthType[authType])
+              .flat()
+          : securityObjectsForAuthType[routeSpec.auth],
       }
 
-      const responseSchema = generateSchema(
-        addOkStatus && jsonResponse instanceof z.ZodObject
-          ? jsonResponse.extend({ ok: z.boolean() })
-          : jsonResponse
-      )
-
-      const schemaWithReferences = embedSchemaReferences(
-        responseSchema,
-        globalSchemas
-      )
-
-      // TODO: we should not hardcode 200 here
-      if (route.responses != null) {
-        route.responses[200].content = {
-          "application/json": {
-            schema: schemaWithReferences,
+      // Add request body if applicable for this method
+      if (body_to_generate_schema) {
+        route.requestBody = {
+          content: {
+            "application/json": {
+              schema: generateSchema(body_to_generate_schema as any),
+            },
           },
         }
       }
-    }
 
-    route.tags = []
-    for (const tag of tags) {
-      if (tag.doesRouteHaveTag && tag.doesRouteHaveTag(route.summary || "")) {
-        route.tags.push(tag.name)
+      // Add parameters if applicable for this method
+      if (query_to_generate_schema) {
+        const schema = generateSchema(query_to_generate_schema as any)
+        if (schema.properties) {
+          const parameters: ParameterObject[] = Object.keys(
+            schema.properties as any
+          ).map((name) => {
+            return {
+              name,
+              in: "query",
+              schema: schema.properties![name],
+              required: schema.required?.includes(name),
+            }
+          })
+
+          route.parameters = parameters
+        }
       }
+
+      // Handle JSON response
+      const { jsonResponse } = routeSpec
+      const { addOkStatus = true } = setupParams
+
+      if (jsonResponse) {
+        if (
+          !jsonResponse._def ||
+          !jsonResponse._def.typeName ||
+          jsonResponse._def.typeName !== "ZodObject"
+        ) {
+          console.warn(
+            chalk.yellow(
+              `Skipping route ${routePath} because the response is not a ZodObject.`
+            )
+          )
+          continue
+        }
+
+        const responseSchema = generateSchema(
+          addOkStatus && jsonResponse instanceof z.ZodObject
+            ? jsonResponse.extend({ ok: z.boolean() })
+            : jsonResponse
+        )
+
+        const schemaWithReferences = embedSchemaReferences(
+          responseSchema,
+          globalSchemas
+        )
+
+        if (route.responses != null) {
+          route.responses[200].content = {
+            "application/json": {
+              schema: schemaWithReferences,
+            },
+          }
+        }
+      }
+
+      // Add tags
+      route.tags = []
+      for (const tag of tags) {
+        if (tag.doesRouteHaveTag && tag.doesRouteHaveTag(route.summary || "")) {
+          route.tags.push(tag.name)
+        }
+      }
+
+      // Get Fern SDK metadata for this specific method
+      const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
+        methods: [method], // Only pass this specific method
+        path: routePath,
+        sdkReturnValue:
+          descriptionMetadata?.response_key ?? routeSpec.sdkReturnValue,
+      })
+
+      // Apply method-specific metadata
+      Object.assign(route, methodsMappedToFernSdkMetadata[method])
+
+      // Store the route for this method
+      methodRoutes[method.toLowerCase()] = route
     }
-
-    const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
-      methods,
-      path: routePath,
-      sdkReturnValue:
-        descriptionMetadata?.response_key ?? routeSpec.sdkReturnValue,
-    })
-
     // Some routes accept multiple methods
-    builder.addPath(routePath, {
-      ...methods
-        .map((method) => ({
-          [method.toLowerCase()]: {
-            ...methodsMappedToFernSdkMetadata[method],
-            ...route,
-            operationId: `${transformPathToOperationId(routePath)}${pascalCase(
-              method
-            )}`,
-          },
-        }))
-        .reduceRight((acc, cur) => ({ ...acc, ...cur }), {}),
-    })
+    builder.addPath(routePath, methodRoutes)
   }
 
   if (outputFile) {
