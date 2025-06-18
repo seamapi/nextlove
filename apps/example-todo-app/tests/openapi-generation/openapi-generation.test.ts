@@ -119,3 +119,56 @@ test("generateOpenAPI correctly parses nested object description", async (t) => 
   t.is(testArrayDescription.items.description, "This is an object.")
   t.is(testArrayDescription.items["x-title"], "Nested Object Description")
 })
+
+test("generateOpenAPI includes GET even when POST is defined", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const methods = Object.keys(openapiJson.paths["/api/todo/list"])
+  t.is(2, methods.length)
+
+  // GET includes parameters
+  t.deepEqual(
+    {
+      name: "ids",
+      in: "query",
+      required: true,
+      schema: {
+        items: {
+          format: "uuid",
+          type: "string",
+        },
+        type: "array",
+      },
+    },
+    openapiJson.paths["/api/todo/list"].get.parameters[0]
+  )
+
+  t.falsy(openapiJson.paths["/api/todo/list"].get.requestBody)
+
+  // POST route has request body
+
+  t.deepEqual(
+    {
+      properties: {
+        ids: {
+          items: {
+            format: "uuid",
+            type: "string",
+          },
+          type: "array",
+        },
+      },
+      required: ["ids"],
+      type: "object",
+    },
+    openapiJson.paths["/api/todo/list"].post.requestBody.content[
+      "application/json"
+    ].schema
+  )
+
+  t.falsy(openapiJson.paths["/api/todo/list"].post.parameters)
+})
