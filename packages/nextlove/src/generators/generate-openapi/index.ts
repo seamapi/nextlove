@@ -143,39 +143,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     file_path,
     { setupParams, routeSpec, route: routePath },
   ] of filepathToRouteFn) {
-    const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].some((method) =>
-      routeSpec.methods.includes(method)
-    )
-    // TODO: support multipart/form-data
-
-    // handle body
-    let body_to_generate_schema
-    if (isPostOrPutOrPatch) {
-      body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
-
-      if (routeSpec.jsonBody && routeSpec.commonParams) {
-        body_to_generate_schema = routeSpec.jsonBody.merge(
-          routeSpec.commonParams
-        )
-      }
-    } else {
-      body_to_generate_schema = routeSpec.jsonBody
-    }
-
-    // handle query
-    let query_to_generate_schema
-    if (isPostOrPutOrPatch) {
-      query_to_generate_schema = routeSpec.queryParams
-    } else {
-      query_to_generate_schema = routeSpec.queryParams ?? routeSpec.commonParams
-
-      if (routeSpec.queryParams && routeSpec.commonParams) {
-        query_to_generate_schema = routeSpec.queryParams.merge(
-          routeSpec.commonParams
-        )
-      }
-    }
-
     const methods = routeSpec.methods
     if (methods.length === 0) {
       console.warn(
@@ -206,14 +173,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       dashifyObjectKeys(descriptionMetadata)
     )
 
-    // Create a map to store method-specific route objects
     const methodRoutes: Record<string, OperationObject> = {}
 
-    // Loop through each method and create method-specific route objects
     for (const method of methods) {
       const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].includes(method)
 
-      // Calculate body schema for this specific method
+      // TODO: support multipart/form-data
       let body_to_generate_schema
       if (isPostOrPutOrPatch) {
         body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
@@ -227,7 +192,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         body_to_generate_schema = routeSpec.jsonBody
       }
 
-      // Calculate query schema for this specific method
       let query_to_generate_schema
       if (isPostOrPutOrPatch) {
         query_to_generate_schema = routeSpec.queryParams
@@ -242,7 +206,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         }
       }
 
-      // Create base route object for this method
       const route: OperationObject = {
         ...routeSpec.openApiMetadata,
         ...formattedDescriptionMetadata,
@@ -269,7 +232,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           : securityObjectsForAuthType[routeSpec.auth],
       }
 
-      // Add request body if applicable for this method
       if (body_to_generate_schema) {
         route.requestBody = {
           content: {
@@ -280,7 +242,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         }
       }
 
-      // Add parameters if applicable for this method
       if (query_to_generate_schema) {
         const schema = generateSchema(query_to_generate_schema as any)
         if (schema.properties) {
@@ -299,7 +260,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         }
       }
 
-      // Handle JSON response
       const { jsonResponse } = routeSpec
       const { addOkStatus = true } = setupParams
 
@@ -329,6 +289,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         )
 
         if (route.responses != null) {
+          // TODO: we should not hardcode 200 here
           route.responses[200].content = {
             "application/json": {
               schema: schemaWithReferences,
@@ -337,7 +298,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         }
       }
 
-      // Add tags
       route.tags = []
       for (const tag of tags) {
         if (tag.doesRouteHaveTag && tag.doesRouteHaveTag(route.summary || "")) {
@@ -345,7 +305,6 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         }
       }
 
-      // Get Fern SDK metadata for this specific method
       const methodsMappedToFernSdkMetadata = await mapMethodsToFernSdkMetadata({
         methods: [method], // Only pass this specific method
         path: routePath,
@@ -353,13 +312,10 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           descriptionMetadata?.response_key ?? routeSpec.sdkReturnValue,
       })
 
-      // Apply method-specific metadata
       Object.assign(route, methodsMappedToFernSdkMetadata[method])
-
-      // Store the route for this method
       methodRoutes[method.toLowerCase()] = route
     }
-    // Some routes accept multiple methods
+
     builder.addPath(routePath, methodRoutes)
   }
 
