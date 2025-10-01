@@ -92,8 +92,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
         const authMiddlewares = (
           Array.isArray(spec.auth) ? spec.auth : [spec.auth]
-        ).map((authType) => authMiddlewareMap[authType])
-        const undefinedAuthType = authMiddlewares.find((mw) => !mw)
+        ).map((authType) => [authType, authMiddlewareMap[authType]] as const)
+        const undefinedAuthType = authMiddlewares.find(([, mw]) => !mw)
         if (undefinedAuthType)
           throw new Error(`Unknown auth type: ${undefinedAuthType}`)
 
@@ -105,15 +105,16 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             spec.onMultipleAuthMiddlewareFailures ??
             onMultipleAuthMiddlewareFailures
 
-          for (const middleware of authMiddlewares) {
+          for (const [name, middleware] of authMiddlewares) {
             try {
               return await middleware((...args) => {
                 // Otherwise errors unrelated to auth thrown by built-in middleware (withMethods, withValidation) will be caught here
                 didAuthMiddlewareThrow = false
                 return next(...args)
               })(req, res)
-            } catch (error) {
+            } catch (error: any) {
               if (didAuthMiddlewareThrow) {
+                error.source_middleware = name
                 errors.push(error)
                 continue
               } else {
