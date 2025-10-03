@@ -9,6 +9,10 @@ import {
 import withMethods, { HTTPMethods } from "./middlewares/with-methods"
 import withValidation from "./middlewares/with-validation"
 import { z } from "zod"
+import {
+  AuthMethodDoesNotApplyException,
+  UnauthorizedException,
+} from "../nextjs-exception-middleware"
 
 type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
 
@@ -98,14 +102,12 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
           throw new Error(`Unknown auth type: ${undefinedAuthType}`)
 
         const firstAuthMiddlewareThatSucceeds = (next) => async (req, res) => {
-          let errors: unknown[] = []
-          let didAuthMiddlewareThrow = true
-
           const handleMultipleAuthMiddlewareFailures =
             spec.onMultipleAuthMiddlewareFailures ??
             onMultipleAuthMiddlewareFailures
 
           for (const [name, middleware] of authMiddlewares) {
+            let didAuthMiddlewareThrow = true
             try {
               return await middleware((...args) => {
                 // Otherwise errors unrelated to auth thrown by built-in middleware (withMethods, withValidation) will be caught here
@@ -113,21 +115,23 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
                 return next(...args)
               })(req, res)
             } catch (error: any) {
-              if (didAuthMiddlewareThrow) {
-                error.source_middleware = name
-                errors.push(error)
+              if (error instanceof AuthMethodDoesNotApplyException) {
                 continue
-              } else {
-                throw error
               }
+              error.source_middleware = name
+              if (
+                handleMultipleAuthMiddlewareFailures &&
+                didAuthMiddlewareThrow
+              ) {
+                handleMultipleAuthMiddlewareFailures([error])
+              }
+              throw error
             }
           }
-
-          if (handleMultipleAuthMiddlewareFailures && didAuthMiddlewareThrow) {
-            handleMultipleAuthMiddlewareFailures(errors)
-          }
-
-          throw errors[errors.length - 1]
+          throw new UnauthorizedException({
+            type: "unauthorized",
+            message: "No authentication methods succeeded",
+          })
         }
 
         return wrappers(

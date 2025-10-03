@@ -77,6 +77,18 @@ export class UnauthorizedException extends HttpException {
   }
 }
 
+export class AuthMethodDoesNotApplyException extends HttpException {
+  constructor(
+    public metadata: HttpExceptionMetadata = {
+      type: "auth_method_does_not_apply",
+      message: "Auth method does not apply",
+    },
+    options?: ThrowingOptions
+  ) {
+    super(401, metadata, options)
+  }
+}
+
 export class NotFoundException extends HttpException {
   constructor(
     public metadata: HttpExceptionMetadata,
