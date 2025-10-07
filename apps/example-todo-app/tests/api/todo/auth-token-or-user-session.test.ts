@@ -38,7 +38,7 @@ test("GET /todo/auth-token-or-user-session", async (t) => {
   // Message set by custom onMultipleAuthMiddlewareFailures() hook
   t.true(
     noAuthResponse.data.error.message.includes(
-      "Multiple auth middleware failures"
+      "No authentication methods succeeded"
     )
   )
 })

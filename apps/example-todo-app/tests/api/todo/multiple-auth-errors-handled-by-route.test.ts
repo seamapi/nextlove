@@ -10,8 +10,8 @@ test("GET /todo/multiple-auth-errors-handled-by-route", async (t) => {
     .catch((error: AxiosError) => {
       t.like(error.response, {
         error: {
-          message: "Received 2 unauthorized errors",
-          type: "multiple_unauthorized",
+          message: "No authentication methods succeeded",
+          type: "unauthorized",
         },
       })
     })
