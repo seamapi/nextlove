@@ -21,6 +21,7 @@ const defaultRouteSpec = {
     todo: ZT.todo,
     ok: ZT.ok,
   },
+  maxDuration: 60, // Default maxDuration of 60 seconds for all routes
   onMultipleAuthMiddlewareFailures: (errors: unknown[]) => {
     throw new UnauthorizedException({
       type: "unauthorized",

@@ -84,6 +84,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
       : {},
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
     onMultipleAuthMiddlewareFailures,
+    maxDuration: globalMaxDuration,
   } = setupParams
 
   const withRouteSpec = (spec: RouteSpec) => {
@@ -159,6 +160,12 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
 
       rootRequestHandler._setupParams = setupParams
       rootRequestHandler._routeSpec = spec
+
+      // Export maxDuration as a Next.js route segment config
+      const maxDuration = spec.maxDuration ?? globalMaxDuration
+      if (maxDuration !== undefined) {
+        rootRequestHandler.maxDuration = maxDuration
+      }
 
       return rootRequestHandler
     }

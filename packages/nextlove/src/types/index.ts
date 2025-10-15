@@ -43,6 +43,13 @@ export interface RouteSpec<
   sdkReturnValue?: string | string[]
 
   onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
+
+  /**
+   * Route-specific maxDuration (in seconds).
+   * Overrides the global default if set.
+   * This is a Next.js route segment config.
+   */
+  maxDuration?: number
 }
 
 export type MiddlewareChainOutput<
@@ -96,6 +103,13 @@ export interface SetupParams<
    * You can inspect the errors and throw a more generic error in this hook if you want.
    */
   onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
+
+  /**
+   * Global default maxDuration (in seconds) for all routes.
+   * Individual routes can override this value.
+   * This is a Next.js route segment config.
+   */
+  maxDuration?: number
 }
 
 const defaultMiddlewareMap = {
