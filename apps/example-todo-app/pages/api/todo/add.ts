@@ -61,6 +61,7 @@ export const route_spec = checkRouteSpec({
     This endpoint allows you to add a new todo item to the list. Deprecated.
   `,
   sdkReturnValue: "foo",
+  maxDuration: 120, // Override global default with 120 seconds for this route
 })
 
 export default withRouteSpec(route_spec)(async (req, res) => {

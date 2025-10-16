@@ -1,5 +1,6 @@
 import test from "ava"
 import getTestServer from "tests/fixtures/get-test-server"
+import handler from "pages/api/todo/add"
 
 test("POST /todo/add", async (t) => {
   const { axios } = await getTestServer(t)
@@ -29,4 +30,9 @@ test("POST /todo/add", async (t) => {
     .post("/todo/add", { title: "Todo Title" })
     .catch((err) => err)
   t.is(successfulRes.status, 200)
+})
+
+test("POST /todo/add has maxDuration set", (t) => {
+  // Route-specific maxDuration of 120 overrides global default of 60
+  t.is(handler.maxDuration, 120)
 })

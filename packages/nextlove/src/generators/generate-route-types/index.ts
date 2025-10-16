@@ -34,6 +34,7 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   // TODO when less lazy, use ts-morph for better generation
   const routeDefs: string[] = []
   for (const [_, { route, routeSpec, setupParams }] of filteredRoutes) {
+    const maxDuration = routeSpec.maxDuration ?? setupParams.maxDuration
     const queryKeys = Object.keys(routeSpec.queryParams?.shape ?? {})
     const pathParameters = queryKeys.filter((key) => route.includes(`[${key}]`))
 
@@ -84,7 +85,8 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
           ).node
         )
       : "{}"
-  }
+  },
+  maxDuration: ${maxDuration ?? "undefined"}
 }`.trim()
     )
   }
