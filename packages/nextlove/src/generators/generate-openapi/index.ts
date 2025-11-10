@@ -120,8 +120,10 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
   }
 
   for (const [key, value] of Object.entries(globalSchemas)) {
-    const schemaWithReferences = embedSchemaReferences(value, globalSchemas)
-    globalSchemas[key] = schemaWithReferences
+    if (key === "batch") {
+      const schemaWithReferences = embedSchemaReferences(value, globalSchemas)
+      globalSchemas[key] = schemaWithReferences
+    }
   }
 
   // Build OpenAPI spec
