@@ -119,6 +119,13 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     globalSchemas[schemaName] = generateSchema(zodSchema)
   }
 
+  for (const [key, value] of Object.entries(globalSchemas)) {
+    if (key === "batch") {
+      const schemaWithReferences = embedSchemaReferences(value, globalSchemas)
+      globalSchemas[key] = schemaWithReferences
+    }
+  }
+
   // Build OpenAPI spec
   const builder = OpenApiBuilder.create({
     openapi: "3.0.0",
