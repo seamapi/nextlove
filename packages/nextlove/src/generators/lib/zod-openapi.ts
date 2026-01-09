@@ -462,10 +462,7 @@ function parseArray({
   )
 }
 
-function parseLiteral({
-  schemas,
-  zodRef,
-}: ParsingArgs<any>): SchemaObject {
+function parseLiteral({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const value = getLiteralValue(zodRef)
   return merge(
     {
@@ -477,10 +474,7 @@ function parseLiteral({
   )
 }
 
-function parseEnum({
-  schemas,
-  zodRef,
-}: ParsingArgs<any>): SchemaObject {
+function parseEnum({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const values = getEnumValues(zodRef)
   const valuesArray = Array.isArray(values) ? values : Object.values(values)
   return merge(
@@ -525,13 +519,10 @@ function parseUnion({
   ) {
     // special case to transform unions of literals into enums
     const literals = contents as unknown as z.ZodLiteral<OpenApiZodAny>[]
-    const type = literals.reduce(
-      (prev, content) => {
-        const value = getLiteralValue(content)
-        return !prev || prev === typeof value ? typeof value : null
-      },
-      null as null | string
-    )
+    const type = literals.reduce((prev, content) => {
+      const value = getLiteralValue(content)
+      return !prev || prev === typeof value ? typeof value : null
+    }, null as null | string)
 
     if (type) {
       return merge(
@@ -588,10 +579,7 @@ function parseNever({
   return merge({ readOnly: true }, parseDescription(zodRef), ...schemas)
 }
 
-function parseBranded({
-  schemas,
-  zodRef,
-}: ParsingArgs<any>): SchemaObject {
+function parseBranded({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const type = getBrandedType(zodRef)
   return merge(type ? generateSchema(type) : {}, ...schemas)
 }
@@ -603,10 +591,7 @@ function catchAllParser({
   return merge(parseDescription(zodRef), ...schemas)
 }
 
-function parsePipeline({
-  zodRef,
-  useOutput,
-}: ParsingArgs<any>): SchemaObject {
+function parsePipeline({ zodRef, useOutput }: ParsingArgs<any>): SchemaObject {
   const { in: inSchema, out: outSchema } = getPipelineParts(zodRef)
   if (useOutput && outSchema) {
     return generateSchema(outSchema, useOutput)

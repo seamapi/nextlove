@@ -192,9 +192,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
 
         if (routeSpec.jsonBody && routeSpec.commonParams) {
-          body_to_generate_schema = (routeSpec.jsonBody as z.ZodObject<any>).merge(
-            routeSpec.commonParams as z.ZodObject<any>
-          )
+          body_to_generate_schema = (
+            routeSpec.jsonBody as z.ZodObject<any>
+          ).merge(routeSpec.commonParams as z.ZodObject<any>)
         }
       } else {
         body_to_generate_schema = routeSpec.jsonBody
@@ -208,9 +208,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           routeSpec.queryParams ?? routeSpec.commonParams
 
         if (routeSpec.queryParams && routeSpec.commonParams) {
-          query_to_generate_schema = (routeSpec.queryParams as z.ZodObject<any>).merge(
-            routeSpec.commonParams as z.ZodObject<any>
-          )
+          query_to_generate_schema = (
+            routeSpec.queryParams as z.ZodObject<any>
+          ).merge(routeSpec.commonParams as z.ZodObject<any>)
         }
       }
 
