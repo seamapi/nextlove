@@ -20,7 +20,7 @@ export const route_spec = checkRouteSpec({
   queryParams,
   jsonResponse: z.object({
     ok: z.boolean(),
-    todo: ZT.todo,
+    todo: ZT.todo.optional(),
     error: z
       .object({
         type: z.string(),
