@@ -53,6 +53,7 @@ import {
   getDiscriminator,
   getBrandedType,
   getPipelineParts,
+  getShape,
 } from "../../lib/zod-compat"
 
 // Type alias for Zod 3/4 compatibility
@@ -88,8 +89,8 @@ function iterateZodObject({
   useOutput,
   hideDefinitions,
 }: ParsingArgs<OpenApiZodAnyObject>) {
-  // Get shape using the shape property (works in both Zod 3 and 4)
-  const shape = (zodRef as any).shape || {}
+  // Get shape using the compat helper (works in both Zod 3 and 4)
+  const shape = getShape(zodRef as ZodTypeAny) || {}
   const reduced = Object.keys(shape)
     .filter((key) => hideDefinitions?.includes(key) === false)
     .reduce(
@@ -298,10 +299,9 @@ function parseObject({
   additionalProperties =
     additionalProperties != null ? { additionalProperties } : {}
 
-  const requiredProperties = Object.keys(
-    (zodRef as z.AnyZodObject).shape
-  ).filter((key) => {
-    const item = (zodRef as z.AnyZodObject).shape[key]
+  const objectShape = getShape(zodRef as ZodTypeAny) || {}
+  const requiredProperties = Object.keys(objectShape).filter((key) => {
+    const item = objectShape[key]
     const itemTypeName = getTypeName(item)
     return (
       !(

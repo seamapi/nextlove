@@ -7,6 +7,7 @@ import {
   getTypeName,
   getEffectsSchema,
   getInnerType,
+  getShape,
 } from "../../lib/zod-compat"
 
 interface GenerateRouteTypesOpts {
@@ -40,7 +41,9 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   const routeDefs: string[] = []
   for (const [_, { route, routeSpec, setupParams }] of filteredRoutes) {
     const maxDuration = routeSpec.maxDuration ?? setupParams.maxDuration
-    const queryKeys = Object.keys((routeSpec.queryParams as any)?.shape ?? {})
+    const queryKeys = Object.keys(
+      routeSpec.queryParams ? getShape(routeSpec.queryParams) ?? {} : {}
+    )
     const pathParameters = queryKeys.filter((key) => route.includes(`[${key}]`))
 
     // queryParams might be a ZodEffects or ZodOptional in some cases
