@@ -20,7 +20,8 @@ test("GET /todo/array-query-brackets (comma-separated array values)", async (t) 
     .catch((r) => r)
 
   t.is(status, 400)
-  t.is(error.message, `Expected array, received string for "ids"`)
+  // Zod 4 prefixes with "Invalid input: " so we check for the core message
+  t.true(error.message.includes('expected array, received string for "ids"'))
 })
 
 test("GET /todo/array-query-brackets (bracket array values)", async (t) => {

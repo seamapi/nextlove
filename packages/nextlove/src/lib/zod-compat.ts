@@ -139,9 +139,20 @@ export function getChecks(schema: ZodTypeAny): any[] {
 /**
  * Get values from a ZodEnum or ZodNativeEnum
  */
-export function getEnumValues(schema: ZodTypeAny): any[] | Record<string, any> {
+export function getEnumValues(
+  schema: ZodTypeAny
+): any[] | Record<string, any> | undefined {
+  // Zod 4: use schema.options (array) or schema.enum (object)
+  if ("options" in schema && Array.isArray((schema as any).options)) {
+    return (schema as any).options
+  }
+  if ("enum" in schema && (schema as any).enum) {
+    return (schema as any).enum
+  }
+  // Zod 3 fallback
   const def = getDef(schema)
-  return def?.values
+  // Zod 4 also has entries in def
+  return def?.values || def?.entries
 }
 
 /**
