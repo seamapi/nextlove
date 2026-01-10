@@ -1,4 +1,3 @@
-// @ts-nocheck - Vendored code with Zod 3/4 type incompatibilities (runtime works correctly)
 /**
  * Zod OpenAPI Generator.
  *
@@ -28,7 +27,6 @@
  */
 
 import type { SchemaObject, SchemaObjectType } from "openapi3-ts/oas31"
-import merge from "ts-deepmerge"
 import { z, ZodTypeAny } from "zod"
 import { parseFrontMatter, testFrontMatter } from "./front-matter"
 import dedent from "dedent"
@@ -59,7 +57,26 @@ import {
 // Type alias for Zod 3/4 compatibility
 type AnyZodObject = z.ZodObject<any>
 
-type AnatineSchemaObject = SchemaObject & { hideDefinitions?: string[] }
+// Extended SchemaObject that includes OpenAPI 3.0's nullable property for backwards compatibility
+type ExtendedSchemaObject = SchemaObject & { nullable?: boolean }
+type AnatineSchemaObject = ExtendedSchemaObject & { hideDefinitions?: string[] }
+
+/**
+ * Shallow merge multiple schema objects into one.
+ * Deep merge is not needed since metaOpenApi only contains flat metadata
+ * (description, deprecated, x-* extensions), not nested schema structures.
+ */
+function mergeSchemas(
+  ...schemas: Array<Partial<ExtendedSchemaObject> | undefined>
+): ExtendedSchemaObject {
+  const result: ExtendedSchemaObject = {}
+  for (const schema of schemas) {
+    if (schema) {
+      Object.assign(result, schema)
+    }
+  }
+  return result
+}
 
 export interface OpenApiZodAny extends ZodTypeAny {
   metaOpenApi?: AnatineSchemaObject | AnatineSchemaObject[]
@@ -162,7 +179,7 @@ function parseTransformation({
       }
     }
   }
-  return merge(
+  return mergeSchemas(
     {
       ...(zodRef.description ? { description: zodRef.description } : {}),
       ...input,
@@ -232,7 +249,7 @@ function parseString({
         break
     }
   })
-  return merge(baseSchema, parseDescription(zodRef), ...schemas)
+  return mergeSchemas(baseSchema, parseDescription(zodRef), ...schemas)
 }
 
 function parseNumber({
@@ -266,7 +283,7 @@ function parseNumber({
         baseSchema.multipleOf = item.value
     }
   })
-  return merge(baseSchema, parseDescription(zodRef), ...schemas)
+  return mergeSchemas(baseSchema, parseDescription(zodRef), ...schemas)
 }
 
 function getExcludedDefinitionsFromSchema(
@@ -287,9 +304,7 @@ function parseObject({
   schemas,
   useOutput,
   hideDefinitions,
-}: ParsingArgs<
-  z.ZodObject<never, "passthrough" | "strict" | "strip">
->): SchemaObject {
+}: ParsingArgs<AnyZodObject>): SchemaObject {
   let additionalProperties: SchemaObject["additionalProperties"]
 
   const catchall = getCatchall(zodRef)
@@ -331,7 +346,7 @@ function parseObject({
   const required =
     requiredProperties.length > 0 ? { required: requiredProperties } : {}
 
-  return merge(
+  return mergeSchemas(
     {
       type: "object" as SchemaObjectType,
       properties: iterateZodObject({
@@ -355,7 +370,7 @@ function parseRecord({
   useOutput,
 }: ParsingArgs<z.ZodRecord>): SchemaObject {
   const valueType = getRecordValueType(zodRef)
-  return merge(
+  return mergeSchemas(
     {
       type: "object" as SchemaObjectType,
       additionalProperties:
@@ -374,7 +389,7 @@ function parseBigInt({
   zodRef,
   schemas,
 }: ParsingArgs<z.ZodBigInt>): SchemaObject {
-  return merge(
+  return mergeSchemas(
     { type: "integer" as SchemaObjectType, format: "int64" },
     parseDescription(zodRef),
     ...schemas
@@ -385,7 +400,7 @@ function parseBoolean({
   zodRef,
   schemas,
 }: ParsingArgs<z.ZodBoolean>): SchemaObject {
-  return merge(
+  return mergeSchemas(
     { type: "boolean" as SchemaObjectType },
     parseDescription(zodRef),
     ...schemas
@@ -393,7 +408,7 @@ function parseBoolean({
 }
 
 function parseDate({ zodRef, schemas }: ParsingArgs<z.ZodDate>): SchemaObject {
-  return merge(
+  return mergeSchemas(
     { type: "string" as SchemaObjectType, format: "date-time" },
     parseDescription(zodRef),
     ...schemas
@@ -401,7 +416,7 @@ function parseDate({ zodRef, schemas }: ParsingArgs<z.ZodDate>): SchemaObject {
 }
 
 function parseNull({ zodRef, schemas }: ParsingArgs<z.ZodNull>): SchemaObject {
-  return merge(
+  return mergeSchemas(
     {
       nullable: true,
     },
@@ -415,7 +430,7 @@ function parseOptional({
   zodRef,
   useOutput,
 }: ParsingArgs<z.ZodOptional<OpenApiZodAny>>): SchemaObject {
-  return merge(
+  return mergeSchemas(
     generateSchema(zodRef.unwrap(), useOutput),
     parseDescription(zodRef),
     ...schemas
@@ -428,7 +443,7 @@ function parseNullable({
   useOutput,
 }: ParsingArgs<z.ZodNullable<OpenApiZodAny>>): SchemaObject {
   const schema = generateSchema(zodRef.unwrap(), useOutput)
-  return merge(
+  return mergeSchemas(
     { ...schema, type: schema.type, nullable: true },
     parseDescription(zodRef),
     ...schemas
@@ -441,7 +456,7 @@ function parseDefault({
   useOutput,
 }: ParsingArgs<z.ZodDefault<OpenApiZodAny>>): SchemaObject {
   const innerType = getInnerType(zodRef)
-  return merge(
+  return mergeSchemas(
     {
       default: getDefaultValue(zodRef),
       ...(innerType ? generateSchema(innerType, useOutput) : {}),
@@ -467,7 +482,7 @@ function parseArray({
   if (minLength != null) constraints.minItems = minLength.value
   if (maxLength != null) constraints.maxItems = maxLength.value
 
-  return merge(
+  return mergeSchemas(
     {
       type: "array" as SchemaObjectType,
       items: generateSchema(zodRef.element, useOutput),
@@ -480,7 +495,7 @@ function parseArray({
 
 function parseLiteral({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const value = getLiteralValue(zodRef)
-  return merge(
+  return mergeSchemas(
     {
       type: typeof value as "string" | "number" | "boolean",
       enum: [value],
@@ -492,8 +507,15 @@ function parseLiteral({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
 
 function parseEnum({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const values = getEnumValues(zodRef)
+  if (!values) {
+    return mergeSchemas(
+      { type: "string" },
+      parseDescription(zodRef),
+      ...schemas
+    )
+  }
   const valuesArray = Array.isArray(values) ? values : Object.values(values)
-  return merge(
+  return mergeSchemas(
     {
       type: typeof valuesArray[0] as "string" | "number",
       enum: valuesArray,
@@ -509,7 +531,7 @@ function parseIntersection({
   useOutput,
 }: ParsingArgs<z.ZodIntersection<z.ZodTypeAny, z.ZodTypeAny>>): SchemaObject {
   const { left, right } = getIntersectionParts(zodRef)
-  return merge(
+  return mergeSchemas(
     {
       allOf: [
         left ? generateSchema(left, useOutput) : {},
@@ -534,14 +556,14 @@ function parseUnion({
     )
   ) {
     // special case to transform unions of literals into enums
-    const literals = contents as unknown as z.ZodLiteral<OpenApiZodAny>[]
+    const literals = contents as ZodTypeAny[]
     const type = literals.reduce((prev, content) => {
       const value = getLiteralValue(content)
       return !prev || prev === typeof value ? typeof value : null
     }, null as null | string)
 
     if (type) {
-      return merge(
+      return mergeSchemas(
         {
           type: type as "string" | "number" | "boolean",
           enum: literals.map((literal) => getLiteralValue(literal)),
@@ -559,7 +581,7 @@ function parseUnion({
     (content) => getTypeName(content) !== "ZodNull"
   )
 
-  return merge(
+  return mergeSchemas(
     {
       oneOf: nonNullContents.map((schema) => generateSchema(schema, useOutput)),
       ...(isNullable ? { nullable: true } : {}),
@@ -576,11 +598,11 @@ function parseDiscriminatedUnion({
 }: ParsingArgs<any>): SchemaObject {
   const discriminator = getDiscriminator(zodRef)
   const options = getUnionOptions(zodRef)
-  return merge(
+  return mergeSchemas(
     {
-      discriminator: {
-        propertyName: discriminator,
-      },
+      ...(discriminator
+        ? { discriminator: { propertyName: discriminator } }
+        : {}),
       oneOf: options.map((schema) => generateSchema(schema, useOutput)),
     },
     parseDescription(zodRef),
@@ -592,19 +614,19 @@ function parseNever({
   zodRef,
   schemas,
 }: ParsingArgs<z.ZodNever>): SchemaObject {
-  return merge({ readOnly: true }, parseDescription(zodRef), ...schemas)
+  return mergeSchemas({ readOnly: true }, parseDescription(zodRef), ...schemas)
 }
 
 function parseBranded({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const type = getBrandedType(zodRef)
-  return merge(type ? generateSchema(type) : {}, ...schemas)
+  return mergeSchemas(type ? generateSchema(type) : {}, ...schemas)
 }
 
 function catchAllParser({
   zodRef,
   schemas,
 }: ParsingArgs<ZodTypeAny>): SchemaObject {
-  return merge(parseDescription(zodRef), ...schemas)
+  return mergeSchemas(parseDescription(zodRef), ...schemas)
 }
 
 function parsePipeline({ zodRef, useOutput }: ParsingArgs<any>): SchemaObject {
@@ -621,7 +643,7 @@ function parseReadonly({
   schemas,
 }: ParsingArgs<any>): SchemaObject {
   const innerType = getInnerType(zodRef)
-  return merge(
+  return mergeSchemas(
     innerType ? generateSchema(innerType, useOutput) : {},
     parseDescription(zodRef),
     ...schemas
