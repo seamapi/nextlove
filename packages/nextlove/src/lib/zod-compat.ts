@@ -130,10 +130,22 @@ export function getShape(
 
 /**
  * Get the checks array from a string/number schema
+ * In Zod 4, checks are objects with _zod.def containing the check details
+ * We normalize them to have the properties directly accessible
  */
 export function getChecks(schema: ZodTypeAny): any[] {
   const def = getDef(schema)
-  return def?.checks || []
+  const checks = def?.checks || []
+
+  // Normalize Zod 4 check objects
+  return checks.map((check: any) => {
+    if (check._zod?.def) {
+      // Zod 4: flatten _zod.def properties onto the check object
+      return { ...check._zod.def }
+    }
+    // Zod 3: already has properties directly
+    return check
+  })
 }
 
 /**
@@ -159,7 +171,16 @@ export function getEnumValues(
  * Get the literal value from a ZodLiteral
  */
 export function getLiteralValue(schema: ZodTypeAny): any {
+  // Zod 4: try schema.value first (public API)
+  if ("value" in schema) {
+    return (schema as any).value
+  }
   const def = getDef(schema)
+  // Zod 4: values is an array
+  if (Array.isArray(def?.values)) {
+    return def.values[0]
+  }
+  // Zod 3: value is a single value
   return def?.value
 }
 

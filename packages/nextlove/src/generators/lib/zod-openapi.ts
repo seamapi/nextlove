@@ -202,10 +202,10 @@ function parseString({
   }
   const checks = getChecks(zodRef)
   checks.forEach((item) => {
-    // Get the kind - Zod 3 uses item.kind, Zod 4 uses item.def?.check or item.format
-    const kind = item.kind || item.def?.check || (item.format ? "format" : null)
+    // Get the kind - Zod 3 uses item.kind, Zod 4 uses item.check (normalized by getChecks)
+    const kind = item.kind || item.check
     // Get format for Zod 4 string format checks
-    const format = item.format || item.def?.format
+    const format = item.format
 
     switch (kind) {
       case "email":
@@ -225,7 +225,6 @@ function parseString({
         break
       // Zod 4 uses "string_format" as the check type with format property
       case "string_format":
-      case "format":
         if (format === "email") baseSchema.format = "email"
         else if (format === "uuid") baseSchema.format = "uuid"
         else if (format === "cuid") baseSchema.format = "cuid"
@@ -238,14 +237,16 @@ function parseString({
         break
       case "max":
       case "max_length":
-        baseSchema.maxLength = item.value ?? item.def?.maximum
+        // Zod 3: item.value, Zod 4 (normalized): item.maximum
+        baseSchema.maxLength = item.value ?? item.maximum
         break
       case "min":
       case "min_length":
-        baseSchema.minLength = item.value ?? item.def?.minimum
+        // Zod 3: item.value, Zod 4 (normalized): item.minimum
+        baseSchema.minLength = item.value ?? item.minimum
         break
       case "regex":
-        baseSchema.pattern = item.regex?.source || item.def?.pattern
+        baseSchema.pattern = item.regex?.source ?? item.pattern?.source
         break
     }
   })
