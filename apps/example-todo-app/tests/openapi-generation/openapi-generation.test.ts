@@ -130,28 +130,27 @@ test("generateOpenAPI includes GET even when POST is defined", async (t) => {
   const methods = Object.keys(openapiJson.paths["/api/todo/list"])
   t.is(2, methods.length)
 
-  // GET includes parameters
-  t.deepEqual(
-    {
-      name: "ids",
-      in: "query",
-      required: true,
-      schema: {
-        items: {
-          format: "uuid",
-          type: "string",
-        },
-        type: "array",
+  // GET includes parameters (using t.like for flexibility with Zod 4's extra properties like pattern)
+  t.like(openapiJson.paths["/api/todo/list"].get.parameters[0], {
+    name: "ids",
+    in: "query",
+    required: true,
+    schema: {
+      items: {
+        format: "uuid",
+        type: "string",
       },
+      type: "array",
     },
-    openapiJson.paths["/api/todo/list"].get.parameters[0]
-  )
+  })
 
   t.falsy(openapiJson.paths["/api/todo/list"].get.requestBody)
 
-  // POST route has request body
-
-  t.deepEqual(
+  // POST route has request body (using t.like for flexibility with Zod 4's extra properties)
+  t.like(
+    openapiJson.paths["/api/todo/list"].post.requestBody.content[
+      "application/json"
+    ].schema,
     {
       properties: {
         ids: {
@@ -164,10 +163,7 @@ test("generateOpenAPI includes GET even when POST is defined", async (t) => {
       },
       required: ["ids"],
       type: "object",
-    },
-    openapiJson.paths["/api/todo/list"].post.requestBody.content[
-      "application/json"
-    ].schema
+    }
   )
 
   t.falsy(openapiJson.paths["/api/todo/list"].post.parameters)

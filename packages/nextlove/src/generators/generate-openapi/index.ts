@@ -14,6 +14,7 @@ import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
 import dedent from "dedent"
 import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
 import { dashifyObjectKeys } from "../utils/dashify-object-keys"
+import { getTypeName } from "../../lib/zod-compat"
 
 function replaceFirstCharToLowercase(str: string) {
   if (str.length === 0) {
@@ -191,9 +192,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
         body_to_generate_schema = routeSpec.jsonBody ?? routeSpec.commonParams
 
         if (routeSpec.jsonBody && routeSpec.commonParams) {
-          body_to_generate_schema = routeSpec.jsonBody.merge(
-            routeSpec.commonParams
-          )
+          body_to_generate_schema = (
+            routeSpec.jsonBody as z.ZodObject<any>
+          ).merge(routeSpec.commonParams as z.ZodObject<any>)
         }
       } else {
         body_to_generate_schema = routeSpec.jsonBody
@@ -207,9 +208,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           routeSpec.queryParams ?? routeSpec.commonParams
 
         if (routeSpec.queryParams && routeSpec.commonParams) {
-          query_to_generate_schema = routeSpec.queryParams.merge(
-            routeSpec.commonParams
-          )
+          query_to_generate_schema = (
+            routeSpec.queryParams as z.ZodObject<any>
+          ).merge(routeSpec.commonParams as z.ZodObject<any>)
         }
       }
 
@@ -271,11 +272,8 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       const { addOkStatus = true } = setupParams
 
       if (jsonResponse) {
-        if (
-          !jsonResponse._def ||
-          !jsonResponse._def.typeName ||
-          jsonResponse._def.typeName !== "ZodObject"
-        ) {
+        const jsonResponseTypeName = getTypeName(jsonResponse)
+        if (jsonResponseTypeName !== "ZodObject") {
           console.warn(
             chalk.yellow(
               `Skipping route ${routePath} because the response is not a ZodObject.`

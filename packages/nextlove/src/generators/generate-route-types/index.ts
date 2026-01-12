@@ -2,7 +2,13 @@ import * as fs from "node:fs/promises"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
 import { zodToTs, printNode } from "../lib/zod-to-ts"
 import prettier from "prettier"
-import { z, ZodEffects, ZodOptional } from "zod"
+import { z, ZodTypeAny } from "zod"
+import {
+  getTypeName,
+  getEffectsSchema,
+  getInnerType,
+  getShape,
+} from "../../lib/zod-compat"
 
 interface GenerateRouteTypesOpts {
   packageDir: string
@@ -35,24 +41,37 @@ export const generateRouteTypes = async (opts: GenerateRouteTypesOpts) => {
   const routeDefs: string[] = []
   for (const [_, { route, routeSpec, setupParams }] of filteredRoutes) {
     const maxDuration = routeSpec.maxDuration ?? setupParams.maxDuration
-    const queryKeys = Object.keys(routeSpec.queryParams?.shape ?? {})
+    const queryKeys = Object.keys(
+      routeSpec.queryParams ? getShape(routeSpec.queryParams) ?? {} : {}
+    )
     const pathParameters = queryKeys.filter((key) => route.includes(`[${key}]`))
 
     // queryParams might be a ZodEffects or ZodOptional in some cases
-    let queryParams = routeSpec.queryParams
-    while (
-      queryParams &&
-      ("sourceType" in queryParams || "unwrap" in queryParams)
-    ) {
-      if ("sourceType" in queryParams) {
-        queryParams = (queryParams as unknown as ZodEffects<any>).sourceType()
-      } else if ("unwrap" in queryParams) {
-        queryParams = (queryParams as unknown as ZodOptional<any>).unwrap()
+    let queryParams: ZodTypeAny | undefined = routeSpec.queryParams
+    while (queryParams) {
+      const typeName = getTypeName(queryParams)
+      if (typeName === "ZodEffects") {
+        const inner = getEffectsSchema(queryParams)
+        if (inner) {
+          queryParams = inner
+          continue
+        }
+      } else if (typeName === "ZodOptional") {
+        const inner = getInnerType(queryParams)
+        if (inner) {
+          queryParams = inner
+          continue
+        }
       }
+      break
     }
 
-    if (queryParams && "omit" in queryParams) {
-      queryParams = queryParams.omit(
+    if (
+      queryParams &&
+      "omit" in queryParams &&
+      typeof (queryParams as any).omit === "function"
+    ) {
+      queryParams = (queryParams as any).omit(
         Object.fromEntries(pathParameters.map((param) => [param, true]))
       )
     }

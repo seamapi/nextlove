@@ -14,7 +14,8 @@ import {
   UnauthorizedException,
 } from "../nextjs-exception-middleware"
 
-type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
+// ParamDef type compatible with both Zod 3 and Zod 4
+type ParamDef = z.ZodTypeAny
 
 export const checkRouteSpec = <
   AuthType extends string = string,

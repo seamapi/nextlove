@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next"
-import { z, ZodFirstPartyTypeKind } from "zod"
+import { z } from "zod"
 import _ from "lodash"
 
 import {
@@ -8,6 +8,11 @@ import {
 } from "../../nextjs-exception-middleware"
 import { QueryArrayFormats } from "../../types"
 import { DEFAULT_ARRAY_FORMATS } from ".."
+import {
+  getTypeName,
+  getEffectsSchema,
+  getInnerType,
+} from "../../lib/zod-compat"
 
 const getZodObjectSchemaFromZodEffectSchema = (
   isZodEffect: boolean,
@@ -19,48 +24,21 @@ const getZodObjectSchemaFromZodEffectSchema = (
 
   let currentSchema = schema
 
-  while (currentSchema instanceof z.ZodEffects) {
-    currentSchema = currentSchema._def.schema
+  while (getTypeName(currentSchema) === "ZodEffects") {
+    const innerSchema = getEffectsSchema(currentSchema)
+    if (!innerSchema) break
+    currentSchema = innerSchema
   }
 
   return currentSchema as z.ZodObject<any>
 }
 
-/**
- * This function is used to get the correct schema from a ZodEffect | ZodDefault | ZodOptional schema.
- * TODO: this function should handle all special cases of ZodSchema and not just ZodEffect | ZodDefault | ZodOptional
- */
-const getZodDefFromZodSchemaHelpers = (schema: z.ZodTypeAny) => {
-  const special_zod_types = [
-    ZodFirstPartyTypeKind.ZodOptional,
-    ZodFirstPartyTypeKind.ZodDefault,
-    ZodFirstPartyTypeKind.ZodEffects,
-  ]
-
-  while (special_zod_types.includes(schema._def.typeName)) {
-    if (
-      schema._def.typeName === ZodFirstPartyTypeKind.ZodOptional ||
-      schema._def.typeName === ZodFirstPartyTypeKind.ZodDefault
-    ) {
-      schema = schema._def.innerType
-      continue
-    }
-
-    if (schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects) {
-      schema = schema._def.schema
-      continue
-    }
-  }
-  return schema._def
-}
-
 const tryGetZodSchemaAsObject = (
   schema: z.ZodTypeAny
 ): z.ZodObject<any> | undefined => {
-  const isZodEffect = schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects
+  const isZodEffect = getTypeName(schema) === "ZodEffects"
   const safe_schema = getZodObjectSchemaFromZodEffectSchema(isZodEffect, schema)
-  const isZodObject =
-    safe_schema._def.typeName === ZodFirstPartyTypeKind.ZodObject
+  const isZodObject = getTypeName(safe_schema) === "ZodObject"
 
   if (!isZodObject) {
     return undefined
@@ -69,14 +47,36 @@ const tryGetZodSchemaAsObject = (
   return safe_schema as z.ZodObject<any>
 }
 
+const unwrapZodSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
+  const special_zod_types = ["ZodOptional", "ZodDefault", "ZodEffects"]
+
+  while (special_zod_types.includes(getTypeName(schema))) {
+    const typeName = getTypeName(schema)
+    if (typeName === "ZodOptional" || typeName === "ZodDefault") {
+      const inner = getInnerType(schema)
+      if (!inner) break
+      schema = inner
+      continue
+    }
+
+    if (typeName === "ZodEffects") {
+      const inner = getEffectsSchema(schema)
+      if (!inner) break
+      schema = inner
+      continue
+    }
+  }
+  return schema
+}
+
 const isZodSchemaArray = (schema: z.ZodTypeAny) => {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodArray
+  const unwrapped = unwrapZodSchema(schema)
+  return getTypeName(unwrapped) === "ZodArray"
 }
 
 const isZodSchemaBoolean = (schema: z.ZodTypeAny) => {
-  const def = getZodDefFromZodSchemaHelpers(schema)
-  return def.typeName === ZodFirstPartyTypeKind.ZodBoolean
+  const unwrapped = unwrapZodSchema(schema)
+  return getTypeName(unwrapped) === "ZodBoolean"
 }
 
 const parseQueryParams = (
@@ -316,7 +316,7 @@ export const withValidation =
           input.queryParams,
           req.query,
           supportedArrayFormats
-        )
+        ) as typeof req.query
       }
 
       if (input.commonParams) {

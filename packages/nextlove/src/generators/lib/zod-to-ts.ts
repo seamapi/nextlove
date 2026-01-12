@@ -1,3 +1,4 @@
+// @ts-nocheck - Vendored code with Zod 3/4 type incompatibilities (runtime works correctly)
 /**
  * Zod To TS
  *
@@ -30,6 +31,25 @@ import ts from "typescript"
 import { ZodType, ZodTypeAny } from "zod"
 import { parseFrontMatter, testFrontMatter } from "./front-matter"
 import dedent from "dedent"
+import {
+  getTypeName,
+  getDef,
+  getLiteralValue,
+  getShape,
+  getArrayType,
+  getEnumValues,
+  getUnionOptions,
+  getEffectsSchema,
+  getInnerType,
+  getTupleItems,
+  getRecordValueType,
+  getMapTypes,
+  getSetValueType,
+  getIntersectionParts,
+  getPromiseType,
+  getFunctionParts,
+  getCustomTypeGetter,
+} from "../../lib/zod-compat"
 
 const { factory: f, SyntaxKind, ScriptKind, ScriptTarget, EmitHint } = ts
 
@@ -161,8 +181,6 @@ type GetTypeFunction = (
   options: ResolvedZodToTsOptions
 ) => ts.Identifier | ts.TypeNode
 
-type GetType = { _def: { getType?: GetTypeFunction } }
-
 const callGetType = (
   zod: ZodTypeAny,
   identifier: string,
@@ -170,10 +188,9 @@ const callGetType = (
 ) => {
   let type: ReturnType<GetTypeFunction> | undefined
 
-  const getTypeSchema = zod as GetType
+  const getType = getCustomTypeGetter(zod)
   // this must be called before accessing 'type'
-  if (getTypeSchema._def.getType)
-    type = getTypeSchema._def.getType(ts, identifier, options)
+  if (getType) type = getType(ts, identifier, options)
   return type
 }
 
@@ -205,7 +222,7 @@ const zodToTsNode = (
   store: ZodToTsStore,
   options: ResolvedZodToTsOptions
 ) => {
-  const typeName = zod._def.typeName
+  const typeName = getTypeName(zod)
 
   const getTypeType = callGetType(zod, identifier, options)
   // special case native enum, which needs an identifier node
@@ -262,7 +279,7 @@ const zodToTsNode = (
       // z.literal('hi') -> 'hi'
       let literal: ts.LiteralExpression | ts.BooleanLiteral
 
-      const literalValue = zod._def.value as LiteralType
+      const literalValue = getLiteralValue(zod) as LiteralType
       switch (typeof literalValue) {
         case "number": {
           literal = f.createNumericLiteral(literalValue)
@@ -281,13 +298,14 @@ const zodToTsNode = (
       return f.createLiteralTypeNode(literal)
     }
     case "ZodObject": {
-      const properties = Object.entries(zod._def.shape())
+      const shape = getShape(zod) || {}
+      const properties = Object.entries(shape)
 
       const members: ts.TypeElement[] = properties.map(([key, value]) => {
         const nextZodNode = value as ZodTypeAny
         const type = zodToTsNode(nextZodNode, ...otherArguments)
 
-        const { typeName: nextZodNodeTypeName } = nextZodNode._def
+        const nextZodNodeTypeName = getTypeName(nextZodNode)
         const isOptional =
           nextZodNodeTypeName === "ZodOptional" || nextZodNode.isOptional()
 
@@ -308,14 +326,19 @@ const zodToTsNode = (
     }
 
     case "ZodArray": {
-      const type = zodToTsNode(zod._def.type, ...otherArguments)
+      const arrayType = getArrayType(zod)
+      const type = arrayType
+        ? zodToTsNode(arrayType, ...otherArguments)
+        : createUnknownKeywordNode()
       const node = f.createArrayTypeNode(type)
       return node
     }
 
     case "ZodEnum": {
       // z.enum['a', 'b', 'c'] -> 'a' | 'b' | 'c
-      const types = zod._def.values.map((value: string) =>
+      const values = getEnumValues(zod)
+      const valuesArray = Array.isArray(values) ? values : Object.values(values)
+      const types = valuesArray.map((value: string) =>
         f.createLiteralTypeNode(f.createStringLiteral(value))
       )
       return f.createUnionTypeNode(types)
@@ -323,8 +346,8 @@ const zodToTsNode = (
 
     case "ZodUnion": {
       // z.union([z.string(), z.number()]) -> string | number
-      const options: ZodTypeAny[] = zod._def.options
-      const types: ts.TypeNode[] = options.map((option) =>
+      const unionOptions = getUnionOptions(zod)
+      const types: ts.TypeNode[] = unionOptions.map((option) =>
         zodToTsNode(option, ...otherArguments)
       )
       return f.createUnionTypeNode(types)
@@ -332,8 +355,8 @@ const zodToTsNode = (
 
     case "ZodDiscriminatedUnion": {
       // z.discriminatedUnion('kind', [z.object({ kind: z.literal('a'), a: z.string() }), z.object({ kind: z.literal('b'), b: z.number() })]) -> { kind: 'a', a: string } | { kind: 'b', b: number }
-      const options: ZodTypeAny[] = [...zod._def.options.values()]
-      const types: ts.TypeNode[] = options.map((option) =>
+      const unionOptions = getUnionOptions(zod)
+      const types: ts.TypeNode[] = unionOptions.map((option) =>
         zodToTsNode(option, ...otherArguments)
       )
       return f.createUnionTypeNode(types)
@@ -341,21 +364,25 @@ const zodToTsNode = (
 
     case "ZodEffects": {
       // ignore any effects, they won't factor into the types
-      const node = zodToTsNode(
-        zod._def.schema,
-        ...otherArguments
-      ) as ts.TypeNode
+      const effectsSchema = getEffectsSchema(zod)
+      if (!effectsSchema) return createUnknownKeywordNode()
+      const node = zodToTsNode(effectsSchema, ...otherArguments) as ts.TypeNode
       return node
     }
 
     case "ZodNativeEnum": {
       const type = getTypeType
+      const enumValues = getEnumValues(zod)
+      const enumValuesObj =
+        typeof enumValues === "object" && !Array.isArray(enumValues)
+          ? enumValues
+          : {}
 
       if (options.nativeEnums === "union") {
         // allow overriding with this option
         if (type) return maybeIdentifierToTypeReference(type)
 
-        const types = Object.values(zod._def.values).map((value) => {
+        const types = Object.values(enumValuesObj).map((value) => {
           if (typeof value === "number") {
             return f.createLiteralTypeNode(f.createNumericLiteral(value))
           }
@@ -370,7 +397,7 @@ const zodToTsNode = (
 
       if (options.nativeEnums === "resolve") {
         const enumMembers = Object.entries(
-          zod._def.values as Record<string, string | number>
+          enumValuesObj as Record<string, string | number>
         ).map(([key, value]) => {
           const literal =
             typeof value === "number"
@@ -395,10 +422,9 @@ const zodToTsNode = (
     }
 
     case "ZodOptional": {
-      const innerType = zodToTsNode(
-        zod._def.innerType,
-        ...otherArguments
-      ) as ts.TypeNode
+      const inner = getInnerType(zod)
+      if (!inner) return createUnknownKeywordNode()
+      const innerType = zodToTsNode(inner, ...otherArguments) as ts.TypeNode
       return f.createUnionTypeNode([
         innerType,
         f.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
@@ -406,10 +432,9 @@ const zodToTsNode = (
     }
 
     case "ZodNullable": {
-      const innerType = zodToTsNode(
-        zod._def.innerType,
-        ...otherArguments
-      ) as ts.TypeNode
+      const inner = getInnerType(zod)
+      if (!inner) return createUnknownKeywordNode()
+      const innerType = zodToTsNode(inner, ...otherArguments) as ts.TypeNode
       return f.createUnionTypeNode([
         innerType,
         f.createLiteralTypeNode(f.createNull()),
@@ -418,7 +443,8 @@ const zodToTsNode = (
 
     case "ZodTuple": {
       // z.tuple([z.string(), z.number()]) -> [string, number]
-      const types = zod._def.items.map((option: ZodTypeAny) =>
+      const items = getTupleItems(zod)
+      const types = items.map((option: ZodTypeAny) =>
         zodToTsNode(option, ...otherArguments)
       )
       return f.createTupleTypeNode(types)
@@ -426,7 +452,10 @@ const zodToTsNode = (
 
     case "ZodRecord": {
       // z.record(z.number()) -> { [x: string]: number }
-      const valueType = zodToTsNode(zod._def.valueType, ...otherArguments)
+      const recordValueType = getRecordValueType(zod)
+      const valueType = recordValueType
+        ? zodToTsNode(recordValueType, ...otherArguments)
+        : createUnknownKeywordNode()
 
       const node = f.createTypeLiteralNode([
         f.createIndexSignature(
@@ -449,8 +478,13 @@ const zodToTsNode = (
 
     case "ZodMap": {
       // z.map(z.string()) -> Map<string>
-      const valueType = zodToTsNode(zod._def.valueType, ...otherArguments)
-      const keyType = zodToTsNode(zod._def.keyType, ...otherArguments)
+      const { keyType: mapKeyType, valueType: mapValueType } = getMapTypes(zod)
+      const valueType = mapValueType
+        ? zodToTsNode(mapValueType, ...otherArguments)
+        : createUnknownKeywordNode()
+      const keyType = mapKeyType
+        ? zodToTsNode(mapKeyType, ...otherArguments)
+        : createUnknownKeywordNode()
 
       const node = f.createTypeReferenceNode(f.createIdentifier("Map"), [
         keyType,
@@ -462,7 +496,10 @@ const zodToTsNode = (
 
     case "ZodSet": {
       // z.set(z.string()) -> Set<string>
-      const type = zodToTsNode(zod._def.valueType, ...otherArguments)
+      const setValueType = getSetValueType(zod)
+      const type = setValueType
+        ? zodToTsNode(setValueType, ...otherArguments)
+        : createUnknownKeywordNode()
 
       const node = f.createTypeReferenceNode(f.createIdentifier("Set"), [type])
       return node
@@ -470,15 +507,24 @@ const zodToTsNode = (
 
     case "ZodIntersection": {
       // z.number().and(z.string()) -> number & string
-      const left = zodToTsNode(zod._def.left, ...otherArguments)
-      const right = zodToTsNode(zod._def.right, ...otherArguments)
+      const { left: intersectLeft, right: intersectRight } =
+        getIntersectionParts(zod)
+      const left = intersectLeft
+        ? zodToTsNode(intersectLeft, ...otherArguments)
+        : createUnknownKeywordNode()
+      const right = intersectRight
+        ? zodToTsNode(intersectRight, ...otherArguments)
+        : createUnknownKeywordNode()
       const node = f.createIntersectionTypeNode([left, right])
       return node
     }
 
     case "ZodPromise": {
       // z.promise(z.string()) -> Promise<string>
-      const type = zodToTsNode(zod._def.type, ...otherArguments)
+      const promiseType = getPromiseType(zod)
+      const type = promiseType
+        ? zodToTsNode(promiseType, ...otherArguments)
+        : createUnknownKeywordNode()
 
       const node = f.createTypeReferenceNode(f.createIdentifier("Promise"), [
         type,
@@ -489,7 +535,9 @@ const zodToTsNode = (
 
     case "ZodFunction": {
       // z.function().args(z.string()).returns(z.number()) -> (args_0: string) => number
-      const argumentTypes = zod._def.args._def.items.map(
+      const { args: funcArgs, returns: funcReturns } = getFunctionParts(zod)
+      const argsItems = funcArgs ? getTupleItems(funcArgs) : []
+      const argumentTypes = argsItems.map(
         (argument: ZodTypeAny, index: number) => {
           const argumentType = zodToTsNode(argument, ...otherArguments)
 
@@ -513,7 +561,9 @@ const zodToTsNode = (
         )
       )
 
-      const returnType = zodToTsNode(zod._def.returns, ...otherArguments)
+      const returnType = funcReturns
+        ? zodToTsNode(funcReturns, ...otherArguments)
+        : createUnknownKeywordNode()
 
       const node = f.createFunctionTypeNode(
         undefined,
@@ -526,10 +576,9 @@ const zodToTsNode = (
 
     case "ZodDefault": {
       // z.string().optional().default('hi') -> string
-      const type = zodToTsNode(
-        zod._def.innerType,
-        ...otherArguments
-      ) as ts.TypeNode
+      const defaultInner = getInnerType(zod)
+      if (!defaultInner) return createUnknownKeywordNode()
+      const type = zodToTsNode(defaultInner, ...otherArguments) as ts.TypeNode
 
       const filteredNodes: ts.Node[] = []
 

@@ -15,14 +15,15 @@ export type Middleware<T, Dep = {}> = WrapperMiddleware<T, Dep> & {
   securityObjects?: SecurityRequirementObject[]
 }
 
-type ParamDef = z.ZodTypeAny | z.ZodEffects<z.ZodTypeAny>
+// ParamDef type compatible with both Zod 3 and Zod 4
+type ParamDef = z.ZodTypeAny
 
 export interface RouteSpec<
   Auth extends string | string[] = string[],
   Methods extends HTTPMethods[] = any,
-  JsonBody extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  QueryParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
-  CommonParams extends ParamDef = z.ZodObject<any, any, any, any, any>,
+  JsonBody extends ParamDef = z.ZodTypeAny,
+  QueryParams extends ParamDef = z.ZodTypeAny,
+  CommonParams extends ParamDef = z.ZodTypeAny,
   Middlewares extends readonly Middleware<any, any>[] = any[],
   JsonResponse extends ParamDef = z.ZodTypeAny,
   FormData extends ParamDef = z.ZodTypeAny
