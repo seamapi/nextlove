@@ -14,7 +14,6 @@ export = createRule({
   meta: {
     type: "suggestion",
     docs: {
-      recommended: "warn",
       description: "Suggests to use jsonResponse when defining a route spec",
     },
     messages: {
