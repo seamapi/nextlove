@@ -213,10 +213,13 @@ export function getArrayConstraints(schema: ZodTypeAny): {
 
 /**
  * Get the element type from a ZodArray
+ * Zod v3: def.type contains the element schema
+ * Zod v4: def.element contains the element schema (def.type is the string "array")
  */
 export function getArrayType(schema: ZodTypeAny): ZodTypeAny | undefined {
   const def = getDef(schema)
-  return def?.type
+  // Zod v4 uses def.element, Zod v3 uses def.type
+  return def?.element ?? def?.type
 }
 
 /**
@@ -358,10 +361,13 @@ export function getSetValueType(schema: ZodTypeAny): ZodTypeAny | undefined {
 
 /**
  * Get promise type
+ * Zod v3: def.type contains the inner schema
+ * Zod v4: def.innerType contains the inner schema (def.type is the string "promise")
  */
 export function getPromiseType(schema: ZodTypeAny): ZodTypeAny | undefined {
   const def = getDef(schema)
-  return def?.type
+  // Zod v4 uses def.innerType, Zod v3 uses def.type
+  return def?.innerType ?? def?.type
 }
 
 /**
