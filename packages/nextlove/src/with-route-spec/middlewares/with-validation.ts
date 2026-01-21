@@ -297,12 +297,12 @@ export const withValidation =
 
       const isFormData = Boolean(input.formData)
 
-      if (isFormData && willValidateRequestBody) {
-        req.body = input.formData?.parse(req.body)
+      if (isFormData && willValidateRequestBody && input.formData) {
+        req.body = input.formData.parse(req.body)
       }
 
-      if (!isFormData && willValidateRequestBody) {
-        req.body = input.jsonBody?.parse(req.body)
+      if (!isFormData && willValidateRequestBody && input.jsonBody) {
+        req.body = input.jsonBody.parse(req.body)
       }
 
       if (input.queryParams) {
