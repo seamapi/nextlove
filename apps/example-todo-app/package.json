@@ -13,7 +13,7 @@
     "test": "ava"
   },
   "dependencies": {
-    "axios": "^0.24.0",
+    "axios": "^1.13.5",
     "content-type": "1.0.4",
     "cookie": "0.4.2",
     "debug": "^4.3.4",
