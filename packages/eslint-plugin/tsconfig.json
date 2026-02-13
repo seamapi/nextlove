@@ -19,7 +19,8 @@
     "declarationMap": false,
     "outDir": "./dist",
     "rootDir": "./lib",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "include": [
     "./lib/**/*"
