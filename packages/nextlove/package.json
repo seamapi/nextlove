@@ -79,7 +79,7 @@
     "eslint-config-next": "^16.0.0",
     "expect-type": "^0.15.0",
     "globby": "^13.2.2",
-    "next": "^16.0.0",
+    "next": "^16.1.7",
     "nextjs-server-modules": "^2.1.0",
     "prettier": "^2.7.1",
     "react": "^19.0.0",
