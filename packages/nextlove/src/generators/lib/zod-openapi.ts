@@ -44,6 +44,8 @@ import {
   getDefaultValue,
   getArrayConstraints,
   getRecordValueType,
+  getTupleItems,
+  getTupleRest,
   getCatchall,
   getUnknownKeys,
   getIntersectionParts,
@@ -494,6 +496,51 @@ function parseArray({
   )
 }
 
+// OpenAPI 3.0 has no positional item schemas, so a tuple becomes a
+// fixed-length array whose items accept every position's schema. `prefixItems`
+// (OpenAPI 3.1) would describe the positions exactly, but emitting it here
+// would produce specs that 3.0 tooling rejects.
+function parseTuple({
+  schemas,
+  zodRef,
+  useOutput,
+}: ParsingArgs<any>): SchemaObject {
+  const items = getTupleItems(zodRef)
+  const rest = getTupleRest(zodRef)
+
+  const itemSchemas = [...items, ...(rest == null ? [] : [rest])].map((item) =>
+    generateSchema(item, useOutput)
+  )
+  const uniqueItemSchemas = itemSchemas.filter(
+    (itemSchema, index) =>
+      itemSchemas.findIndex(
+        (otherSchema) =>
+          JSON.stringify(otherSchema) === JSON.stringify(itemSchema)
+      ) === index
+  )
+
+  const [onlyItemSchema] = uniqueItemSchemas
+
+  return mergeSchemas(
+    {
+      type: "array" as SchemaObjectType,
+      ...(uniqueItemSchemas.length === 0
+        ? {}
+        : {
+            items:
+              uniqueItemSchemas.length === 1
+                ? onlyItemSchema
+                : { oneOf: uniqueItemSchemas },
+          }),
+      minItems: items.length,
+      // A variadic tuple accepts any number of trailing rest values.
+      ...(rest == null ? { maxItems: items.length } : {}),
+    },
+    parseDescription(zodRef),
+    ...schemas
+  )
+}
+
 function parseLiteral({ schemas, zodRef }: ParsingArgs<any>): SchemaObject {
   const value = getLiteralValue(zodRef)
   return mergeSchemas(
@@ -674,10 +721,9 @@ const workerMap = {
   ZodDiscriminatedUnion: parseDiscriminatedUnion,
   ZodNever: parseNever,
   ZodBranded: parseBranded,
+  ZodTuple: parseTuple,
   // TODO Transform the rest to schemas
   ZodUndefined: catchAllParser,
-  // TODO: `prefixItems` is allowed in OpenAPI 3.1 which can be used to create tuples
-  ZodTuple: catchAllParser,
   ZodMap: catchAllParser,
   ZodFunction: catchAllParser,
   ZodLazy: catchAllParser,

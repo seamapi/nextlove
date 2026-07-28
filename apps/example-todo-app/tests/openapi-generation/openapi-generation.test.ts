@@ -168,3 +168,41 @@ test("generateOpenAPI includes GET even when POST is defined", async (t) => {
 
   t.falsy(openapiJson.paths["/api/todo/list"].post.parameters)
 })
+
+test("generateOpenAPI describes tuples as fixed-length arrays", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
+  )
+
+  const { properties } =
+    openapiJson.paths["/api/todo/add"].post.requestBody.content[
+      "application/json"
+    ].schema
+
+  // Every position shares one schema, so items does not need a oneOf.
+  t.like(properties.completedBetween, {
+    type: "array",
+    items: { type: "string", format: "date-time" },
+    minItems: 2,
+    maxItems: 2,
+  })
+  t.falsy(properties.completedBetween.items.oneOf)
+
+  t.deepEqual(properties.positionAndLabel.type, "array")
+  t.deepEqual(properties.positionAndLabel.minItems, 2)
+  t.deepEqual(properties.positionAndLabel.maxItems, 2)
+  t.deepEqual(
+    properties.positionAndLabel.items.oneOf.map(({ type }) => type),
+    ["number", "string"]
+  )
+
+  // A rest type means there is no upper bound on the length.
+  t.like(properties.variadicTags, {
+    type: "array",
+    items: { type: "string" },
+    minItems: 1,
+  })
+  t.falsy(properties.variadicTags.maxItems)
+})
