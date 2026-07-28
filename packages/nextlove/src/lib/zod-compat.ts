@@ -324,6 +324,14 @@ export function getTupleItems(schema: ZodTypeAny): ZodTypeAny[] {
 }
 
 /**
+ * Get the rest type of a variadic tuple, e.g. z.tuple([z.string()]).rest(z.number())
+ */
+export function getTupleRest(schema: ZodTypeAny): ZodTypeAny | undefined {
+  const def = getDef(schema)
+  return def?.rest ?? undefined
+}
+
+/**
  * Get function args and returns
  */
 export function getFunctionParts(schema: ZodTypeAny): {

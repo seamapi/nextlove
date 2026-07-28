@@ -29,6 +29,11 @@ export const jsonBody = z.object({
     )
     .optional(),
   testNull: z.null().optional(),
+  completedBetween: z
+    .tuple([z.string().datetime(), z.string().datetime()])
+    .optional(),
+  positionAndLabel: z.tuple([z.number(), z.string()]).optional(),
+  variadicTags: z.tuple([z.string()]).rest(z.string()).optional(),
   arrayDescription: z
     .array(
       z.object({}).describe(`
