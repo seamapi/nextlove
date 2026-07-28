@@ -24,13 +24,13 @@
     "example:test-only": "cd apps/example-todo-app && yarn build && yarn run ava"
   },
   "devDependencies": {
-    "@semantic-release/git": "10.0.1",
+    "@semantic-release/git": "^11.0.1",
     "@types/node": "^20.8.6",
     "cpy-cli": "^4.2.0",
     "eslint-config-custom": "*",
     "mock-fs": "^5.2.0",
     "prettier": "^2.7.1",
-    "semantic-release": "19.0.5",
+    "semantic-release": "^25.0.8",
     "turbo": "latest"
   },
   "engines": {

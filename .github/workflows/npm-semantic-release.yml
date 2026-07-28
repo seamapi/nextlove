@@ -8,6 +8,12 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      # Required for @semantic-release/git to push the release commit and tag.
+      contents: write
+      # Required for npm trusted publishing (OIDC): lets the job mint the
+      # id-token that is exchanged for a short-lived npm publish token.
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +27,5 @@ jobs:
       - run: cd packages/nextlove && yarn build
       - name: Release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.SEAMAPI_NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cd packages/nextlove && npx semantic-release
