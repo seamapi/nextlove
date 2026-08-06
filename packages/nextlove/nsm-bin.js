@@ -1,3 +1,2 @@
 #!/usr/bin/env node
-
-require("nextjs-server-modules/bin.js")
+import "nextjs-server-modules/bin.js"

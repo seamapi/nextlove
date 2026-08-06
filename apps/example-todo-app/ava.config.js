@@ -1,6 +1,8 @@
 module.exports = {
   files: ["tests/**/*.test.ts"],
   extensions: ["ts"],
-  require: ["esbuild-register"],
-  ignoredByWatcher: [".next"],
+  require: ["tsx/cjs"],
+  watchMode: {
+    ignoreChanges: [".next"],
+  },
 }
