@@ -1,5 +1,5 @@
 {
-  "name": "nextlove-turborepo",
+  "name": "nextlove-monorepo",
   "version": "0.0.1",
   "private": true,
   "workspaces": [
@@ -7,9 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
+    "build": "yarn workspace nextlove build && yarn workspace example-todo-app build",
+    "dev": "yarn workspace example-todo-app dev",
+    "lint": "yarn workspace example-todo-app lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
     "pretest": "yarn build",
@@ -30,8 +30,10 @@
     "eslint-config-custom": "*",
     "mock-fs": "^5.2.0",
     "prettier": "^2.7.1",
-    "semantic-release": "^25.0.8",
-    "turbo": "latest"
+    "semantic-release": "^25.0.8"
+  },
+  "resolutions": {
+    "glob-promise/glob": "^7.2.0"
   },
   "engines": {
     "npm": ">=7.0.0",
