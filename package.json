@@ -1,6 +1,6 @@
 {
   "name": "nextlove",
-  "version": "3.3.0",
+  "version": "4.0.0-beta.1",
   "description": "Enhanced Next.js API types, OpenAPI generation and utilities.",
   "type": "module",
   "main": "./dist/index.js",
