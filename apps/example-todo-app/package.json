@@ -9,7 +9,6 @@
     "build:type": "nextlove generate-route-types --packageDir .",
     "build:routespecs": "nextlove extract-route-specs --packageDir . --allowed-import-patterns '**/lib/zod.ts' --allowed-import-patterns '**/pages/api/**/*.ts' --outputFile dist/extracted-route-specs.mjs",
     "start": "next start",
-    "lint": "next lint",
     "test": "ava"
   },
   "dependencies": {

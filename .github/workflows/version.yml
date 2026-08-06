@@ -1,0 +1,47 @@
+---
+name: Version
+
+run-name: Cut ${{ github.event.inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to cut
+        required: true
+
+jobs:
+  tag:
+    name: Tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_committer_name: ${{ secrets.GIT_USER_NAME }}
+          git_committer_email: ${{ secrets.GIT_USER_EMAIL }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Setup
+        uses: ./.github/actions/setup
+      # `npm version` is deliberately avoided here. The published package lives
+      # in packages/nextlove, which is not the git root, so npm performs no git
+      # operations and no tag is ever cut; `--workspace nextlove` does tag but
+      # exits non-zero on this repo's peer graph. `npm pkg set` edits the
+      # manifest and nothing else, so the git steps below stay explicit.
+      - name: Cut ${{ github.event.inputs.version }} version
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          (cd packages/nextlove && npm pkg set version="$VERSION")
+          git add packages/nextlove/package.json
+          git commit --message "v$VERSION"
+          git tag --sign --message "v$VERSION" "v$VERSION"
+          git push --follow-tags
