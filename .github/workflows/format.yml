@@ -30,7 +30,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Format
-        run: yarn format
+        run: npm run format
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v5
         if: always()

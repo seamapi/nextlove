@@ -25,7 +25,7 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
         registry-url: ${{ inputs.registry_url }}
-        cache: yarn
+        cache: npm
     - name: Setup Node.js without cache
       uses: actions/setup-node@v4
       if: inputs.install_dependencies == 'false'
@@ -35,4 +35,4 @@ runs:
     - name: Install dependencies
       if: inputs.install_dependencies == 'true'
       shell: bash
-      run: yarn install --frozen-lockfile
+      run: npm ci

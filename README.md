@@ -10,7 +10,7 @@ Make type-safe routes that automatically generate OpenAPI in NextJS easy!
 
 ## Installation
 
-`yarn add nextlove`
+`npm install nextlove`
 
 ## Create well-typed routes + middleware with nextlove!
 
