@@ -1,19 +1,28 @@
 {
   "name": "nextlove-monorepo",
   "version": "0.0.1",
+  "description": "Monorepo for the nextlove package and its example app.",
   "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
+  "homepage": "https://github.com/seamapi/nextlove",
+  "bugs": "https://github.com/seamapi/nextlove/issues",
+  "repository": "seamapi/nextlove",
+  "license": "MIT",
+  "author": {
+    "name": "Seam Labs, Inc.",
+    "email": "devops@getseam.com"
+  },
   "scripts": {
     "build": "yarn workspace nextlove build && yarn workspace example-todo-app build",
     "dev": "yarn workspace example-todo-app dev",
     "typecheck": "yarn workspace nextlove typecheck",
-    "lint": "prettier --check \"**/*.{ts,tsx,md}\"",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "pretest": "yarn build",
     "test": "yarn workspace nextlove test && yarn workspace example-todo-app test",
+    "lint": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "example:start": "cd apps/example-todo-app && yarn start",
     "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
     "example:build:type": "cd apps/example-todo-app && yarn build:type",
@@ -22,20 +31,25 @@
     "example:test-only:fast": "cd apps/example-todo-app && yarn run ava",
     "example:test-only": "cd apps/example-todo-app && yarn build && yarn run ava"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=7.0.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.0.0 || ^22.0.0"
+    }
+  },
+  "packageManager": "yarn@1.22.17",
+  "resolutions": {
+    "glob-promise/glob": "^7.2.0"
+  },
   "devDependencies": {
     "@types/node": "^20.8.6",
     "cpy-cli": "^4.2.0",
     "eslint-config-custom": "*",
     "prettier": "^2.7.1",
     "semantic-release": "^25.0.8"
-  },
-  "resolutions": {
-    "glob-promise/glob": "^7.2.0"
-  },
-  "engines": {
-    "npm": ">=7.0.0",
-    "node": ">=18.0.0"
-  },
-  "packageManager": "yarn@1.22.17",
-  "repository": "https://github.com/seamapi/nextlove"
+  }
 }
