@@ -29,3 +29,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+
+# build output
+dist
+*.tgz
+*.tsbuildinfo
+
+# nextjs-server-modules
+.nsm

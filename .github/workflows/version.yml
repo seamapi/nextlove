@@ -31,17 +31,5 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Setup
         uses: ./.github/actions/setup
-      # `npm version` is deliberately avoided here. The published package lives
-      # in packages/nextlove, which is not the git root, so npm performs no git
-      # operations and no tag is ever cut; `--workspace nextlove` does tag but
-      # exits non-zero on this repo's peer graph. `npm pkg set` edits the
-      # manifest and nothing else, so the git steps below stay explicit.
       - name: Cut ${{ github.event.inputs.version }} version
-        env:
-          VERSION: ${{ github.event.inputs.version }}
-        run: |
-          (cd packages/nextlove && npm pkg set version="$VERSION")
-          git add packages/nextlove/package.json
-          git commit --message "v$VERSION"
-          git tag --sign --message "v$VERSION" "v$VERSION"
-          git push --follow-tags
+        run: npm version --sign-git-tag=true ${{ github.event.inputs.version }}
