@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup
         uses: ./.github/actions/setup
         with:
@@ -31,7 +31,7 @@ jobs:
       - name: Package
         run: npm pack
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ github.sha }}
           if-no-files-found: error

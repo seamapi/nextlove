@@ -20,14 +20,14 @@ runs:
   using: composite
   steps:
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       if: inputs.install_dependencies == 'true'
       with:
         node-version: ${{ inputs.node_version }}
         registry-url: ${{ inputs.registry_url }}
         cache: npm
     - name: Setup Node.js without cache
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       if: inputs.install_dependencies == 'false'
       with:
         node-version: ${{ inputs.node_version }}
