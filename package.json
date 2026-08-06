@@ -16,20 +16,20 @@
     "email": "devops@getseam.com"
   },
   "scripts": {
-    "build": "yarn workspace nextlove build && yarn workspace example-todo-app build",
-    "dev": "yarn workspace example-todo-app dev",
-    "typecheck": "yarn workspace nextlove typecheck",
-    "pretest": "yarn build",
-    "test": "yarn workspace nextlove test && yarn workspace example-todo-app test",
+    "build": "npm run build --workspace nextlove && npm run build --workspace example-todo-app",
+    "dev": "npm run dev --workspace example-todo-app",
+    "typecheck": "npm run typecheck --workspace nextlove",
+    "pretest": "npm run build",
+    "test": "npm test --workspace nextlove && npm test --workspace example-todo-app",
     "lint": "prettier --check \"**/*.{ts,tsx,md}\"",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "example:start": "cd apps/example-todo-app && yarn start",
-    "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
-    "example:build:type": "cd apps/example-todo-app && yarn build:type",
-    "example:build:routespecs": "cd apps/example-todo-app && yarn build:routespecs",
-    "example:test": "yarn build && cd apps/example-todo-app && yarn run ava",
-    "example:test-only:fast": "cd apps/example-todo-app && yarn run ava",
-    "example:test-only": "cd apps/example-todo-app && yarn build && yarn run ava"
+    "example:start": "npm run start --workspace example-todo-app",
+    "example:build:openapi": "npm run build:openapi --workspace example-todo-app",
+    "example:build:type": "npm run build:type --workspace example-todo-app",
+    "example:build:routespecs": "npm run build:routespecs --workspace example-todo-app",
+    "example:test": "npm run build && npm run ava --workspace example-todo-app",
+    "example:test-only:fast": "npm run ava --workspace example-todo-app",
+    "example:test-only": "npm run build --workspace example-todo-app && npm run ava --workspace example-todo-app"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -39,11 +39,16 @@
     "runtime": {
       "name": "node",
       "version": "^24.0.0 || ^22.0.0"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "^11.0.0 || ^10.0.0"
     }
   },
-  "packageManager": "yarn@1.22.17",
-  "resolutions": {
-    "glob-promise/glob": "^7.2.0"
+  "overrides": {
+    "glob-promise": {
+      "glob": "^7.2.0"
+    }
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

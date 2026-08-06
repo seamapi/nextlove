@@ -31,8 +31,8 @@ jobs:
         uses: ./.github/actions/setup
         with:
           install_dependencies: 'false'
-      - name: Normalize yarn.lock
-        run: yarn install
+      - name: Normalize package-lock.json
+        run: npm install
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

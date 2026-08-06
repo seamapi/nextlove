@@ -9,7 +9,8 @@
     "build:type": "nextlove generate-route-types --packageDir .",
     "build:routespecs": "nextlove extract-route-specs --packageDir . --allowed-import-patterns '**/lib/zod.ts' --allowed-import-patterns '**/pages/api/**/*.ts' --outputFile dist/extracted-route-specs.mjs",
     "start": "next start",
-    "test": "ava"
+    "test": "ava",
+    "ava": "ava"
   },
   "dependencies": {
     "axios": "^0.24.0",
@@ -42,7 +43,7 @@
     "prettier": "^2.7.1",
     "qs": "^6.11.2",
     "rimraf": "^4.1.2",
-    "tsup": "^5.6.3",
+    "tsup": "^8.0.0",
     "typescript": "^5.0.2"
   }
 }

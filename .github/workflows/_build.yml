@@ -27,7 +27,7 @@ jobs:
         with:
           node_version: ${{ inputs.node_version }}
       - name: Build
-        run: yarn workspace nextlove build
+        run: npm run build --workspace nextlove
       - name: Package
         run: npm pack
         working-directory: packages/nextlove
