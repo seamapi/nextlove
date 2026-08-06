@@ -27,13 +27,12 @@ jobs:
         with:
           node_version: ${{ inputs.node_version }}
       - name: Build
-        run: npm run build --workspace nextlove
+        run: npm run build
       - name: Package
         run: npm pack
-        working-directory: packages/nextlove
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ github.sha }}
           if-no-files-found: error
-          path: packages/nextlove/*.tgz
+          path: '*.tgz'
