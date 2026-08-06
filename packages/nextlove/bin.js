@@ -1,11 +1,8 @@
 #!/usr/bin/env node
+import "tsx/cjs"
+import minimist from "minimist"
 
-const argv = require("minimist")(process.argv.slice(2))
-const { register } = require("esbuild-register/dist/node")
-
-const { unregister } = register({
-  target: `node${process.version.slice(1)}`,
-})
+const argv = minimist(process.argv.slice(2))
 
 if (argv.help || argv.h) {
   console.log(
@@ -22,46 +19,32 @@ nextlove (generate-openapi | generate-route-types | extract-route-specs) [option
   process.exit(0)
 }
 
+const resolvePackageDir = () => {
+  if (argv._.length === 2) {
+    argv.packageDir = argv._[1]
+  }
+  if (argv["package-dir"]) {
+    argv.packageDir = argv["package-dir"]
+  }
+  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
+}
+
+const report = (result) => {
+  if (!argv.outputFile) {
+    console.log(result)
+  }
+}
+
 if (argv._[0] === "generate-openapi") {
-  if (argv._.length === 2) {
-    argv.packageDir = argv._[1]
-  }
-  if (argv["package-dir"]) {
-    argv.packageDir = argv["package-dir"]
-  }
-  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
-
-  require("./dist/generators")
-    .generateOpenAPI(argv)
-    .then((result) => {
-      if (!argv.outputFile) {
-        console.log(result)
-      }
-    })
+  resolvePackageDir()
+  const { generateOpenAPI } = await import("./dist/generators/index.js")
+  report(await generateOpenAPI(argv))
 } else if (argv._[0] === "generate-route-types") {
-  if (argv._.length === 2) {
-    argv.packageDir = argv._[1]
-  }
-  if (argv["package-dir"]) {
-    argv.packageDir = argv["package-dir"]
-  }
-  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
-
-  require("./dist/generators")
-    .generateRouteTypes(argv)
-    .then((result) => {
-      if (!argv.outputFile) {
-        console.log(result)
-      }
-    })
+  resolvePackageDir()
+  const { generateRouteTypes } = await import("./dist/generators/index.js")
+  report(await generateRouteTypes(argv))
 } else if (argv._[0] === "extract-route-specs") {
-  if (argv._.length === 2) {
-    argv.packageDir = argv._[1]
-  }
-  if (argv["package-dir"]) {
-    argv.packageDir = argv["package-dir"]
-  }
-  if (!argv["packageDir"]) throw new Error("Missing --packageDir")
+  resolvePackageDir()
 
   if (argv["allowed-import-patterns"]) {
     argv.allowedImportPatterns = Array.isArray(argv["allowed-import-patterns"])
@@ -69,11 +52,6 @@ if (argv._[0] === "generate-openapi") {
       : [argv["allowed-import-patterns"]]
   }
 
-  require("./dist/generators")
-    .extractRouteSpecs(argv)
-    .then((result) => {
-      if (!argv.outputFile) {
-        console.log(result)
-      }
-    })
+  const { extractRouteSpecs } = await import("./dist/generators/index.js")
+  report(await extractRouteSpecs(argv))
 }

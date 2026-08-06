@@ -1,5 +1,8 @@
+import { createRequire } from "node:module"
 import path from "node:path"
 import { RouteSpec, SetupParams } from "../../types"
+
+const require = createRequire(import.meta.url)
 import { defaultMapFilePathToHTTPRoute } from "./default-map-file-path-to-http-route"
 
 export interface RouteInfo {

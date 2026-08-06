@@ -1,6 +1,9 @@
-module.exports = {
+export default {
   files: ["tests/**/*.test.ts"],
   extensions: ["ts"],
-  require: ["esbuild-runner/register"],
-  ignoredByWatcher: [".next"],
-};
+  nodeArguments: ["--import=tsx"],
+  workerThreads: false,
+  watchMode: {
+    ignoreChanges: [".next"],
+  },
+}
