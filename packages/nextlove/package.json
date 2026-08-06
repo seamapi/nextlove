@@ -1,24 +1,8 @@
 {
   "name": "nextlove",
   "version": "3.3.0",
-  "private": false,
-  "sideEffects": false,
-  "repository": "https://github.com/seamapi/nextlove",
-  "files": [
-    "dist",
-    "generators.d.ts",
-    "exception-middleware.d.ts"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "bin": {
-    "nsm": "nsm-bin.js",
-    "nextlove": "bin.js"
-  },
+  "description": "Enhanced Next.js API types, OpenAPI generation and utilities.",
   "main": "./dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -37,12 +21,45 @@
       "require": "./dist/nextjs-exception-middleware/index.js"
     }
   },
+  "module": "dist/index.mjs",
+  "sideEffects": false,
+  "keywords": [
+    "nextjs",
+    "openapi",
+    "zod",
+    "api",
+    "typescript"
+  ],
+  "homepage": "https://github.com/seamapi/nextlove",
+  "bugs": "https://github.com/seamapi/nextlove/issues",
+  "repository": "seamapi/nextlove",
+  "license": "MIT",
+  "author": {
+    "name": "Seam Labs, Inc.",
+    "email": "devops@getseam.com"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "bin": {
+    "nsm": "nsm-bin.js",
+    "nextlove": "bin.js"
+  },
+  "files": [
+    "dist",
+    "generators.d.ts",
+    "exception-middleware.d.ts"
+  ],
   "scripts": {
-    "test": "npm run typecheck && npm run ava",
-    "typecheck": "tsc --noEmit",
-    "ava": "ava",
     "build": "tsup --dts --sourcemap inline src/index.ts src/generators/index.ts src/nextjs-exception-middleware/index.ts --format cjs,esm",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck && npm run ava",
+    "ava": "ava",
     "yalc": "npm run build && yalc push"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "peerDependencies": {
     "esbuild": ">=0.14.7",
