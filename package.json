@@ -19,7 +19,6 @@
       "default": "./nextjs-exception-middleware/index.js"
     }
   },
-  "module": "./dist/index.js",
   "sideEffects": false,
   "keywords": [
     "nextjs",
@@ -41,7 +40,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "bin": {
-    "nsm": "nsm-bin.js",
     "nextlove": "bin.js"
   },
   "files": [
@@ -55,9 +53,7 @@
     "types",
     "with-route-spec",
     "wrappers",
-    "src",
-    "generators.d.ts",
-    "exception-middleware.d.ts"
+    "src"
   ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -91,22 +87,11 @@
       "version": "^11.0.0 || ^10.0.0"
     }
   },
-  "overrides": {
-    "glob-promise": {
-      "glob": "^7.2.0"
-    }
-  },
   "peerDependencies": {
     "next": ">=12",
-    "nextjs-server-modules": ">=1",
     "prettier": "^2.0.0 || ^3.0.0",
     "typescript": "^5.0.2",
     "zod": "^3.0.0 || ^4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "nextjs-server-modules": {
-      "optional": true
-    }
   },
   "dependencies": {
     "@types/js-yaml": "^4.0.9",
@@ -136,7 +121,6 @@
     "eslint-config-next": "^16.0.0",
     "expect-type": "^0.15.0",
     "next": "^16.0.0",
-    "nextjs-server-modules": "^2.1.0",
     "prettier": "^2.7.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
