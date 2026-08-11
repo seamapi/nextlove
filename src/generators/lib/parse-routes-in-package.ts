@@ -36,8 +36,6 @@ export const parseRoutesInPackage = async (opts: {
 
   await Promise.all(
     filepaths.map(async (p) => {
-      // Route modules are imported rather than required so that they can pull
-      // in ESM only dependencies.
       const { default: routeFn } = await import(
         pathToFileURL(path.resolve(p)).href
       )
