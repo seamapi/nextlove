@@ -46,6 +46,14 @@ export interface RouteSpec<
   onMultipleAuthMiddlewareFailures?: (errors: unknown[]) => void
 
   /**
+   * Whether this route parses query params with the legacy parser
+   * (true, the default) or with @seamapi/url-search-params-parser (false).
+   * Overrides the setup param if set.
+   * The default will change to false in the next major version.
+   */
+  useLegacyQueryParamsParser?: boolean
+
+  /**
    * Route-specific maxDuration (in seconds).
    * Overrides the global default if set.
    * This is a Next.js route segment config.
@@ -97,7 +105,18 @@ export interface SetupParams<
   securitySchemas?: Record<string, SecuritySchemeObject>
   globalSchemas?: Record<string, z.ZodTypeAny>
 
+  /**
+   * Only applies when using the legacy query params parser.
+   */
   supportedArrayFormats?: QueryArrayFormats
+
+  /**
+   * Whether routes parse query params with the legacy parser
+   * (true, the default) or with @seamapi/url-search-params-parser (false).
+   * May be overridden per route in the route spec.
+   * The default will change to false in the next major version.
+   */
+  useLegacyQueryParamsParser?: boolean
 
   /**
    * If an endpoint accepts multiple auth methods and they all fail, this hook will be called with the errors thrown by the middlewares.
