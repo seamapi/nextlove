@@ -123,6 +123,9 @@ export const extractRouteSpecs = async (opts: GenerateRouteTypesOpts) => {
       path.basename(opts.outputFile).replace(".mjs", "").replace(".js", "") +
         ".d.ts"
     )
+    // esbuild creates the output directory for the bundle below, but writing
+    // the declarations alongside it has to create it first.
+    await fs.mkdir(path.dirname(declarationFilePath), { recursive: true })
     await fs.writeFile(
       declarationFilePath,
       emitResult.getOutputFiles()[0].getText()

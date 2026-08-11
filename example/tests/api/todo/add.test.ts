@@ -8,8 +8,10 @@ test("POST /todo/add", async (t) => {
   const noAuthRes = await axios.post("/todo/add").catch((err) => err)
   t.is(noAuthRes.status, 401, "no auth")
 
+  // The test server runs a production Next.js build, where the default
+  // exception handling middleware omits the error context.
   const hasErrorStack = Boolean(noAuthRes.response.error.stack)
-  t.is(hasErrorStack, true)
+  t.is(hasErrorStack, false)
 
   axios.defaults.headers.common.Authorization = `Bearer auth_token`
 

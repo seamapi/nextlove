@@ -220,6 +220,5 @@ if (bad_soups.includes(soup_param)) {
 This repo bundles NextJS utility modules including...
 
 - [nextjs-exception-middleware](https://github.com/seamapi/nextjs-exception-middleware)
-- [nextjs-server-modules](https://github.com/seamapi/nextjs-server-modules)
 - [nextjs-middleware-wrappers](https://github.com/seamapi/wrappers)
 - openAPI generation utilities
