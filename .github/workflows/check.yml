@@ -80,7 +80,7 @@ jobs:
     name: Build
     uses: ./.github/workflows/_build.yml
   install:
-    name: Install (Node.js v${{ matrix.node }} on ${{ matrix.os_name }})
+    name: Install (Node.js v${{ matrix.node }} with Next.js ${{ matrix.next.version }} on ${{ matrix.os_name }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     needs: build
@@ -92,6 +92,14 @@ jobs:
         node:
           - '22'
           - '24'
+        # Both ends of the supported Next.js range are installed because the
+        # peer ranges must stay satisfiable against the React version each one
+        # pins, not just against the newest.
+        next:
+          - version: '^16'
+            react: '^19'
+          - version: '^14'
+            react: '^18'
         include:
           - os: ubuntu-latest
             os_name: Linux
@@ -109,16 +117,16 @@ jobs:
         run: |
           echo '{"type":"module"}' > package.json
           echo "import 'nextlove'" > index.js
-      # Peers are installed explicitly and peer resolution is relaxed because
-      # nextlove peers nextjs-server-modules, whose own next peer range caps at
-      # next 14 and so conflicts with the react >=19 peer. This job checks that
-      # the published package resolves and imports, not that its peer ranges
-      # are mutually satisfiable.
+      # Peer resolution is deliberately left strict so this job fails on a peer
+      # range that consumers could not install.
       - name: Install
         run: |
-          npm install --legacy-peer-deps --save \
+          npm install --save \
             "$(ls *.tgz | head -n1)" \
-            zod@^4 next@^16 react@^19 react-dom@^19
+            zod@^4 \
+            "next@${{ matrix.next.version }}" \
+            "react@${{ matrix.next.react }}" \
+            "react-dom@${{ matrix.next.react }}"
       - name: Run
         run: node index.js
   typecheck:
