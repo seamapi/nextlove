@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises"
-import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
-import { zodToTs, printNode } from "../lib/zod-to-ts"
+import { parseRoutesInPackage } from "../lib/parse-routes-in-package.js"
+import { zodToTs, printNode } from "../lib/zod-to-ts.js"
 import prettier from "prettier"
 import { z, ZodTypeAny } from "zod"
 import {
@@ -8,7 +8,7 @@ import {
   getEffectsSchema,
   getInnerType,
   getShape,
-} from "../../lib/zod-compat"
+} from "../../lib/zod-compat.js"
 
 interface GenerateRouteTypesOpts {
   packageDir: string

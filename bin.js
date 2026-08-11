@@ -37,11 +37,11 @@ const report = (result) => {
 
 if (argv._[0] === "generate-openapi") {
   resolvePackageDir()
-  const { generateOpenAPI } = await import("./dist/generators/index.js")
+  const { generateOpenAPI } = await import("./generators/index.js")
   report(await generateOpenAPI(argv))
 } else if (argv._[0] === "generate-route-types") {
   resolvePackageDir()
-  const { generateRouteTypes } = await import("./dist/generators/index.js")
+  const { generateRouteTypes } = await import("./generators/index.js")
   report(await generateRouteTypes(argv))
 } else if (argv._[0] === "extract-route-specs") {
   resolvePackageDir()
@@ -52,6 +52,6 @@ if (argv._[0] === "generate-openapi") {
       : [argv["allowed-import-patterns"]]
   }
 
-  const { extractRouteSpecs } = await import("./dist/generators/index.js")
+  const { extractRouteSpecs } = await import("./generators/index.js")
   report(await extractRouteSpecs(argv))
 }

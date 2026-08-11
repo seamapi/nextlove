@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { HttpException } from "./http-exceptions"
+import { HttpException } from "./http-exceptions.js"
 
 export interface WithExceptionHandlingOptions {
   onError?: (error: Error, req: NextApiRequest) => void

@@ -4,17 +4,17 @@ import {
   OperationObject,
   ParameterObject,
 } from "openapi3-ts/oas31"
-import { SetupParams } from "../../types"
+import { SetupParams } from "../../types/index.js"
 import { z } from "zod"
-import { parseRoutesInPackage } from "../lib/parse-routes-in-package"
-import { generateSchema } from "../lib/zod-openapi"
-import { embedSchemaReferences } from "./embed-schema-references"
-import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils"
-import { parseFrontMatter, testFrontMatter } from "../lib/front-matter"
+import { parseRoutesInPackage } from "../lib/parse-routes-in-package.js"
+import { generateSchema } from "../lib/zod-openapi.js"
+import { embedSchemaReferences } from "./embed-schema-references.js"
+import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils.js"
+import { parseFrontMatter, testFrontMatter } from "../lib/front-matter.js"
 import dedent from "dedent"
-import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
-import { dashifyObjectKeys } from "../utils/dashify-object-keys"
-import { getTypeName } from "../../lib/zod-compat"
+import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x.js"
+import { dashifyObjectKeys } from "../utils/dashify-object-keys.js"
+import { getTypeName } from "../../lib/zod-compat.js"
 
 function replaceFirstCharToLowercase(str: string) {
   if (str.length === 0) {

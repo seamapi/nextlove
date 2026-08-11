@@ -1,7 +1,7 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { Middleware as WrapperMiddleware } from "../wrappers"
+import { Middleware as WrapperMiddleware } from "../wrappers/index.js"
 import { z } from "zod"
-import { HTTPMethods } from "../with-route-spec/middlewares/with-methods"
+import { HTTPMethods } from "../with-route-spec/middlewares/with-methods.js"
 import {
   SecuritySchemeObject,
   SecurityRequirementObject,

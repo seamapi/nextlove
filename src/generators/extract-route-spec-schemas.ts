@@ -3,7 +3,7 @@ import crypto from "node:crypto"
 import path from "node:path"
 import { Project, SyntaxKind } from "ts-morph"
 import * as esbuild from "esbuild"
-import { defaultMapFilePathToHTTPRoute } from "./lib/default-map-file-path-to-http-route"
+import { defaultMapFilePathToHTTPRoute } from "./lib/default-map-file-path-to-http-route.js"
 
 interface GenerateRouteTypesOpts {
   packageDir: string

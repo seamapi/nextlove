@@ -1,5 +1,5 @@
 import test from "ava"
-import { createWithRouteSpec } from "../../src/with-route-spec"
+import { createWithRouteSpec } from "../../src/with-route-spec/index.js"
 
 test("route-level onMultipleAuthMiddlewareFailures spec takes precedent", async (t) => {
   let globalWasCalled = false

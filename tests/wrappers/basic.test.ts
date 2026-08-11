@@ -4,7 +4,7 @@ import {
   SaferMiddleware,
   Middleware,
   extendRequest,
-} from "../../src/wrappers"
+} from "../../src/wrappers/index.js"
 
 test("test wrappers types", async (t) => {
   const mw1: Middleware<{ mw1_artifact: number }> = (next) => (req, res) => {

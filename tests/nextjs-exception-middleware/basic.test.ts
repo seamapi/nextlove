@@ -3,7 +3,7 @@ import sinon from "sinon"
 import {
   HttpException,
   withExceptionHandling,
-} from "../../src/nextjs-exception-middleware"
+} from "../../src/nextjs-exception-middleware/index.js"
 
 type TestContext = {
   mockRequest: any

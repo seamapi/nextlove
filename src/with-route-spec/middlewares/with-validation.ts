@@ -5,14 +5,14 @@ import _ from "lodash"
 import {
   BadRequestException,
   InternalServerErrorException,
-} from "../../nextjs-exception-middleware"
-import { QueryArrayFormats } from "../../types"
-import { DEFAULT_ARRAY_FORMATS } from ".."
+} from "../../nextjs-exception-middleware/index.js"
+import { QueryArrayFormats } from "../../types/index.js"
+import { DEFAULT_ARRAY_FORMATS } from "../index.js"
 import {
   getTypeName,
   getEffectsSchema,
   getInnerType,
-} from "../../lib/zod-compat"
+} from "../../lib/zod-compat.js"
 
 const getZodObjectSchemaFromZodEffectSchema = (
   isZodEffect: boolean,

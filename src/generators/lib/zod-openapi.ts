@@ -28,10 +28,10 @@
 
 import type { SchemaObject, SchemaObjectType } from "openapi3-ts/oas31"
 import { z, ZodTypeAny } from "zod"
-import { parseFrontMatter, testFrontMatter } from "./front-matter"
+import { parseFrontMatter, testFrontMatter } from "./front-matter.js"
 import dedent from "dedent"
-import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x"
-import { dashifyObjectKeys } from "../utils/dashify-object-keys"
+import { prefixObjectKeysWithX } from "../utils/prefix-object-keys-with-x.js"
+import { dashifyObjectKeys } from "../utils/dashify-object-keys.js"
 import {
   getTypeName,
   getDef,
@@ -54,7 +54,7 @@ import {
   getBrandedType,
   getPipelineParts,
   getShape,
-} from "../../lib/zod-compat"
+} from "../../lib/zod-compat.js"
 
 // Type alias for Zod 3/4 compatibility
 type AnyZodObject = z.ZodObject<any>

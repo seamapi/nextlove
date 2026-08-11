@@ -1,1 +1,1 @@
-export * from "./dist/generators"
+export * from "./generators"

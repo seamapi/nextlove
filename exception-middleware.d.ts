@@ -1,1 +1,1 @@
-export * from "./dist/nextjs-exception-middleware"
+export * from "./nextjs-exception-middleware"
