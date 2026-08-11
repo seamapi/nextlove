@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import unwrappedWithExceptionHandling, {
   WithExceptionHandlingOptions,
-} from "./with-exception-handling"
-import withOkStatus, { WithOkStatusOptions } from "./with-ok-status"
+} from "./with-exception-handling.js"
+import withOkStatus, { WithOkStatusOptions } from "./with-ok-status.js"
 
 export interface ExceptionHandlingOptions {
   addOkStatus?: boolean
@@ -30,4 +30,4 @@ export const withExceptionHandling =
     )
   }
 
-export * from "./http-exceptions"
+export * from "./http-exceptions.js"

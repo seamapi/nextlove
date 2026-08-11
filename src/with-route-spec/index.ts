@@ -1,18 +1,18 @@
 import { NextApiResponse, NextApiRequest } from "next"
-import { withExceptionHandling } from "../nextjs-exception-middleware"
-import wrappers, { Middleware } from "../wrappers"
+import { withExceptionHandling } from "../nextjs-exception-middleware/index.js"
+import wrappers, { Middleware } from "../wrappers/index.js"
 import {
   CreateWithRouteSpecFunction,
   QueryArrayFormats,
   RouteSpec,
-} from "../types"
-import withMethods, { HTTPMethods } from "./middlewares/with-methods"
-import withValidation from "./middlewares/with-validation"
+} from "../types/index.js"
+import withMethods, { HTTPMethods } from "./middlewares/with-methods.js"
+import withValidation from "./middlewares/with-validation.js"
 import { z } from "zod"
 import {
   AuthMethodDoesNotApplyException,
   UnauthorizedException,
-} from "../nextjs-exception-middleware"
+} from "../nextjs-exception-middleware/index.js"
 
 // ParamDef type compatible with both Zod 3 and Zod 4
 type ParamDef = z.ZodTypeAny

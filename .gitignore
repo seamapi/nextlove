@@ -1,5 +1,17 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# TypeScript build output
+/index.js
+/index.js.map
+/index.d.ts
+/index.d.ts.map
+/generators/
+/lib/
+/nextjs-exception-middleware/
+/types/
+/with-route-spec/
+/wrappers/
+
 # dependencies
 node_modules
 .pnp

@@ -3,20 +3,20 @@
   "version": "4.0.1",
   "description": "Enhanced Next.js API types, OpenAPI generation and utilities.",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     },
     "./generators": {
-      "types": "./dist/generators/index.d.ts",
-      "default": "./dist/generators/index.js"
+      "types": "./generators/index.d.ts",
+      "default": "./generators/index.js"
     },
     "./exception-middleware": {
-      "types": "./dist/nextjs-exception-middleware/index.d.ts",
-      "default": "./dist/nextjs-exception-middleware/index.js"
+      "types": "./nextjs-exception-middleware/index.d.ts",
+      "default": "./nextjs-exception-middleware/index.js"
     }
   },
   "module": "./dist/index.js",
@@ -45,13 +45,23 @@
     "nextlove": "bin.js"
   },
   "files": [
-    "dist",
+    "index.js",
+    "index.js.map",
+    "index.d.ts",
+    "index.d.ts.map",
+    "generators",
+    "lib",
+    "nextjs-exception-middleware",
+    "types",
+    "with-route-spec",
+    "wrappers",
+    "src",
     "generators.d.ts",
     "exception-middleware.d.ts"
   ],
   "scripts": {
-    "build": "tsup --clean --dts --sourcemap inline src/index.ts src/generators/index.ts src/nextjs-exception-middleware/index.ts --format esm",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc",
     "pretest": "npm run typecheck",
     "test": "ava",
     "test:watch": "ava --watch",
@@ -64,7 +74,9 @@
     "example:openapi": "npm --prefix example run build:openapi",
     "example:types": "npm --prefix example run build:type",
     "example:routespecs": "npm --prefix example run build:routespecs",
-    "postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags",
+    "prebuild": "del 'index.d.ts*' 'index.js*' generators lib nextjs-exception-middleware types with-route-spec wrappers",
+    "postbuild": "node ./index.js"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -118,6 +130,7 @@
     "@types/react-dom": "^19.0.0",
     "@types/sinon": "^10.0.20",
     "ava": "^5.3.1",
+    "del-cli": "^7.0.0",
     "eslint": "^9.0.0",
     "eslint-config-custom": "*",
     "eslint-config-next": "^16.0.0",
@@ -130,7 +143,6 @@
     "semantic-release": "^25.0.8",
     "sinon": "^15.2.0",
     "ts-toolbelt": "^9.6.0",
-    "tsup": "^8.0.0",
     "type-fest": "^3.1.0",
     "zod": "^4.3.5"
   }

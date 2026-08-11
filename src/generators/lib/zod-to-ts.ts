@@ -29,7 +29,7 @@
 
 import ts from "typescript"
 import { ZodType, ZodTypeAny } from "zod"
-import { parseFrontMatter, testFrontMatter } from "./front-matter"
+import { parseFrontMatter, testFrontMatter } from "./front-matter.js"
 import dedent from "dedent"
 import {
   getTypeName,
@@ -49,7 +49,7 @@ import {
   getPromiseType,
   getFunctionParts,
   getCustomTypeGetter,
-} from "../../lib/zod-compat"
+} from "../../lib/zod-compat.js"
 
 const { factory: f, SyntaxKind, ScriptKind, ScriptTarget, EmitHint } = ts
 

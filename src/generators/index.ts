@@ -1,3 +1,3 @@
-export * from "./generate-openapi"
-export * from "./generate-route-types"
-export * from "./extract-route-spec-schemas"
+export * from "./generate-openapi/index.js"
+export * from "./generate-route-types/index.js"
+export * from "./extract-route-spec-schemas.js"

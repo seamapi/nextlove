@@ -1,4 +1,4 @@
-import { MethodNotAllowedException } from "../../nextjs-exception-middleware"
+import { MethodNotAllowedException } from "../../nextjs-exception-middleware/index.js"
 
 export type HTTPMethods =
   | "GET"

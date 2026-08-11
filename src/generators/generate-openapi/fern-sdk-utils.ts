@@ -1,4 +1,4 @@
-import { RouteSpec } from "../../types"
+import { RouteSpec } from "../../types/index.js"
 
 function transformPathToFernSdkMethodName(path: string) {
   const parts = path.split("/").filter((part) => part !== "")
