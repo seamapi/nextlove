@@ -1,0 +1,142 @@
+---
+name: Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    name: Test (Node.js v${{ matrix.node }} on ${{ matrix.os_name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        node:
+          - '22'
+          - '24'
+        include:
+          - os: ubuntu-latest
+            os_name: Linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ matrix.node }}
+      - name: Test
+        run: npm test
+  lint:
+    name: Lint (Node.js v${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '22'
+          - '24'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ matrix.node }}
+      - name: Lint
+        run: npm run lint
+  example:
+    name: Example (Node.js v${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '22'
+          - '24'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ matrix.node }}
+      # The example app is a standalone project that links the locally built
+      # nextlove through file:.., so it installs separately from the root.
+      - name: Install example
+        run: npm run example:install
+      - name: Test example
+        run: npm run example
+  build:
+    name: Build
+    uses: ./.github/workflows/_build.yml
+  install:
+    name: Install (Node.js v${{ matrix.node }} on ${{ matrix.os_name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        node:
+          - '22'
+          - '24'
+        include:
+          - os: ubuntu-latest
+            os_name: Linux
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: .
+      - name: Create test project
+        run: |
+          echo '{"type":"module"}' > package.json
+          echo "import 'nextlove'" > index.js
+      # Peers are installed explicitly and peer resolution is relaxed because
+      # nextlove peers nextjs-server-modules, whose own next peer range caps at
+      # next 14 and so conflicts with the react >=19 peer. This job checks that
+      # the published package resolves and imports, not that its peer ranges
+      # are mutually satisfiable.
+      - name: Install
+        run: |
+          npm install --legacy-peer-deps --save \
+            "$(ls *.tgz | head -n1)" \
+            zod@^4 next@^16 react@^19 react-dom@^19
+      - name: Run
+        run: node index.js
+  typecheck:
+    name: Typecheck (Node.js v${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - '22'
+          - '24'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ matrix.node }}
+      - name: Typecheck
+        run: npm run typecheck

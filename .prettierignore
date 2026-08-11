@@ -1,2 +1,4 @@
 dist
 .nsm
+.next
+next-env.d.ts

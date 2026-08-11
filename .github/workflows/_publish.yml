@@ -1,0 +1,59 @@
+---
+name: _publish
+
+on:
+  workflow_call:
+    inputs:
+      artifact_name:
+        description: The artifact name.
+        type: string
+        required: true
+      registry_url:
+        description: The package registry url.
+        type: string
+        required: true
+    secrets:
+      registry_token:
+        description: The package registry token.
+        required: false
+
+jobs:
+  publish:
+    name: Publish package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          install_dependencies: 'false'
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: .
+      # npm-publish defaults the dist-tag to "latest", which would hand every
+      # `npm install nextlove` a prerelease. Prerelease tags publish under their
+      # own identifier instead: v4.0.0-beta.1 publishes to the "beta" dist-tag.
+      - name: Get meta
+        id: meta
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          echo "tgz=$(ls *.tgz | head -n1)" >> $GITHUB_OUTPUT
+          case "$REF_NAME" in
+            *-*) dist_tag="${REF_NAME#*-}"; dist_tag="${dist_tag%%.*}" ;;
+            *) dist_tag=latest ;;
+          esac
+          echo "dist_tag=$dist_tag" >> $GITHUB_OUTPUT
+          echo "Publishing to the '$dist_tag' dist-tag."
+      - name: Publish
+        uses: JS-DevTools/npm-publish@v4
+        with:
+          access: public
+          tag: ${{ steps.meta.outputs.dist_tag }}
+          token: ${{ secrets.registry_token }}
+          registry: ${{ inputs.registry_url }}
+          package: ${{ steps.meta.outputs.tgz }}

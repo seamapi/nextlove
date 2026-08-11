@@ -1,42 +1,134 @@
 {
-  "name": "nextlove-turborepo",
-  "version": "0.0.1",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
+  "name": "nextlove",
+  "version": "4.0.0-beta.1",
+  "description": "Enhanced Next.js API types, OpenAPI generation and utilities.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./generators": {
+      "types": "./dist/generators/index.d.ts",
+      "default": "./dist/generators/index.js"
+    },
+    "./exception-middleware": {
+      "types": "./dist/nextjs-exception-middleware/index.d.ts",
+      "default": "./dist/nextjs-exception-middleware/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "sideEffects": false,
+  "keywords": [
+    "nextjs",
+    "openapi",
+    "zod",
+    "api",
+    "typescript"
+  ],
+  "homepage": "https://github.com/seamapi/nextlove",
+  "bugs": "https://github.com/seamapi/nextlove/issues",
+  "repository": "seamapi/nextlove",
+  "license": "MIT",
+  "author": {
+    "name": "Seam Labs, Inc.",
+    "email": "devops@getseam.com"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "bin": {
+    "nsm": "nsm-bin.js",
+    "nextlove": "bin.js"
+  },
+  "files": [
+    "dist",
+    "generators.d.ts",
+    "exception-middleware.d.ts"
   ],
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
+    "build": "tsup --clean --dts --sourcemap inline src/index.ts src/generators/index.ts src/nextjs-exception-middleware/index.ts --format esm",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run typecheck",
+    "test": "ava",
+    "test:watch": "ava --watch",
+    "test:debug": "ava debug --break",
+    "lint": "prettier --check \"**/*.{ts,tsx,md}\"",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
-    "pretest": "yarn build",
-    "test": "yarn workspace nextlove test && yarn workspace example-todo-app test",
-    "example:start": "cd apps/example-todo-app && yarn start",
-    "example:build:openapi": "cd apps/example-todo-app && yarn build:openapi",
-    "example:build:type": "cd apps/example-todo-app && yarn build:type",
-    "example:build:routespecs": "cd apps/example-todo-app && yarn build:routespecs",
-    "publish-packages": "cd packages/nextlove && yarn build && npm publish",
-    "example:test": "npm run build && cd apps/example-todo-app && yarn run ava",
-    "example:test-only:fast": "cd apps/example-todo-app && yarn run ava",
-    "example:test-only": "cd apps/example-todo-app && yarn build && yarn run ava"
-  },
-  "devDependencies": {
-    "@semantic-release/git": "^11.0.1",
-    "@types/node": "^20.8.6",
-    "cpy-cli": "^4.2.0",
-    "eslint-config-custom": "*",
-    "mock-fs": "^5.2.0",
-    "prettier": "^2.7.1",
-    "semantic-release": "^25.0.8",
-    "turbo": "latest"
+    "preexample": "npm run build",
+    "example": "npm --prefix example test",
+    "example:install": "npm --prefix example install",
+    "example:openapi": "npm --prefix example run build:openapi",
+    "example:types": "npm --prefix example run build:type",
+    "example:routespecs": "npm --prefix example run build:routespecs",
+    "postversion": "git push --follow-tags"
   },
   "engines": {
-    "npm": ">=7.0.0",
-    "node": ">=18.0.0"
+    "node": ">=22.12.0"
   },
-  "packageManager": "yarn@1.22.17",
-  "repository": "https://github.com/seamapi/nextlove"
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.0.0 || ^22.0.0"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "^11.0.0 || ^10.0.0"
+    }
+  },
+  "overrides": {
+    "glob-promise": {
+      "glob": "^7.2.0"
+    }
+  },
+  "peerDependencies": {
+    "next": ">=12",
+    "nextjs-server-modules": ">=1",
+    "prettier": "^2.0.0 || ^3.0.0",
+    "react": ">=19",
+    "react-dom": ">=19",
+    "typescript": "^5.0.2",
+    "zod": "^3.0.0 || ^4.0.0"
+  },
+  "dependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "chalk": "^5.3.0",
+    "dedent": "^1.5.1",
+    "esbuild": "^0.25.0",
+    "globby": "^13.2.2",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.8",
+    "openapi3-ts": "^4.4.0",
+    "ts-morph": "^21.0.1",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.182",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^22.10.0",
+    "@types/prettier": "^2.7.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/sinon": "^10.0.20",
+    "ava": "^5.3.1",
+    "eslint": "^9.0.0",
+    "eslint-config-custom": "*",
+    "eslint-config-next": "^16.0.0",
+    "expect-type": "^0.15.0",
+    "next": "^16.0.0",
+    "nextjs-server-modules": "^2.1.0",
+    "prettier": "^2.7.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "semantic-release": "^25.0.8",
+    "sinon": "^15.2.0",
+    "ts-toolbelt": "^9.6.0",
+    "tsup": "^8.0.0",
+    "type-fest": "^3.1.0",
+    "zod": "^4.3.5"
+  }
 }
