@@ -1,6 +1,6 @@
 import test from "ava"
-import getTestServer from "tests/fixtures/get-test-server"
-import handler from "pages/api/todo/add"
+import getTestServer from "../../fixtures/get-test-server"
+import handler from "../../../pages/api/todo/add"
 
 test("POST /todo/add", async (t) => {
   const { axios } = await getTestServer(t)

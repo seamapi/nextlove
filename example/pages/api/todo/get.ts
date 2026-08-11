@@ -1,9 +1,9 @@
 import { checkRouteSpec } from "nextlove"
-import { withRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "../../../lib/middlewares"
 import { NotFoundException } from "nextlove"
-import { TODO_ID } from "tests/fixtures"
+import { TODO_ID } from "../../../tests/fixtures"
 import { z } from "zod"
-import * as ZT from "lib/zod"
+import * as ZT from "../../../lib/zod"
 
 export const queryParams = z.object({
   id: z.string().uuid(),

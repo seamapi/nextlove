@@ -1,7 +1,7 @@
 import test from "ava"
-import { TODO_ID } from "tests/fixtures"
-import axiosAssert from "tests/fixtures/axios-assert"
-import getTestServer from "tests/fixtures/get-test-server"
+import { TODO_ID } from "../../fixtures"
+import axiosAssert from "../../fixtures/axios-assert"
+import getTestServer from "../../fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
 test("GET /todo/get", async (t) => {

@@ -1,6 +1,6 @@
 import qs from "qs"
 import test from "ava"
-import getTestServer from "tests/fixtures/get-test-server"
+import getTestServer from "../../fixtures/get-test-server"
 
 test("GET /todo/array-query-brackets (comma-separated array values)", async (t) => {
   const { axios } = await getTestServer(t)
