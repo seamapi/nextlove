@@ -1,6 +1,6 @@
 import test from "ava"
-import { TODO_ID } from "tests/fixtures"
-import getTestServer from "tests/fixtures/get-test-server"
+import { TODO_ID } from "../../fixtures"
+import getTestServer from "../../fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
 test("DELETE /todo/delete", async (t) => {

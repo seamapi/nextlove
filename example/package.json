@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Example Next.js TODO app built against the locally built nextlove.",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",

@@ -1,5 +1,5 @@
 import { checkRouteSpec } from "nextlove"
-import { withRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "../../../lib/middlewares"
 import { z } from "zod"
 import { HttpException } from "nextlove"
 import { jsonBody } from "./add"

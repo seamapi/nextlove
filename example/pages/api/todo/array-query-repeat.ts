@@ -1,5 +1,5 @@
 import { checkRouteSpec } from "nextlove"
-import { withRouteSpecSupportedArrayFormats } from "lib/middlewares"
+import { withRouteSpecSupportedArrayFormats } from "../../../lib/middlewares"
 import { z } from "zod"
 
 export const queryParams = z.object({

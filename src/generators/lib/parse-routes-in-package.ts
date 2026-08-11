@@ -1,8 +1,6 @@
-import { createRequire } from "node:module"
 import path from "node:path"
+import { pathToFileURL } from "node:url"
 import { RouteSpec, SetupParams } from "../../types/index.js"
-
-const require = createRequire(import.meta.url)
 import { defaultMapFilePathToHTTPRoute } from "./default-map-file-path-to-http-route.js"
 
 export interface RouteInfo {
@@ -38,7 +36,11 @@ export const parseRoutesInPackage = async (opts: {
 
   await Promise.all(
     filepaths.map(async (p) => {
-      const { default: routeFn } = await require(path.resolve(p))
+      // Route modules are imported rather than required so that they can pull
+      // in ESM only dependencies.
+      const { default: routeFn } = await import(
+        pathToFileURL(path.resolve(p)).href
+      )
 
       if (routeFn) {
         if (

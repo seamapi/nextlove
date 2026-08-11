@@ -1,4 +1,4 @@
-import { withRouteSpecSupportedArrayFormats } from "lib/middlewares"
+import { withRouteSpecSupportedArrayFormats } from "../../../lib/middlewares"
 import { checkRouteSpec } from "nextlove"
 import { z } from "zod"
 

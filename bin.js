@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import "tsx/cjs"
+// Route modules are TypeScript, and the generators import them at runtime.
+import "tsx/esm"
 import minimist from "minimist"
 
 const argv = minimist(process.argv.slice(2))

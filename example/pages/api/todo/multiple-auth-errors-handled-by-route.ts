@@ -1,5 +1,5 @@
 import { UnauthorizedException } from "nextlove"
-import { withRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "../../../lib/middlewares"
 
 export default withRouteSpec({
   methods: ["GET"],

@@ -1,7 +1,7 @@
 import { checkRouteSpec } from "nextlove"
-import { withRouteSpec } from "lib/middlewares"
+import { withRouteSpec } from "../../../lib/middlewares"
 import { z } from "zod"
-import * as ZT from "lib/zod"
+import * as ZT from "../../../lib/zod"
 
 export const commonParams = z.object({
   ids: z.array(z.string().uuid()),

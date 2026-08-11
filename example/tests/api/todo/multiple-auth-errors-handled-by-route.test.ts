@@ -1,5 +1,5 @@
 import test from "ava"
-import getTestServer from "tests/fixtures/get-test-server"
+import getTestServer from "../../fixtures/get-test-server"
 import { AxiosError } from "axios"
 
 test("GET /todo/multiple-auth-errors-handled-by-route", async (t) => {

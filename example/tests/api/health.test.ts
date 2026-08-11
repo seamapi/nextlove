@@ -1,5 +1,5 @@
 import test from "ava"
-import getTestServer from "tests/fixtures/get-test-server"
+import getTestServer from "../fixtures/get-test-server"
 
 test("GET /health", async (t) => {
   const { axios } = await getTestServer(t)

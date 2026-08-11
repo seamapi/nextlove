@@ -1,6 +1,6 @@
 // This file changes the routing to allow top-level prefixes
 
-module.exports = {
+export default {
   async rewrites() {
     return {
       beforeFiles: [

@@ -1,6 +1,6 @@
-import { axiosAssert } from "tests/fixtures/axios-assert"
+import { axiosAssert } from "../../fixtures/axios-assert"
 import test from "ava"
-import getTestServer from "tests/fixtures/get-test-server"
+import getTestServer from "../../fixtures/get-test-server"
 import { v4 as uuidv4 } from "uuid"
 
 test("GET /todo/list-with-refine", async (t) => {
