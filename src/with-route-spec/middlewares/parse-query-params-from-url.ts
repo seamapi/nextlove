@@ -24,7 +24,7 @@ export const parseQueryParamsFromUrl = (
   inputUrl: string,
   routeQuery: Record<string, unknown>
 ): Record<string, unknown> => {
-  const { searchParams } = new URL(inputUrl, "http://dummy.com")
+  const { searchParams } = new URL(inputUrl, "https://example.com")
 
   let parsed: Record<string, unknown>
   try {
