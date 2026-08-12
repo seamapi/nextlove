@@ -78,7 +78,7 @@ const getQueryParams = async (
   const req = {
     method: "GET",
     url,
-    query: toNextQuery(new URL(url, "http://dummy.com").searchParams),
+    query: toNextQuery(new URL(url, "https://example.com").searchParams),
     headers: {},
   }
   await route(async (req: any) => void (query = req.query))(
