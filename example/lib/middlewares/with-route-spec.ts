@@ -1,8 +1,4 @@
-import {
-  createWithRouteSpec,
-  QueryArrayFormats,
-  UnauthorizedException,
-} from "nextlove"
+import { createWithRouteSpec, UnauthorizedException } from "nextlove"
 import { withAuthToken } from "./with-auth-token"
 import { withUserSession } from "./with-user-session"
 import * as ZT from "../zod"
@@ -21,6 +17,7 @@ const defaultRouteSpec = {
     todo: ZT.todo,
     ok: ZT.ok,
   },
+  useLegacyQueryParamsParser: false,
   maxDuration: 60, // Default maxDuration of 60 seconds for all routes
   onMultipleAuthMiddlewareFailures: (errors: unknown[]) => {
     throw new UnauthorizedException({
@@ -38,14 +35,6 @@ export const withRouteSpecWithGlobalMiddlewareAfterAuth = createWithRouteSpec({
   globalMiddlewaresAfterAuth: [withGlobalMiddlewareAfterAuth],
   ...defaultRouteSpec,
 } as const)
-
-export const withRouteSpecSupportedArrayFormats = (
-  supportedArrayFormats: QueryArrayFormats
-) =>
-  createWithRouteSpec({
-    ...defaultRouteSpec,
-    supportedArrayFormats,
-  })
 
 export const withRouteSpecWithoutValidateGetRequestBody = createWithRouteSpec({
   authMiddlewareMap: { auth_token: withAuthToken },

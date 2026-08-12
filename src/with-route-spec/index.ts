@@ -84,6 +84,7 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
         }
       : {},
     supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
+    useLegacyQueryParamsParser = true,
     onMultipleAuthMiddlewareFailures,
     maxDuration: globalMaxDuration,
   } = setupParams
@@ -154,6 +155,8 @@ export const createWithRouteSpec: CreateWithRouteSpecFunction = ((
             shouldValidateResponses,
             shouldValidateGetRequestBody,
             supportedArrayFormats,
+            useLegacyQueryParamsParser:
+              spec.useLegacyQueryParamsParser ?? useLegacyQueryParamsParser,
           }),
           userDefinedRouteFn
         )(req as any, res)

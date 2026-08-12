@@ -8,6 +8,7 @@ import {
 } from "../../nextjs-exception-middleware/index.js"
 import { QueryArrayFormats } from "../../types/index.js"
 import { DEFAULT_ARRAY_FORMATS } from "../index.js"
+import { parseQueryParamsFromUrl } from "./parse-query-params-from-url.js"
 import {
   getTypeName,
   getEffectsSchema,
@@ -197,6 +198,7 @@ export interface RequestInput<
   shouldValidateResponses?: boolean
   shouldValidateGetRequestBody?: boolean
   supportedArrayFormats?: QueryArrayFormats
+  useLegacyQueryParamsParser?: boolean
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -253,7 +255,10 @@ export const withValidation =
   ) =>
   (next) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
-    const { supportedArrayFormats = DEFAULT_ARRAY_FORMATS } = input
+    const {
+      supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
+      useLegacyQueryParamsParser = true,
+    } = input
 
     if (
       (input.formData && input.jsonBody) ||
@@ -290,6 +295,8 @@ export const withValidation =
 
     try {
       const original_combined_params = { ...req.query, ...req.body }
+      const original_query = req.query
+      const original_body = req.body
 
       const willValidateRequestBody = input.shouldValidateGetRequestBody
         ? true
@@ -305,7 +312,7 @@ export const withValidation =
         req.body = input.jsonBody?.parse(req.body)
       }
 
-      if (input.queryParams) {
+      if (input.queryParams && useLegacyQueryParamsParser) {
         if (!req.url) {
           throw new Error("req.url is undefined")
         }
@@ -319,7 +326,7 @@ export const withValidation =
         ) as typeof req.query
       }
 
-      if (input.commonParams) {
+      if (input.commonParams && useLegacyQueryParamsParser) {
         /**
          * as commonParams includes query params, we can use the parseQueryParams function
          */
@@ -328,6 +335,37 @@ export const withValidation =
           original_combined_params,
           supportedArrayFormats
         )
+      }
+
+      if (
+        !useLegacyQueryParamsParser &&
+        (input.queryParams || input.commonParams)
+      ) {
+        if (!req.url) {
+          throw new Error("req.url is undefined")
+        }
+
+        if (input.queryParams) {
+          req.query = input.queryParams.parse(
+            parseQueryParamsFromUrl(input.queryParams, req.url, original_query)
+          ) as typeof req.query
+        }
+
+        if (input.commonParams) {
+          /**
+           * as commonParams includes query params, we can use the
+           * parseQueryParamsFromUrl function, with body params taking
+           * precedence over query params as they do above
+           */
+          ;(req as any).commonParams = input.commonParams.parse({
+            ...parseQueryParamsFromUrl(
+              input.commonParams,
+              req.url,
+              original_query
+            ),
+            ...original_body,
+          })
+        }
       }
     } catch (error: any) {
       if (error instanceof BadRequestException) {
