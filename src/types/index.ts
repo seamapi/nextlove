@@ -54,6 +54,19 @@ export interface RouteSpec<
   useLegacyQueryParamsParser?: boolean
 
   /**
+   * Whether this route parses query params strictly, accepting only the
+   * output of @seamapi/url-search-params-serializer (true), or generously,
+   * also accepting the comma and bracket array formats and boolean spellings
+   * such as "yes" and "1" (false, the default).
+   * Overrides the setup param if set. Strict parsing applies when either
+   * this or the `_strict` query param asks for it, so setting it true
+   * enforces strict parsing that a client cannot relax, and leaving it false
+   * lets a client tighten its own requests. Has no effect under the legacy
+   * parser.
+   */
+  strictQueryParamsParser?: boolean
+
+  /**
    * Route-specific maxDuration (in seconds).
    * Overrides the global default if set.
    * This is a Next.js route segment config.
@@ -117,6 +130,19 @@ export interface SetupParams<
    * The default will change to false in the next major version.
    */
   useLegacyQueryParamsParser?: boolean
+
+  /**
+   * Whether routes parse query params strictly, accepting only the output of
+   * @seamapi/url-search-params-serializer (true), or generously, also
+   * accepting the comma and bracket array formats and boolean spellings such
+   * as "yes" and "1" (false, the default).
+   * May be overridden per route in the route spec. Strict parsing applies
+   * when either this or the `_strict` query param asks for it, so setting it
+   * true enforces strict parsing that a client cannot relax, and leaving it
+   * false lets a client tighten its own requests. Has no effect under the
+   * legacy parser.
+   */
+  strictQueryParamsParser?: boolean
 
   /**
    * If an endpoint accepts multiple auth methods and they all fail, this hook will be called with the errors thrown by the middlewares.

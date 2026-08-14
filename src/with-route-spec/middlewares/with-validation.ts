@@ -8,7 +8,10 @@ import {
 } from "../../nextjs-exception-middleware/index.js"
 import { QueryArrayFormats } from "../../types/index.js"
 import { DEFAULT_ARRAY_FORMATS } from "../index.js"
-import { parseQueryParamsFromUrl } from "./parse-query-params-from-url.js"
+import {
+  parseQueryParamsFromUrl,
+  STRICT_QUERY_PARAM_NAME,
+} from "./parse-query-params-from-url.js"
 import {
   getTypeName,
   getEffectsSchema,
@@ -199,6 +202,25 @@ export interface RequestInput<
   shouldValidateGetRequestBody?: boolean
   supportedArrayFormats?: QueryArrayFormats
   useLegacyQueryParamsParser?: boolean
+  strictQueryParamsParser?: boolean
+}
+
+/**
+ * Reads the strict parsing flag off the query and removes it, so that a
+ * route's own schema never sees it. Only the literal "true" asks for strict
+ * parsing, the one spelling a strict boolean has.
+ *
+ * A client can only tighten: strict applies when either the route or the
+ * client asks for it, so a route that enforces strict cannot be relaxed.
+ */
+const takeStrictQueryParam = (req: NextApiRequest): boolean | undefined => {
+  const value = req.query[STRICT_QUERY_PARAM_NAME]
+  if (value === undefined) return undefined
+
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete req.query[STRICT_QUERY_PARAM_NAME]
+
+  return value === "true"
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -259,6 +281,12 @@ export const withValidation =
       supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
       useLegacyQueryParamsParser = true,
     } = input
+
+    // Always taken, never short circuited, so the param is stripped even when
+    // the route already enforces strict and its value adds nothing.
+    const strictFromQuery = takeStrictQueryParam(req)
+    const strictQueryParamsParser =
+      input.strictQueryParamsParser === true || strictFromQuery === true
 
     if (
       (input.formData && input.jsonBody) ||
@@ -347,7 +375,12 @@ export const withValidation =
 
         if (input.queryParams) {
           req.query = input.queryParams.parse(
-            parseQueryParamsFromUrl(input.queryParams, req.url, original_query)
+            parseQueryParamsFromUrl(
+              input.queryParams,
+              req.url,
+              original_query,
+              strictQueryParamsParser
+            )
           ) as typeof req.query
         }
 
@@ -361,7 +394,8 @@ export const withValidation =
             ...parseQueryParamsFromUrl(
               input.commonParams,
               req.url,
-              original_query
+              original_query,
+              strictQueryParamsParser
             ),
             ...original_body,
           })

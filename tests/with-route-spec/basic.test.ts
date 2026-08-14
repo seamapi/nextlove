@@ -59,6 +59,7 @@ const getQueryParams = async (
   routeSpec: {
     queryParams: z.ZodTypeAny
     useLegacyQueryParamsParser?: boolean
+    strictQueryParamsParser?: boolean
   },
   url: string
 ) => {
@@ -153,4 +154,135 @@ test("optional query params that are not sent are omitted", async (t) => {
   )
 
   t.deepEqual(Object.keys(query), ["ids"], "flag is not a key of req.query")
+})
+
+const getQueryParamsError = async (
+  routeSpec: {
+    queryParams: z.ZodTypeAny
+    useLegacyQueryParamsParser?: boolean
+    strictQueryParamsParser?: boolean
+  },
+  url: string
+) => {
+  const withRouteSpec = createWithRouteSpec({
+    apiName: "test",
+    productionServerUrl: "https://seam.com",
+    globalMiddlewares: [],
+    authMiddlewareMap: {},
+  })
+  const route = withRouteSpec({
+    methods: ["GET"],
+    auth: "none",
+    ...routeSpec,
+  } as any)
+
+  let status: number | undefined
+  let body: any
+  await route(async () => void 0)(
+    {
+      method: "GET",
+      url,
+      query: toNextQuery(new URL(url, "https://example.com").searchParams),
+      headers: {},
+    } as any,
+    {
+      status(code: number) {
+        status = code
+        return {
+          json(json: any) {
+            body = json
+          },
+        }
+      },
+    } as any
+  )
+
+  return { status, type: body?.error?.type, message: body?.error?.message }
+}
+
+// The serializer emits a comma inside an array value percent-encoded, but
+// URLSearchParams decodes it before the parser runs, so generous mode cannot
+// tell it apart from the comma array format.
+const commaArrayUrl = "/api/test?names=a%2Cb&names=c"
+const namesQueryParams = z.object({ names: z.array(z.string()) })
+
+test("_strict selects strict parsing per request", async (t) => {
+  t.deepEqual(
+    await getQueryParams(
+      { queryParams: namesQueryParams, useLegacyQueryParamsParser: false },
+      `${commaArrayUrl}&_strict=true`
+    ),
+    { names: ["a,b", "c"] },
+    "an array value containing a comma round trips"
+  )
+
+  const generous = await getQueryParamsError(
+    { queryParams: namesQueryParams, useLegacyQueryParamsParser: false },
+    commaArrayUrl
+  )
+  t.is(generous.status, 400, "the same request is unparseable when generous")
+  t.is(generous.type, "invalid_query_params")
+})
+
+test("_strict is consumed and never reaches the route", async (t) => {
+  const query = await getQueryParams(
+    {
+      queryParams: z.object({ ids: z.array(z.string()) }),
+      useLegacyQueryParamsParser: false,
+    },
+    "/api/test?ids=a&_strict=true"
+  )
+
+  t.deepEqual(query, { ids: ["a"] })
+})
+
+test("only _strict=true asks for strict parsing", async (t) => {
+  // "true" is the one spelling a strict boolean has, so nothing else is a
+  // request for strict parsing, and every other value is ignored.
+  for (const value of ["false", "ture", "1", "0", "yes", ""]) {
+    t.deepEqual(
+      await getQueryParams(
+        { queryParams: flagQueryParams, useLegacyQueryParamsParser: false },
+        `/api/test?flag=yes&_strict=${value}`
+      ),
+      { flag: true },
+      `_strict=${value} leaves parsing generous`
+    )
+  }
+})
+
+test("_strict can only tighten parsing", async (t) => {
+  const enforced = await getQueryParamsError(
+    {
+      queryParams: flagQueryParams,
+      useLegacyQueryParamsParser: false,
+      strictQueryParamsParser: true,
+    },
+    "/api/test?flag=yes&_strict=false"
+  )
+  t.is(enforced.status, 400, "a route that enforces strict cannot be relaxed")
+
+  const upgraded = await getQueryParamsError(
+    {
+      queryParams: flagQueryParams,
+      useLegacyQueryParamsParser: false,
+      strictQueryParamsParser: false,
+    },
+    "/api/test?flag=yes&_strict=true"
+  )
+  t.is(upgraded.status, 400, "a route that does not can be upgraded")
+})
+
+test("_strict is stripped even when its value adds nothing", async (t) => {
+  t.deepEqual(
+    await getQueryParams(
+      {
+        queryParams: idsQueryParams,
+        useLegacyQueryParamsParser: false,
+        strictQueryParamsParser: true,
+      },
+      "/api/test?ids=a&_strict=false"
+    ),
+    { ids: ["a"] }
+  )
 })
