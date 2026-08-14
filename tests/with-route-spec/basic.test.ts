@@ -251,19 +251,38 @@ test("only _strict=true asks for strict parsing", async (t) => {
   }
 })
 
-test("_strict takes precedent over the route spec", async (t) => {
-  const strictSpec = {
-    queryParams: flagQueryParams,
-    useLegacyQueryParamsParser: false,
-    strictQueryParamsParser: true,
-  }
-
-  t.deepEqual(
-    await getQueryParams(strictSpec, "/api/test?flag=yes&_strict=false"),
-    { flag: true },
-    "generous boolean spellings are accepted again"
+test("_strict can only tighten parsing", async (t) => {
+  const enforced = await getQueryParamsError(
+    {
+      queryParams: flagQueryParams,
+      useLegacyQueryParamsParser: false,
+      strictQueryParamsParser: true,
+    },
+    "/api/test?flag=yes&_strict=false"
   )
+  t.is(enforced.status, 400, "a route that enforces strict cannot be relaxed")
 
-  const { status } = await getQueryParamsError(strictSpec, "/api/test?flag=yes")
-  t.is(status, 400, "without the param the route stays strict")
+  const upgraded = await getQueryParamsError(
+    {
+      queryParams: flagQueryParams,
+      useLegacyQueryParamsParser: false,
+      strictQueryParamsParser: false,
+    },
+    "/api/test?flag=yes&_strict=true"
+  )
+  t.is(upgraded.status, 400, "a route that does not can be upgraded")
+})
+
+test("_strict is stripped even when its value adds nothing", async (t) => {
+  t.deepEqual(
+    await getQueryParams(
+      {
+        queryParams: idsQueryParams,
+        useLegacyQueryParamsParser: false,
+        strictQueryParamsParser: true,
+      },
+      "/api/test?ids=a&_strict=false"
+    ),
+    { ids: ["a"] }
+  )
 })
