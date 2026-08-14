@@ -207,11 +207,9 @@ export interface RequestInput<
 
 /**
  * Reads the strict parsing flag off the query and removes it, so that a
- * route's own schema never sees it. Returns undefined when the client did
- * not ask, leaving the choice to the route and setup params.
- *
- * Parsed strictly, as the flag itself is a boolean the client serialized:
- * only "true" and "false", the spellings a strict boolean has.
+ * route's own schema never sees it. Only the literal "true" asks for strict
+ * parsing, the one spelling a strict boolean has. A client that does not
+ * send it leaves the choice to the route and setup params.
  */
 const takeStrictQueryParam = (req: NextApiRequest): boolean | undefined => {
   const value = req.query[STRICT_QUERY_PARAM_NAME]
@@ -220,13 +218,7 @@ const takeStrictQueryParam = (req: NextApiRequest): boolean | undefined => {
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete req.query[STRICT_QUERY_PARAM_NAME]
 
-  if (value === "true") return true
-  if (value === "false") return false
-
-  throw new BadRequestException({
-    type: "invalid_query_params",
-    message: `Could not parse parameter: '${STRICT_QUERY_PARAM_NAME}' must be "true" or "false"`,
-  })
+  return value === "true"
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {

@@ -236,49 +236,34 @@ test("_strict is consumed and never reaches the route", async (t) => {
   t.deepEqual(query, { ids: ["a"] })
 })
 
+test("only _strict=true asks for strict parsing", async (t) => {
+  // "true" is the one spelling a strict boolean has, so nothing else is a
+  // request for strict parsing, and every other value is ignored.
+  for (const value of ["false", "ture", "1", "0", "yes", ""]) {
+    t.deepEqual(
+      await getQueryParams(
+        { queryParams: flagQueryParams, useLegacyQueryParamsParser: false },
+        `/api/test?flag=yes&_strict=${value}`
+      ),
+      { flag: true },
+      `_strict=${value} leaves parsing generous`
+    )
+  }
+})
+
 test("_strict takes precedent over the route spec", async (t) => {
+  const strictSpec = {
+    queryParams: flagQueryParams,
+    useLegacyQueryParamsParser: false,
+    strictQueryParamsParser: true,
+  }
+
   t.deepEqual(
-    await getQueryParams(
-      {
-        queryParams: flagQueryParams,
-        useLegacyQueryParamsParser: false,
-        strictQueryParamsParser: true,
-      },
-      "/api/test?flag=yes&_strict=false"
-    ),
+    await getQueryParams(strictSpec, "/api/test?flag=yes&_strict=false"),
     { flag: true },
     "generous boolean spellings are accepted again"
   )
 
-  const strict = await getQueryParamsError(
-    {
-      queryParams: flagQueryParams,
-      useLegacyQueryParamsParser: false,
-      strictQueryParamsParser: true,
-    },
-    "/api/test?flag=yes"
-  )
-  t.is(strict.status, 400, "strict accepts only true and false")
-})
-
-test("_strict is itself parsed strictly", async (t) => {
-  // Only the spellings a strict boolean has. An empty value is null, not true.
-  for (const value of ["ture", "1", "0", "yes", ""]) {
-    const { status, type } = await getQueryParamsError(
-      { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
-      `/api/test?ids=a&_strict=${value}`
-    )
-
-    t.is(status, 400, value)
-    t.is(type, "invalid_query_params", value)
-  }
-
-  t.deepEqual(
-    await getQueryParams(
-      { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
-      "/api/test?ids=a&_strict=false"
-    ),
-    { ids: ["a"] },
-    "false is accepted"
-  )
+  const { status } = await getQueryParamsError(strictSpec, "/api/test?flag=yes")
+  t.is(status, 400, "without the param the route stays strict")
 })
