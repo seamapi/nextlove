@@ -261,12 +261,24 @@ test("_strict takes precedent over the route spec", async (t) => {
   t.is(strict.status, 400, "strict accepts only true and false")
 })
 
-test("_strict must be a boolean", async (t) => {
-  const { status, type } = await getQueryParamsError(
-    { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
-    "/api/test?ids=a&_strict=ture"
-  )
+test("_strict is itself parsed strictly", async (t) => {
+  // Only the spellings a strict boolean has. An empty value is null, not true.
+  for (const value of ["ture", "1", "0", "yes", ""]) {
+    const { status, type } = await getQueryParamsError(
+      { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
+      `/api/test?ids=a&_strict=${value}`
+    )
 
-  t.is(status, 400)
-  t.is(type, "invalid_query_params")
+    t.is(status, 400, value)
+    t.is(type, "invalid_query_params", value)
+  }
+
+  t.deepEqual(
+    await getQueryParams(
+      { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
+      "/api/test?ids=a&_strict=false"
+    ),
+    { ids: ["a"] },
+    "false is accepted"
+  )
 })
