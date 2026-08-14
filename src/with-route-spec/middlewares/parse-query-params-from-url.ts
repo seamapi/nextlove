@@ -11,6 +11,12 @@ import {
 } from "../../nextjs-exception-middleware/index.js"
 
 /**
+ * The query param a client sends to select strict parsing for its request.
+ * Consumed here and never surfaced to route handlers.
+ */
+export const STRICT_QUERY_PARAM_NAME = "_strict"
+
+/**
  * Parses the query string with @seamapi/url-search-params-parser, then
  * merges in params the parser has no knowledge of: Next.js dynamic route
  * params, which are in req.query but not in the query string, and params
@@ -22,13 +28,15 @@ import {
 export const parseQueryParamsFromUrl = (
   schema: z.ZodTypeAny,
   inputUrl: string,
-  routeQuery: Record<string, unknown>
+  routeQuery: Record<string, unknown>,
+  strict: boolean
 ): Record<string, unknown> => {
   const { searchParams } = new URL(inputUrl, "https://example.com")
+  searchParams.delete(STRICT_QUERY_PARAM_NAME)
 
   let parsed: Record<string, unknown>
   try {
-    parsed = parseUrlSearchParams(searchParams, schema, { strict: false })
+    parsed = parseUrlSearchParams(searchParams, schema, { strict })
   } catch (error: unknown) {
     if (error instanceof UnparseableSearchParamError) {
       throw new BadRequestException({
@@ -51,6 +59,7 @@ export const parseQueryParamsFromUrl = (
   const parsed_keys = new Set(Object.keys(parsed))
 
   for (const [key, value] of Object.entries(routeQuery)) {
+    if (key === STRICT_QUERY_PARAM_NAME) continue
     if (parsed_keys.has(key)) continue
 
     // Alternate forms of a param the parser already handled.

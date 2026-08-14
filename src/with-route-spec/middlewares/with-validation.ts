@@ -8,7 +8,10 @@ import {
 } from "../../nextjs-exception-middleware/index.js"
 import { QueryArrayFormats } from "../../types/index.js"
 import { DEFAULT_ARRAY_FORMATS } from "../index.js"
-import { parseQueryParamsFromUrl } from "./parse-query-params-from-url.js"
+import {
+  parseQueryParamsFromUrl,
+  STRICT_QUERY_PARAM_NAME,
+} from "./parse-query-params-from-url.js"
 import {
   getTypeName,
   getEffectsSchema,
@@ -199,6 +202,28 @@ export interface RequestInput<
   shouldValidateGetRequestBody?: boolean
   supportedArrayFormats?: QueryArrayFormats
   useLegacyQueryParamsParser?: boolean
+  strictQueryParamsParser?: boolean
+}
+
+/**
+ * Reads the strict parsing flag off the query and removes it, so that a
+ * route's own schema never sees it. Returns undefined when the client did
+ * not ask, leaving the choice to the route and setup params.
+ */
+const takeStrictQueryParam = (req: NextApiRequest): boolean | undefined => {
+  const value = req.query[STRICT_QUERY_PARAM_NAME]
+  if (value === undefined) return undefined
+
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete req.query[STRICT_QUERY_PARAM_NAME]
+
+  if (value === "" || value === "true" || value === "1") return true
+  if (value === "false" || value === "0") return false
+
+  throw new BadRequestException({
+    type: "invalid_query_params",
+    message: `Could not parse parameter: '${STRICT_QUERY_PARAM_NAME}' must be "true" or "false"`,
+  })
 }
 
 const zodIssueToString = (issue: z.ZodIssue) => {
@@ -259,6 +284,9 @@ export const withValidation =
       supportedArrayFormats = DEFAULT_ARRAY_FORMATS,
       useLegacyQueryParamsParser = true,
     } = input
+
+    const strictQueryParamsParser =
+      takeStrictQueryParam(req) ?? input.strictQueryParamsParser ?? false
 
     if (
       (input.formData && input.jsonBody) ||
@@ -347,7 +375,12 @@ export const withValidation =
 
         if (input.queryParams) {
           req.query = input.queryParams.parse(
-            parseQueryParamsFromUrl(input.queryParams, req.url, original_query)
+            parseQueryParamsFromUrl(
+              input.queryParams,
+              req.url,
+              original_query,
+              strictQueryParamsParser
+            )
           ) as typeof req.query
         }
 
@@ -361,7 +394,8 @@ export const withValidation =
             ...parseQueryParamsFromUrl(
               input.commonParams,
               req.url,
-              original_query
+              original_query,
+              strictQueryParamsParser
             ),
             ...original_body,
           })

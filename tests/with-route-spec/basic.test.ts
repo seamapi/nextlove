@@ -59,6 +59,7 @@ const getQueryParams = async (
   routeSpec: {
     queryParams: z.ZodTypeAny
     useLegacyQueryParamsParser?: boolean
+    strictQueryParamsParser?: boolean
   },
   url: string
 ) => {
@@ -153,4 +154,119 @@ test("optional query params that are not sent are omitted", async (t) => {
   )
 
   t.deepEqual(Object.keys(query), ["ids"], "flag is not a key of req.query")
+})
+
+const getQueryParamsError = async (
+  routeSpec: {
+    queryParams: z.ZodTypeAny
+    useLegacyQueryParamsParser?: boolean
+    strictQueryParamsParser?: boolean
+  },
+  url: string
+) => {
+  const withRouteSpec = createWithRouteSpec({
+    apiName: "test",
+    productionServerUrl: "https://seam.com",
+    globalMiddlewares: [],
+    authMiddlewareMap: {},
+  })
+  const route = withRouteSpec({
+    methods: ["GET"],
+    auth: "none",
+    ...routeSpec,
+  } as any)
+
+  let status: number | undefined
+  let body: any
+  await route(async () => void 0)(
+    {
+      method: "GET",
+      url,
+      query: toNextQuery(new URL(url, "https://example.com").searchParams),
+      headers: {},
+    } as any,
+    {
+      status(code: number) {
+        status = code
+        return {
+          json(json: any) {
+            body = json
+          },
+        }
+      },
+    } as any
+  )
+
+  return { status, type: body?.error?.type, message: body?.error?.message }
+}
+
+// The serializer emits a comma inside an array value percent-encoded, but
+// URLSearchParams decodes it before the parser runs, so generous mode cannot
+// tell it apart from the comma array format.
+const commaArrayUrl = "/api/test?names=a%2Cb&names=c"
+const namesQueryParams = z.object({ names: z.array(z.string()) })
+
+test("_strict selects strict parsing per request", async (t) => {
+  t.deepEqual(
+    await getQueryParams(
+      { queryParams: namesQueryParams, useLegacyQueryParamsParser: false },
+      `${commaArrayUrl}&_strict=true`
+    ),
+    { names: ["a,b", "c"] },
+    "an array value containing a comma round trips"
+  )
+
+  const generous = await getQueryParamsError(
+    { queryParams: namesQueryParams, useLegacyQueryParamsParser: false },
+    commaArrayUrl
+  )
+  t.is(generous.status, 400, "the same request is unparseable when generous")
+  t.is(generous.type, "invalid_query_params")
+})
+
+test("_strict is consumed and never reaches the route", async (t) => {
+  const query = await getQueryParams(
+    {
+      queryParams: z.object({ ids: z.array(z.string()) }),
+      useLegacyQueryParamsParser: false,
+    },
+    "/api/test?ids=a&_strict=true"
+  )
+
+  t.deepEqual(query, { ids: ["a"] })
+})
+
+test("_strict takes precedent over the route spec", async (t) => {
+  t.deepEqual(
+    await getQueryParams(
+      {
+        queryParams: flagQueryParams,
+        useLegacyQueryParamsParser: false,
+        strictQueryParamsParser: true,
+      },
+      "/api/test?flag=yes&_strict=false"
+    ),
+    { flag: true },
+    "generous boolean spellings are accepted again"
+  )
+
+  const strict = await getQueryParamsError(
+    {
+      queryParams: flagQueryParams,
+      useLegacyQueryParamsParser: false,
+      strictQueryParamsParser: true,
+    },
+    "/api/test?flag=yes"
+  )
+  t.is(strict.status, 400, "strict accepts only true and false")
+})
+
+test("_strict must be a boolean", async (t) => {
+  const { status, type } = await getQueryParamsError(
+    { queryParams: idsQueryParams, useLegacyQueryParamsParser: false },
+    "/api/test?ids=a&_strict=ture"
+  )
+
+  t.is(status, 400)
+  t.is(type, "invalid_query_params")
 })
