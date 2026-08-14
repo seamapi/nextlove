@@ -10,10 +10,6 @@ import {
   InternalServerErrorException,
 } from "../../nextjs-exception-middleware/index.js"
 
-/**
- * The query param a client sends to select strict parsing for its request.
- * Consumed here and never surfaced to route handlers.
- */
 export const STRICT_QUERY_PARAM_NAME = "_strict"
 
 /**

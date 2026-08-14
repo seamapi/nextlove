@@ -205,14 +205,6 @@ export interface RequestInput<
   strictQueryParamsParser?: boolean
 }
 
-/**
- * Reads the strict parsing flag off the query and removes it, so that a
- * route's own schema never sees it. Only the literal "true" asks for strict
- * parsing, the one spelling a strict boolean has.
- *
- * A client can only tighten: strict applies when either the route or the
- * client asks for it, so a route that enforces strict cannot be relaxed.
- */
 const takeStrictQueryParam = (req: NextApiRequest): boolean | undefined => {
   const value = req.query[STRICT_QUERY_PARAM_NAME]
   if (value === undefined) return undefined
@@ -282,8 +274,6 @@ export const withValidation =
       useLegacyQueryParamsParser = true,
     } = input
 
-    // Always taken, never short circuited, so the param is stripped even when
-    // the route already enforces strict and its value adds nothing.
     const strictFromQuery = takeStrictQueryParam(req)
     const strictQueryParamsParser =
       input.strictQueryParamsParser === true || strictFromQuery === true

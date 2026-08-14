@@ -54,15 +54,8 @@ export interface RouteSpec<
   useLegacyQueryParamsParser?: boolean
 
   /**
-   * Whether this route parses query params strictly, accepting only the
-   * output of @seamapi/url-search-params-serializer (true), or generously,
-   * also accepting the comma and bracket array formats and boolean spellings
-   * such as "yes" and "1" (false, the default).
-   * Overrides the setup param if set. Strict parsing applies when either
-   * this or the `_strict` query param asks for it, so setting it true
-   * enforces strict parsing that a client cannot relax, and leaving it false
-   * lets a client tighten its own requests. Has no effect under the legacy
-   * parser.
+   * Whether this route parses query params strictly. Strict parsing applies
+   * when either this or the `_strict` query param asks for it.
    */
   strictQueryParamsParser?: boolean
 
@@ -132,15 +125,8 @@ export interface SetupParams<
   useLegacyQueryParamsParser?: boolean
 
   /**
-   * Whether routes parse query params strictly, accepting only the output of
-   * @seamapi/url-search-params-serializer (true), or generously, also
-   * accepting the comma and bracket array formats and boolean spellings such
-   * as "yes" and "1" (false, the default).
-   * May be overridden per route in the route spec. Strict parsing applies
-   * when either this or the `_strict` query param asks for it, so setting it
-   * true enforces strict parsing that a client cannot relax, and leaving it
-   * false lets a client tighten its own requests. Has no effect under the
-   * legacy parser.
+   * Whether routes parse query params strictly. Strict parsing applies when
+   * either this or the `_strict` query param asks for it.
    */
   strictQueryParamsParser?: boolean
 

@@ -200,9 +200,6 @@ const getQueryParamsError = async (
   return { status, type: body?.error?.type, message: body?.error?.message }
 }
 
-// The serializer emits a comma inside an array value percent-encoded, but
-// URLSearchParams decodes it before the parser runs, so generous mode cannot
-// tell it apart from the comma array format.
 const commaArrayUrl = "/api/test?names=a%2Cb&names=c"
 const namesQueryParams = z.object({ names: z.array(z.string()) })
 
@@ -237,8 +234,6 @@ test("_strict is consumed and never reaches the route", async (t) => {
 })
 
 test("only _strict=true asks for strict parsing", async (t) => {
-  // "true" is the one spelling a strict boolean has, so nothing else is a
-  // request for strict parsing, and every other value is ignored.
   for (const value of ["false", "ture", "1", "0", "yes", ""]) {
     t.deepEqual(
       await getQueryParams(
