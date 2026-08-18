@@ -33,13 +33,6 @@ jobs:
         uses: ./.github/actions/setup
       - name: Cut ${{ github.event.inputs.version }} version
         run: npm version --sign-git-tag=true ${{ github.event.inputs.version }}
-      # semantic-release attributes a release to a channel with a note under
-      # refs/notes/semantic-release, and only a non-dry-run writes one. This
-      # repo runs semantic-release with dry_run and lets this workflow cut the
-      # tag, so on a prerelease branch nothing would ever record that beta.1
-      # shipped and every subsequent run would recompute beta.1. Stable
-      # releases need no note: an untagged-channel release already counts as
-      # the default channel.
       - name: Record prerelease channel
         env:
           VERSION: ${{ github.event.inputs.version }}
@@ -48,12 +41,7 @@ jobs:
             *-*) channel="${VERSION#*-}"; channel="${channel%%.*}" ;;
             *) echo "Stable release, no channel note required."; exit 0 ;;
           esac
-          # The notes ref already exists from earlier releases and git does not
-          # fetch it by default, so without this the local ref starts empty and
-          # the push is rejected as a non-fast-forward.
-          git fetch origin \
-            "+refs/notes/semantic-release:refs/notes/semantic-release" || true
-          git notes --ref semantic-release add --force \
+          git notes --ref "semantic-release-v$VERSION" add --force \
             --message "{\"channels\":[\"$channel\"]}" "v$VERSION^{commit}"
-          git push origin refs/notes/semantic-release
+          git push origin "refs/notes/semantic-release-v$VERSION"
           echo "Recorded v$VERSION on the '$channel' channel."
