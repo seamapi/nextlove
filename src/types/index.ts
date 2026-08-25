@@ -30,6 +30,14 @@ export interface RouteSpec<
 > {
   openApiMetadata?: any
   methods: Methods
+  /**
+   * Methods to ignore during OpenAPI generation. OpenAPI generation emits a
+   * single "semantic" operation per route, so a route that supports more than
+   * two methods is ambiguous. List the redundant methods here to exclude them
+   * from the generated spec and leave a single semantic method (plus at most
+   * one POST alias) behind.
+   */
+  deprecatedMethods?: HTTPMethods[]
   auth: Auth
   jsonBody?: JsonBody
   queryParams?: QueryParams

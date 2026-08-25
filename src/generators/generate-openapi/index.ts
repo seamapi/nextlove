@@ -9,6 +9,9 @@ import { z } from "zod"
 import { parseRoutesInPackage } from "../lib/parse-routes-in-package.js"
 import { generateSchema } from "../lib/zod-openapi.js"
 import { embedSchemaReferences } from "./embed-schema-references.js"
+import { selectSemanticMethod } from "./select-semantic-method.js"
+
+export { selectSemanticMethod } from "./select-semantic-method.js"
 import { mapMethodsToFernSdkMetadata } from "./fern-sdk-utils.js"
 import { parseFrontMatter, testFrontMatter } from "../lib/front-matter.js"
 import dedent from "dedent"
@@ -159,6 +162,21 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
       continue
     }
 
+    const semanticMethod = selectSemanticMethod(
+      routePath,
+      methods,
+      routeSpec.deprecatedMethods ?? []
+    )
+    if (semanticMethod == null) {
+      console.warn(
+        chalk.yellow(
+          `Skipping route ${routePath} because all of its methods are deprecated.`
+        )
+      )
+      continue
+    }
+    const methodsToGenerate = [semanticMethod]
+
     let description = routeSpec.description
     let descriptionMetadata: {
       response_key?: string
@@ -183,7 +201,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
     const methodRoutes: Record<string, OperationObject> = {}
 
-    for (const method of methods) {
+    for (const method of methodsToGenerate) {
       const isPostOrPutOrPatch = ["POST", "PUT", "PATCH"].includes(method)
 
       // TODO: support multipart/form-data
