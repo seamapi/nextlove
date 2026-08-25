@@ -120,15 +120,17 @@ test("generateOpenAPI correctly parses nested object description", async (t) => 
   t.is(testArrayDescription.items["x-title"], "Nested Object Description")
 })
 
-test("generateOpenAPI includes GET even when POST is defined", async (t) => {
+test("generateOpenAPI generates only the semantic (non-POST) method when GET and POST are both defined", async (t) => {
   const openapiJson = JSON.parse(
     await generateOpenAPI({
       packageDir: ".",
     })
   )
 
+  // Only the semantic method (GET) is generated; the POST alias is dropped.
   const methods = Object.keys(openapiJson.paths["/api/todo/list"])
-  t.is(2, methods.length)
+  t.deepEqual(methods, ["get"])
+  t.falsy(openapiJson.paths["/api/todo/list"].post)
 
   // GET includes parameters (using t.like for flexibility with Zod 4's extra properties like pattern)
   t.like(openapiJson.paths["/api/todo/list"].get.parameters[0], {
@@ -145,28 +147,22 @@ test("generateOpenAPI includes GET even when POST is defined", async (t) => {
   })
 
   t.falsy(openapiJson.paths["/api/todo/list"].get.requestBody)
+})
 
-  // POST route has request body (using t.like for flexibility with Zod 4's extra properties)
-  t.like(
-    openapiJson.paths["/api/todo/list"].post.requestBody.content[
-      "application/json"
-    ].schema,
-    {
-      properties: {
-        ids: {
-          items: {
-            format: "uuid",
-            type: "string",
-          },
-          type: "array",
-        },
-      },
-      required: ["ids"],
-      type: "object",
-    }
+test("generateOpenAPI honors deprecatedMethods and generates only the semantic method", async (t) => {
+  const openapiJson = JSON.parse(
+    await generateOpenAPI({
+      packageDir: ".",
+    })
   )
 
-  t.falsy(openapiJson.paths["/api/todo/list"].post.parameters)
+  // /api/todo/no-validate-body declares ["GET", "DELETE", "POST"] with
+  // deprecatedMethods ["DELETE"], leaving GET as the semantic method.
+  const methods = Object.keys(openapiJson.paths["/api/todo/no-validate-body"])
+  t.deepEqual(methods, ["get"])
+  t.truthy(openapiJson.paths["/api/todo/no-validate-body"].get)
+  t.falsy(openapiJson.paths["/api/todo/no-validate-body"].post)
+  t.falsy(openapiJson.paths["/api/todo/no-validate-body"].delete)
 })
 
 test("generateOpenAPI describes tuples as fixed-length arrays", async (t) => {
