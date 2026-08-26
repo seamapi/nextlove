@@ -1,6 +1,6 @@
 {
   "name": "nextlove",
-  "version": "4.4.0",
+  "version": "4.5.0",
   "description": "Enhanced Next.js API types, OpenAPI generation and utilities.",
   "type": "module",
   "main": "./index.js",
