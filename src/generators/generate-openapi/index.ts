@@ -3,6 +3,8 @@ import {
   OpenApiBuilder,
   OperationObject,
   ParameterObject,
+  ReferenceObject,
+  SchemaObject,
 } from "openapi3-ts/oas31"
 import { SetupParams } from "../../types/index.js"
 import { z } from "zod"
@@ -62,6 +64,48 @@ function pascalCase(input: string): string {
   )
   const pascalCaseString = capitalizedWords.join("")
   return pascalCaseString
+}
+
+/**
+ * A union query schema (e.g. z.union commonParams) has no top-level
+ * properties, only oneOf/anyOf branches, so it would otherwise produce no
+ * query parameters at all. Flatten the branches' properties into one
+ * parameter list. A parameter is only marked required when every branch
+ * requires it — a parameter required by just one branch is conditionally
+ * required at most.
+ */
+function createUnionQueryParameters(schema: SchemaObject): ParameterObject[] {
+  const union_branches = (schema.oneOf ?? schema.anyOf ?? []).filter(
+    (branch): branch is SchemaObject =>
+      typeof branch === "object" &&
+      branch !== null &&
+      "properties" in branch &&
+      branch.properties != null
+  )
+  if (union_branches.length === 0) {
+    return []
+  }
+
+  const properties_by_name: Record<string, SchemaObject | ReferenceObject> = {}
+  for (const branch of union_branches) {
+    for (const [name, property_schema] of Object.entries(
+      branch.properties ?? {}
+    )) {
+      properties_by_name[name] ??= property_schema
+    }
+  }
+
+  return Object.keys(properties_by_name).map((name) => {
+    const is_required_in_every_branch = union_branches.every((branch) =>
+      (branch.required ?? []).includes(name)
+    )
+    return {
+      name,
+      in: "query",
+      schema: properties_by_name[name],
+      required: is_required_in_every_branch || undefined,
+    }
+  })
 }
 
 interface TagOption {
@@ -283,6 +327,11 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
           })
 
           route.parameters = parameters
+        } else {
+          const union_parameters = createUnionQueryParameters(schema)
+          if (union_parameters.length > 0) {
+            route.parameters = union_parameters
+          }
         }
       }
 
