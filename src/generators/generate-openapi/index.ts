@@ -67,6 +67,16 @@ function pascalCase(input: string): string {
   return pascalCaseString
 }
 
+function collectUnionQueryBranches(schema: SchemaObject): SchemaObject[] {
+  return (schema.oneOf ?? schema.anyOf ?? []).filter(
+    (branch): branch is SchemaObject =>
+      typeof branch === "object" &&
+      branch !== null &&
+      "properties" in branch &&
+      branch.properties != null
+  )
+}
+
 /**
  * A union query schema (e.g. z.union commonParams) has no top-level
  * properties, only oneOf/anyOf branches, so it would otherwise produce no
@@ -75,14 +85,9 @@ function pascalCase(input: string): string {
  * requires it — a parameter required by just one branch is conditionally
  * required at most.
  */
-function createUnionQueryParameters(schema: SchemaObject): ParameterObject[] {
-  const union_branches = (schema.oneOf ?? schema.anyOf ?? []).filter(
-    (branch): branch is SchemaObject =>
-      typeof branch === "object" &&
-      branch !== null &&
-      "properties" in branch &&
-      branch.properties != null
-  )
+function createUnionQueryParameters(
+  union_branches: SchemaObject[]
+): ParameterObject[] {
   if (union_branches.length === 0) {
     return []
   }
@@ -107,6 +112,25 @@ function createUnionQueryParameters(schema: SchemaObject): ParameterObject[] {
       required: is_required_in_every_branch || undefined,
     }
   })
+}
+
+/**
+ * Flattening a union into query parameters loses the either-or constraint:
+ * each branch's `required` becomes a per-parameter flag, and no single
+ * parameter is required, so a consumer deriving "does this request require
+ * any parameter?" from the parameter list alone would answer no. When every
+ * branch requires at least one property the request does require a parameter,
+ * which this reports through the `x-has-required-parameters` extension that
+ * consumers (e.g. @seamapi/blueprint) read in preference to their own
+ * derivation.
+ */
+function doesEveryUnionBranchRequireAProperty(
+  union_branches: SchemaObject[]
+): boolean {
+  if (union_branches.length === 0) {
+    return false
+  }
+  return union_branches.every((branch) => (branch.required ?? []).length > 0)
 }
 
 interface TagOption {
@@ -352,9 +376,17 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
 
           route.parameters = parameters
         } else {
-          const union_parameters = createUnionQueryParameters(schema)
+          const union_branches = collectUnionQueryBranches(schema)
+          const union_parameters = createUnionQueryParameters(union_branches)
           if (union_parameters.length > 0) {
             route.parameters = union_parameters
+
+            if (
+              route["x-has-required-parameters"] === undefined &&
+              doesEveryUnionBranchRequireAProperty(union_branches)
+            ) {
+              route["x-has-required-parameters"] = true
+            }
           }
         }
       }

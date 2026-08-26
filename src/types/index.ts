@@ -37,7 +37,7 @@ export interface RouteSpec<
    * from the generated spec and leave a single semantic method (plus at most
    * one POST alias) behind.
    */
-  deprecatedMethods?: HTTPMethods[]
+  deprecatedMethods?: readonly HTTPMethods[]
   auth: Auth
   jsonBody?: JsonBody
   queryParams?: QueryParams

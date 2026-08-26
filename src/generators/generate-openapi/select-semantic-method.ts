@@ -12,8 +12,8 @@
  */
 export function selectSemanticMethod(
   routePath: string,
-  methods: string[],
-  deprecatedMethods: string[] = []
+  methods: readonly string[],
+  deprecatedMethods: readonly string[] = []
 ): string | undefined {
   const deprecated_set = new Set(deprecatedMethods.map((m) => m.toUpperCase()))
   const semantic_methods = methods.filter(
