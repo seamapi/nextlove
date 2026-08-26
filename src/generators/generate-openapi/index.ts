@@ -1,5 +1,6 @@
 import fs from "node:fs/promises"
 import {
+  ExternalDocumentationObject,
   OpenApiBuilder,
   OperationObject,
   ParameterObject,
@@ -77,6 +78,24 @@ interface GenerateOpenAPIOpts {
   tags?: Array<TagOption>
   apiPrefix?: string
   mapFilePathToHTTPRoute?: (file_path: string) => string
+  /**
+   * Markdown for the spec's `info.description`. Dedented and trimmed, so a
+   * template literal with indentation is fine. This is the first prose a
+   * human, doc generator, or coding agent reads, so use it for API-wide
+   * guidance such as preferred client libraries or how requests must be
+   * serialized.
+   */
+  apiDescription?: string
+  /**
+   * The spec's root-level `externalDocs` object.
+   */
+  externalDocs?: ExternalDocumentationObject
+  /**
+   * Extra fields merged into the spec's `info` object. Keys should be
+   * specification extensions (`x-` prefixed), e.g. links to official SDKs
+   * for tooling to surface.
+   */
+  infoExtensions?: Record<`x-${string}`, unknown>
 }
 
 /**
@@ -136,7 +155,12 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOpts) {
     info: {
       title: globalSetupParams.apiName,
       version: "1.0.0",
+      ...(opts.apiDescription != null && {
+        description: dedent(opts.apiDescription).trim(),
+      }),
+      ...opts.infoExtensions,
     },
+    ...(opts.externalDocs != null && { externalDocs: opts.externalDocs }),
     servers: [
       {
         url: globalSetupParams.productionServerUrl || "https://example.com",
