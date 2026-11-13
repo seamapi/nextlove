@@ -20,7 +20,7 @@
     "node": ">=22.12.0"
   },
   "dependencies": {
-    "axios": "^0.33.0",
+    "axios": "^0.34.0",
     "next": "^16.4.1",
     "nextlove": "file:..",
     "react": "^19.0.0",
